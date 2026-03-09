@@ -1,63 +1,42 @@
 import React from "react";
+import Button from "../Components/Button";
 
 export default function DashboardScreen({ navigation }) {
-
   return (
-    <View style={styles.container}>
+    <div style={styles.container}>
+      <h1 style={styles.title}>Dashboard RH</h1>
 
-      <Text style={styles.title}>Dashboard RH</Text>
+      <Button
+        title="👥 Salariés"
+        onClick={() => navigation.navigate("Employees")}
+      />
 
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => navigation.navigate("Employees")}
-      >
-        <Text style={styles.cardText}>👥 Salariés</Text>
-      </TouchableOpacity>
+      <Button
+        title="📅 Demande de congés"
+        onClick={() => navigation.navigate("LeaveRequest")}
+      />
 
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => navigation.navigate("LeaveRequest")}
-      >
-        <Text style={styles.cardText}>📅 Demande de congés</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => navigation.navigate("Profile")}
-      >
-        <Text style={styles.cardText}>👤 Profil</Text>
-      </TouchableOpacity>
-
-    </View>
+      <Button
+        title="👤 Profil"
+        onClick={() => navigation.navigate("Profile")}
+      />
+    </div>
   );
 }
 
-const styles = StyleSheet.create({
-
+const styles = {
   container: {
-    flex: 1,
-    padding: 20,
-    justifyContent: "center"
+    maxWidth: "500px",
+    margin: "50px auto",
+    padding: "20px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "15px",
   },
-
   title: {
-    fontSize: 30,
+    fontSize: "30px",
     fontWeight: "bold",
-    marginBottom: 40,
-    textAlign: "center"
+    marginBottom: "40px",
+    textAlign: "center",
   },
-
-  card: {
-    backgroundColor: "#2563eb",
-    padding: 20,
-    borderRadius: 10,
-    marginBottom: 20
-  },
-
-  cardText: {
-    color: "white",
-    fontSize: 18,
-    textAlign: "center"
-  }
-
-});
+};

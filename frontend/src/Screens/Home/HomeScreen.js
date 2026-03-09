@@ -1,36 +1,33 @@
 import React from "react";
-import { View, StyleSheet } from "react-native";
-
 import Header from "../Components/Header";
 import Button from "../Components/Button";
 
 export default function HomeScreen({ navigation }) {
-
   return (
-    <View style={styles.container}>
-
+    <div style={styles.container}>
       <Header title="Accueil StaffHub" />
 
       <Button
         title="Mon dossier"
-        onPress={() => navigation.navigate("Dossier")}
+        onClick={() => navigation.navigate("Dossier")}
       />
 
       <Button
         title="Activité"
-        onPress={() => navigation.navigate("Activite")}
+        onClick={() => navigation.navigate("Activite")}
       />
-
-    </View>
+    </div>
   );
 }
 
-const styles = StyleSheet.create({
-
+const styles = {
   container: {
-    flex: 1,
-    padding: 20,
-    justifyContent: "center"
-  }
-
-});
+    maxWidth: "400px",
+    margin: "100px auto",
+    padding: "20px",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    gap: "15px",
+  },
+};

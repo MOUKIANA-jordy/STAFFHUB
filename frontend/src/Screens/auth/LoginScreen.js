@@ -2,21 +2,24 @@ import React, { useState } from "react";
 import Header from "../../Components/Header";
 import Input from "../../Components/Input";
 import Button from "../../Components/Button";
-import  api from "../../api/api";
+import api from "../../api/api";
+import { useNavigate } from "react-router-dom";
 
-export default function LoginScreen({ navigation }) {
+export default function LoginScreen() {
   const [identifiant, setIdentifiant] = useState("");
   const [password, setPassword] = useState("");
 
+  const navigate = useNavigate();
+
   const handleLogin = async () => {
     if (!identifiant || !password) {
-      Alert.alert("Erreur", "Veuillez remplir tous les champs.");
+      alert("Veuillez remplir tous les champs.");
       return;
     }
 
     try {
       const response = await api.post("token/", {
-        username: identifiant, // ton matricule côté backend
+        username: identifiant,
         password: password,
       });
 
@@ -25,51 +28,52 @@ export default function LoginScreen({ navigation }) {
       console.log("Access Token :", access);
       console.log("Refresh Token :", refresh);
 
-      // Ici tu peux stocker le token dans AsyncStorage
-      // AsyncStorage.setItem("access_token", access);
+      localStorage.setItem("access_token", access);
+      localStorage.setItem("refresh_token", refresh);
 
-      Alert.alert("Succès", "Connexion réussie !");
-      // navigation.navigate("Home"); // redirection après login
+      alert("Connexion réussie !");
+      navigate("/dashboard");
 
     } catch (error) {
       console.log(error.response?.data || error.message);
-      Alert.alert("Erreur", "Identifiant ou mot de passe incorrect");
+      alert("Identifiant ou mot de passe incorrect");
     }
   };
 
   return (
-    <View style={styles.container}>
+    <div style={styles.container}>
       <Header title="StaffHub" />
 
       <Input
         placeholder="Identifiant"
         value={identifiant}
-        onChangeText={setIdentifiant}
+        onChange={setIdentifiant}
       />
 
       <Input
         placeholder="Mot de passe"
         value={password}
-        onChangeText={setPassword}
-        secureTextEntry
+        onChange={setPassword}
+        type="password"
       />
 
-      <Button title="Se connecter" onPress={handleLogin} />
+      <Button title="Se connecter" onClick={handleLogin} />
 
       <Button
         title="Mot de passe oublié ?"
-        type="link"
-        onPress={() => navigation.navigate("ForgotPassword")}
+        onClick={() => navigate("/forgot-password")}
       />
-    </View>
+    </div>
   );
 }
 
-const styles = StyleSheet.create({
+const styles = {
   container: {
-    flex: 1,
-    padding: 20,
-    justifyContent: "center",
+    maxWidth: "400px",
+    margin: "100px auto",
+    padding: "20px",
     backgroundColor: "#fff",
+    borderRadius: "10px",
+    boxShadow: "0 0 10px rgba(0,0,0,0.1)",
   },
-});
+};

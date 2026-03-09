@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-
 import Header from "../../Components/Header";
 import Input from "../../Components/Input";
 import Button from "../../Components/Button";
@@ -11,49 +10,55 @@ export default function ResetPasswordScreen() {
 
   const handleReset = () => {
 
+    if (!password || !confirmPassword) {
+      alert("Veuillez remplir tous les champs.");
+      return;
+    }
+
     if (password !== confirmPassword) {
-      Alert.alert("Erreur", "Les mots de passe ne correspondent pas");
+      alert("Les mots de passe ne correspondent pas.");
       return;
     }
 
     console.log("Mot de passe changé :", password);
+    alert("Mot de passe modifié avec succès !");
   };
 
   return (
-    <View style={styles.container}>
+    <div style={styles.container}>
 
       <Header title="Nouveau mot de passe" />
 
       <Input
         placeholder="Nouveau mot de passe"
-        secureTextEntry
+        type="password"
         value={password}
-        onChangeText={setPassword}
+        onChange={setPassword}
       />
 
       <Input
         placeholder="Confirmer le mot de passe"
-        secureTextEntry
+        type="password"
         value={confirmPassword}
-        onChangeText={setConfirmPassword}
+        onChange={setConfirmPassword}
       />
 
       <Button
         title="Modifier mot de passe"
-        onPress={handleReset}
+        onClick={handleReset}
       />
 
-    </View>
+    </div>
   );
 }
 
-const styles = StyleSheet.create({
-
+const styles = {
   container: {
-    flex: 1,
-    padding: 20,
-    justifyContent: "center",
-    backgroundColor: "#fff"
+    maxWidth: "400px",
+    margin: "100px auto",
+    padding: "20px",
+    backgroundColor: "#fff",
+    borderRadius: "10px",
+    boxShadow: "0 0 10px rgba(0,0,0,0.1)"
   }
-
-});
+};

@@ -1,44 +1,143 @@
 import React, { useState } from "react";
-import { View, StyleSheet } from "react-native";
+import "../Styles/etatcivil.css";
 
-import Header from "../../Components/Header";
-import Input from "../../Components/Input";
-import Button from "../../Components/Button";
+export default function EtatCivil() {
 
-export default function EtatCivilScreen() {
+  const [form, setForm] = useState({
+    numeroSecu: "",
+    civilite: "",
+    nom: "",
+    prenom: "",
+    deuxiemePrenom: "",
+    sexe: "",
+    matricule: "",
+    situation: "",
+    dateNaissance: "",
+    paysNaissance: "",
+    departementNaissance: "",
+    nationalite: ""
+  });
 
-  const [nom, setNom] = useState("");
-  const [prenom, setPrenom] = useState("");
-  const [dateNaissance, setDateNaissance] = useState("");
-
-  const handleSave = () => {
-    console.log(nom, prenom, dateNaissance);
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value
+    });
   };
 
   return (
-    <View style={styles.container}>
+    <div className="container">
 
-      <Header title="Etat civil" />
+      <h2>État civil</h2>
 
-      <Input placeholder="Nom" value={nom} onChangeText={setNom} />
+      <div className="grid">
 
-      <Input placeholder="Prénom" value={prenom} onChangeText={setPrenom} />
+        <div className="field">
+          <label>Numéro sécurité sociale</label>
+          <input
+            name="numeroSecu"
+            value={form.numeroSecu}
+            onChange={handleChange}
+          />
+        </div>
 
-      <Input
-        placeholder="Date de naissance"
-        value={dateNaissance}
-        onChangeText={setDateNaissance}
-      />
+        <div className="field">
+          <label>Civilité</label>
+          <select name="civilite" onChange={handleChange}>
+            <option>Choisir</option>
+            <option>Monsieur</option>
+            <option>Madame</option>
+          </select>
+        </div>
 
-      <Button title="Enregistrer" onPress={handleSave} />
+        <div className="field">
+          <label>Nom</label>
+          <input
+            name="nom"
+            value={form.nom}
+            onChange={handleChange}
+          />
+        </div>
 
-    </View>
+        <div className="field">
+          <label>Prénom</label>
+          <input
+            name="prenom"
+            value={form.prenom}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="field">
+          <label>Deuxième prénom</label>
+          <input
+            name="deuxiemePrenom"
+            value={form.deuxiemePrenom}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="field">
+          <label>Sexe</label>
+          <select name="sexe" onChange={handleChange}>
+            <option>Masculin</option>
+            <option>Féminin</option>
+          </select>
+        </div>
+
+        <div className="field">
+          <label>Matricule</label>
+          <input
+            name="matricule"
+            value={form.matricule}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="field">
+          <label>Situation</label>
+          <input
+            name="situation"
+            value={form.situation}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="field">
+          <label>Date de naissance</label>
+          <input
+            type="date"
+            name="dateNaissance"
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="field">
+          <label>Pays naissance</label>
+          <input
+            name="paysNaissance"
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="field">
+          <label>Département naissance</label>
+          <input
+            name="departementNaissance"
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="field">
+          <label>Nationalité</label>
+          <input
+            name="nationalite"
+            onChange={handleChange}
+          />
+        </div>
+
+      </div>
+
+    </div>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20
-  }
-});
