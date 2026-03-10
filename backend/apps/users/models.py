@@ -10,6 +10,7 @@ class Salarie(models.Model):
     matricule = models.CharField(max_length=50, unique=True)
     email_personnel = models.EmailField()
     telephone = models.CharField(max_length=20)
+    email_personnel = models.EmailField(default="inconnu@domaine.com")
 
     date_naissance = models.DateField(null=True, blank=True)
 

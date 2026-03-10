@@ -1,0 +1,16 @@
+.input-group{
+display:flex;
+flex-direction:column;
+margin-bottom:15px;
+}
+
+.input-group label{
+font-size:14px;
+margin-bottom:5px;
+}
+
+.input-group input{
+padding:8px;
+border:1px solid #ccc;
+border-radius:4px;
+}

@@ -9,11 +9,12 @@ class SalarieAdmin(admin.ModelAdmin):
         "prenom",
         "nom",
         "matricule",
-        "email",
+        "email_personnel_affichage",  # Email privé
+        "email_pro_affichage",        # Email pro (User)
         "poste",
         "etablissement",
-        "type_contrat",
-        "role",
+        "contrat_affichage",
+        "role_affichage",
         "date_debut_contrat",
         "date_fin_contrat",
     )
@@ -28,7 +29,8 @@ class SalarieAdmin(admin.ModelAdmin):
         "prenom",
         "nom",
         "matricule",
-        "email",
+        "user__email",        # recherche sur email pro
+        "email_personnel",    # recherche sur email perso
         "poste",
     )
 
@@ -43,3 +45,13 @@ class SalarieAdmin(admin.ModelAdmin):
     def contrat_affichage(self, obj):
         return obj.get_type_contrat_display()
     contrat_affichage.short_description = "Type de contrat"
+
+    # Affichage de l'email professionnel
+    def email_pro_affichage(self, obj):
+        return obj.user.email if obj.user else "-"
+    email_pro_affichage.short_description = "Email pro"
+
+    # Affichage de l'email personnel
+    def email_personnel_affichage(self, obj):
+        return obj.email_personnel
+    email_personnel_affichage.short_description = "Email perso"

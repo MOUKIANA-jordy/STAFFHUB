@@ -1,29 +1,38 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import LoginScreen from "./Screens/auth/LoginScreen";
-import ForgotPasswordScreen from "./Screens/auth/ForgotPasswordScreen";
-import ResetPasswordScreen from "./Screens/auth/ResetPasswordScreen";
-import DashboardScreen from "./Screens/Dashboard/DashboardScreen";
-import EmployeesScreen from "./Screens/Employees/EmployeesScreen";
-import ProfileScreen from "./Screens/Profile/ProfileScreen";
+import Login from "./Pages/Login";
+import ForgotPassword from "./Pages/ForgotPassword";
+import ResetPassword from "./Pages/ResetPassword";
+import Home from "./Pages/Home";
 
 function App() {
+
+  const user = {
+    prenom: "Utilisateur",
+    nom: ""
+  };
+
   return (
-    <Router>
+
+    <BrowserRouter>
+
       <Routes>
 
-        <Route path="/" element={<LoginScreen />} />
-        <Route path="/forgot-password" element={<ForgotPasswordScreen />} />
-        <Route path="/reset-password" element={<ResetPasswordScreen />} />
+        <Route path="/" element={<Login />} />
 
-        <Route path="/dashboard" element={<DashboardScreen />} />
-        <Route path="/employees" element={<EmployeesScreen />} />
-        <Route path="/profile" element={<ProfileScreen />} />
+        <Route path="/forgot" element={<ForgotPassword />} />
+
+        <Route path="/reset" element={<ResetPassword />} />
+
+        <Route path="/home" element={<Home user={user} />} />
 
       </Routes>
-    </Router>
+
+    </BrowserRouter>
+
   );
+
 }
 
 export default App;

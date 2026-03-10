@@ -1,0 +1,25 @@
+.page{
+padding:20px;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:15px;
+}
+
+.field{
+display:flex;
+flex-direction:column;
+}
+
+label{
+font-size:13px;
+margin-bottom:4px;
+}
+
+input,select{
+padding:6px;
+border:1px solid #ccc;
+border-radius:4px;
+}

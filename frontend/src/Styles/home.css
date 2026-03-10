@@ -1,0 +1,52 @@
+.home{
+font-family:Arial;
+}
+
+/* HEADER */
+
+.header{
+background:#2563eb;
+color:white;
+padding:15px 25px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.logo h2{
+margin:0;
+}
+
+.menu button{
+margin-right:10px;
+padding:8px 15px;
+border:none;
+border-radius:4px;
+cursor:pointer;
+}
+
+.user-info{
+font-size:14px;
+}
+
+/* SUBMENU */
+
+.submenu{
+background:#e5e7eb;
+padding:10px 20px;
+}
+
+.submenu button{
+margin-right:10px;
+padding:6px 12px;
+border:none;
+background:white;
+border-radius:4px;
+cursor:pointer;
+}
+
+/* CONTENT */
+
+.content{
+padding:40px;
+}
