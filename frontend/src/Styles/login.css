@@ -67,3 +67,9 @@ color:red;
 font-size:13px;
 margin-bottom:10px;
 }
+
+body{
+margin:0;
+background:linear-gradient(135deg,#2563eb,#1e3a8a);
+font-family:Arial;
+}

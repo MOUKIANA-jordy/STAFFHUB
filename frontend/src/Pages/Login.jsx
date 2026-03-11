@@ -37,8 +37,8 @@ export default function Login() {
     try {
 
       const response = await API.post("/api/token/", {
-        identifiant: form.identifiant,
-        password: form.password
+  	username: form.identifiant,
+  	password: form.password
       });
 
       // sauvegarde token
@@ -92,7 +92,6 @@ export default function Login() {
                 className="toggle"
                 onClick={() => setShowPassword(!showPassword)}
               >
-                👁
               </span>
 
             </div>

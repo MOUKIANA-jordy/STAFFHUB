@@ -41,7 +41,6 @@ export default function Home({ user }) {
       <div className="content">
 
         <h2>Bienvenue sur StaffHub</h2>
-        <p>Votre portail de gestion des employés.</p>
 
       </div>
 

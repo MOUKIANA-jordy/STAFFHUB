@@ -1,4 +1,5 @@
-from rest_framework import viewsets, permissions, statut 
+from rest_framework import viewsets, permissions, status
+from rest_framework.decorators import api_view
 from .models import Salarie
 from .serializers import SalarieSerializer
 from .permissions import IsRHOrAdmin
@@ -28,9 +29,9 @@ class SalarieViewSet(viewsets.ModelViewSet):
 
         return [permission() for permission in permission_classes]
 
-        
-        @api_view(["POST"])
-    def login_view(request):
+
+@api_view(["POST"])
+def login_view(request):
 
     identifiant = request.data.get("identifiant")
     password = request.data.get("password")
@@ -38,7 +39,6 @@ class SalarieViewSet(viewsets.ModelViewSet):
     user = authenticate(username=identifiant, password=password)
 
     if user is not None:
-
         return Response({
             "message": "Connexion réussie",
             "user": {

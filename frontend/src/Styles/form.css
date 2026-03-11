@@ -23,3 +23,59 @@ padding:6px;
 border:1px solid #ccc;
 border-radius:4px;
 }
+
+.btn-save{
+margin-top:20px;
+padding:10px;
+background:#2563eb;
+color:white;
+border:none;
+border-radius:5px;
+cursor:pointer;
+}
+
+.legende{
+margin-top:20px
+}
+
+.yellow{
+background:orange;
+display:inline-block;
+width:15px;
+height:15px;
+margin-right:5px;
+}
+
+.green{
+background:green;
+display:inline-block;
+width:15px;
+height:15px;
+margin-right:5px;
+}
+
+.red{
+background:red;
+display:inline-block;
+width:15px;
+height:15px;
+margin-right:5px;
+}
+
+.table{
+width:100%;
+margin-top:20px;
+border-collapse:collapse;
+}
+
+.table th,
+.table td{
+border:1px solid #ddd;
+padding:8px;
+text-align:center;
+}
+
+.table th{
+background:#2563eb;
+color:white;
+}
