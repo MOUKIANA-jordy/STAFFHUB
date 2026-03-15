@@ -1,7 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import "../Styles/home.css";
+import "../Components/Header.jsx";
 
 export default function Home({ user }) {
+
+  const [menu, setMenu] = useState("");
 
   return (
     <div className="home">
@@ -14,8 +18,15 @@ export default function Home({ user }) {
         </div>
 
         <nav className="menu">
-          <button>Dossier</button>
-          <button>Activités</button>
+
+          <button onClick={() => setMenu("dossiers")}>
+            Dossiers
+          </button>
+
+          <button onClick={() => setMenu("activites")}>
+            Activités
+          </button>
+
         </nav>
 
         <div className="user-info">
@@ -28,14 +39,43 @@ export default function Home({ user }) {
 
       </header>
 
-      {/* SOUS MENU */}
-      <div className="submenu">
 
-        <button>Mes demandes</button>
-        <button>Informations</button>
-        <button>Médical</button>
+      {/* SOUS MENU DOSSIERS */}
+      {menu === "dossiers" && (
+        <div className="submenu">
 
-      </div>
+          <h3>Demandes</h3>
+
+          <Link to="/dossiers/demandes/acompte">Acompte</Link>
+          <Link to="/dossiers/demandes/avance">Avance</Link>
+          <Link to="/dossiers/demandes/calendrier">Calendrier</Link>
+          <Link to="/dossiers/demandes/fiches">Fiches</Link>
+          <Link to="/dossiers/demandes/paiement-cet">Paiement CET</Link>
+          <Link to="/dossiers/demandes/paiement-hsup">Paiement H Sup</Link>
+
+          <h3>Informations</h3>
+
+          <Link to="/dossiers/informations/etat-civil">Etat Civil</Link>
+          <Link to="/dossiers/informations/adresse">Adresse</Link>
+          <Link to="/dossiers/informations/famille">Famille</Link>
+          <Link to="/dossiers/informations/iban">IBAN</Link>
+          <Link to="/dossiers/informations/documents">Documents</Link>
+
+        </div>
+      )}
+
+
+      {/* SOUS MENU ACTIVITES */}
+      {menu === "activites" && (
+        <div className="submenu">
+
+          <Link to="/activites/planning">Planning</Link>
+          <Link to="/activites/pointages">Pointages</Link>
+          <Link to="/activites/absences">Absences</Link>
+
+        </div>
+      )}
+
 
       {/* CONTENU PRINCIPAL */}
       <div className="content">
