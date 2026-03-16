@@ -57,6 +57,17 @@ export default function Login() {
 
   return (
     <div className="login-container">
+	  <div className="header-blue">
+
+  <div className="app-name">StaffHub</div>
+
+  <svg className="wave" viewBox="0 0 1440 320">
+    <path fill="#ffffff" fillOpacity="0.3"
+      d="M0,192L80,197.3C160,203,320,213,480,197.3C640,181,800,139,960,133.3C1120,128,1280,160,1360,176L1440,192L1440,320L0,320Z">
+    </path>
+  </svg>
+
+</div>
       <div className="login-box">
 
         <h2>Connexion</h2>

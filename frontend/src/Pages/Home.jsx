@@ -1,83 +1,114 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "../Styles/home.css";
-import "../Components/Header.jsx";
 
 export default function Home({ user }) {
 
   const [menu, setMenu] = useState("");
 
   return (
+
     <div className="home">
 
       {/* HEADER */}
-      <header className="header">
+      <div className="header">
 
         <div className="logo">
-          <h2>StaffHub</h2>
+          StaffHub
         </div>
 
-        <nav className="menu">
+        <div className="top-menu">
 
-          <button onClick={() => setMenu("dossiers")}>
-            Dossiers
+          <button
+            className={menu === "dossier" ? "active" : ""}
+            onClick={() => setMenu("dossier")}
+          >
+            Dossier
           </button>
 
-          <button onClick={() => setMenu("activites")}>
+          <button
+            className={menu === "activites" ? "active" : ""}
+            onClick={() => setMenu("activites")}
+          >
             Activités
           </button>
 
-        </nav>
-
-        <div className="user-info">
-          {user ? (
-            <span>Bonjour {user.prenom} {user.nom}</span>
-          ) : (
-            <span>Bonjour</span>
-          )}
         </div>
 
-      </header>
+        <div className="user">
+          Bonjour {user?.prenom} {user?.nom}
+        </div>
+
+      </div>
 
 
-      {/* SOUS MENU DOSSIERS */}
-      {menu === "dossiers" && (
+      {/* MENU DOSSIER */}
+      {menu === "dossier" && (
+
         <div className="submenu">
 
-          <h3>Demandes</h3>
+          <div className="submenu-section">
 
-          <Link to="/dossiers/demandes/acompte">Acompte</Link>
-          <Link to="/dossiers/demandes/avance">Avance</Link>
-          <Link to="/dossiers/demandes/calendrier">Calendrier</Link>
-          <Link to="/dossiers/demandes/fiches">Fiches</Link>
-          <Link to="/dossiers/demandes/paiement-cet">Paiement CET</Link>
-          <Link to="/dossiers/demandes/paiement-hsup">Paiement H Sup</Link>
+            <h3>Demandes</h3>
 
-          <h3>Informations</h3>
+            <div className="links">
 
-          <Link to="/dossiers/informations/etat-civil">Etat Civil</Link>
-          <Link to="/dossiers/informations/adresse">Adresse</Link>
-          <Link to="/dossiers/informations/famille">Famille</Link>
-          <Link to="/dossiers/informations/iban">IBAN</Link>
-          <Link to="/dossiers/informations/documents">Documents</Link>
+              <Link to="/dossiers/demandes/acompte">Acompte</Link>
+              <Link to="/dossiers/demandes/avance">Avance</Link>
+              <Link to="/dossiers/demandes/calendrier">Calendrier</Link>
+              <Link to="/dossiers/demandes/fiches">Fiches</Link>
+              <Link to="/dossiers/demandes/paiement-cet">Paiement CET</Link>
+              <Link to="/dossiers/demandes/paiement-hsup">Paiement H Sup</Link>
+
+            </div>
+
+          </div>
+
+
+          <div className="submenu-section">
+
+            <h3>Informations</h3>
+
+            <div className="links">
+
+              <Link to="/dossiers/informations/etat-civil">Etat Civil</Link>
+              <Link to="/dossiers/informations/adresse">Adresse</Link>
+              <Link to="/dossiers/informations/famille">Famille</Link>
+              <Link to="/dossiers/informations/iban">IBAN</Link>
+              <Link to="/dossiers/informations/documents">Documents</Link>
+
+            </div>
+
+          </div>
 
         </div>
+
       )}
 
 
-      {/* SOUS MENU ACTIVITES */}
+      {/* MENU ACTIVITES */}
       {menu === "activites" && (
+
         <div className="submenu">
 
-          <Link to="/activites/planning">Planning</Link>
-          <Link to="/activites/pointages">Pointages</Link>
-          <Link to="/activites/absences">Absences</Link>
+          <div className="submenu-section">
+
+            <div className="links">
+
+              <Link to="/activites/planning">Planning</Link>
+              <Link to="/activites/absences">Absences</Link>
+              <Link to="/activites/pointages">Pointages</Link>
+
+            </div>
+
+          </div>
 
         </div>
+
       )}
 
 
-      {/* CONTENU PRINCIPAL */}
+      {/* CONTENU */}
       <div className="content">
 
         <h2>Bienvenue sur StaffHub</h2>
@@ -85,5 +116,7 @@ export default function Home({ user }) {
       </div>
 
     </div>
+
   );
+
 }

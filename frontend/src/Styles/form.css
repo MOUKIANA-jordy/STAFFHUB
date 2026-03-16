@@ -79,3 +79,28 @@ text-align:center;
 background:#2563eb;
 color:white;
 }
+
+/* onglets */
+.tabs{
+  display:flex;
+  background:#d9e1ea;
+  border-bottom:2px solid #2b4e7c;
+}
+
+.tab{
+  padding:8px 15px;
+  text-decoration:none;
+  font-size:13px;
+  color:#2b4e7c;
+  background:#e9edf3;
+  border-right:1px solid #cfd6df;
+}
+
+.tab:hover{
+  background:#ffffff;
+}
+
+.tab.active{
+  background:white;
+  font-weight:bold;
+}

@@ -1,0 +1,29 @@
+.table-container{
+  border:1px solid #cfd6df;
+  background:white;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+th{
+  background:#e9edf3;
+  padding:6px;
+  border:1px solid #cfd6df;
+}
+
+td{
+  padding:6px;
+  border:1px solid #cfd6df;
+}
+
+.table-actions{
+  padding:8px;
+  background:#f2f4f8;
+}
+
+.table-actions button{
+  margin-right:5px;
+}

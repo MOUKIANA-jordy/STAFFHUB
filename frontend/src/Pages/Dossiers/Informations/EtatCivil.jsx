@@ -1,19 +1,15 @@
 import React, { useState } from "react";
 import "../../../Styles/form.css";
 
-export default function EtatCivil() {
+export default function Documents() {
 
   const [form,setForm] = useState({
-    numeroSecu:"",
-    civilite:"",
-    nom:"",
-    prenom:"",
-    sexe:"",
-    matricule:"",
-    dateNaissance:"",
-    nationalite:"",
-    paysNaissance:"",
-    departementNaissance:""
+    typeDocument:"",
+    numeroDocument:"",
+    organisme:"",
+    dateDelivrance:"",
+    dateExpiration:"",
+    statut:""
   });
 
   const handleChange = (e)=>{
@@ -25,61 +21,83 @@ export default function EtatCivil() {
 
   return (
 
-    <div className="page">
+    <div className="form-page">
 
-      <h2>Etat civil</h2>
+      <div className="form-box">
 
-      <div className="grid">
+        <div className="form-grid">
 
-        <div className="field">
-          <label>Numéro sécurité sociale</label>
-          <input name="numeroSecu" onChange={handleChange}/>
+          <div className="form-field">
+            <label>Type document</label>
+            <select name="typeDocument" onChange={handleChange}>
+              <option>Carte de séjour</option>
+              <option>Passeport</option>
+            </select>
+          </div>
+
+          <div className="form-field">
+            <label>N° du document</label>
+            <input name="numeroDocument" onChange={handleChange}/>
+          </div>
+
+          <div className="form-field">
+            <label>Organisme</label>
+            <input name="organisme" onChange={handleChange}/>
+          </div>
+
+          <div className="form-field">
+            <label>Date délivrance</label>
+            <input type="date" name="dateDelivrance" onChange={handleChange}/>
+          </div>
+
+          <div className="form-field">
+            <label>Date expiration</label>
+            <input type="date" name="dateExpiration" onChange={handleChange}/>
+          </div>
+
+          <div className="form-field">
+            <label>Statut document</label>
+            <select name="statut" onChange={handleChange}>
+              <option>Actif</option>
+              <option>Expiré</option>
+            </select>
+          </div>
+
         </div>
 
-        <div className="field">
-          <label>Civilité</label>
-          <select name="civilite" onChange={handleChange}>
-            <option>Monsieur</option>
-            <option>Madame</option>
-          </select>
-        </div>
+      </div>
 
-        <div className="field">
-          <label>Nom</label>
-          <input name="nom" onChange={handleChange}/>
-        </div>
+      {/* TABLEAU BAS */}
+      <div className="table-container">
 
-        <div className="field">
-          <label>Prénom</label>
-          <input name="prenom" onChange={handleChange}/>
-        </div>
+        <table>
 
-        <div className="field">
-          <label>Sexe</label>
-          <select name="sexe" onChange={handleChange}>
-            <option>Masculin</option>
-            <option>Féminin</option>
-          </select>
-        </div>
+          <thead>
+            <tr>
+              <th>Type document</th>
+              <th>N° document</th>
+              <th>Organisme</th>
+              <th>Date délivrance</th>
+              <th>Date expiration</th>
+            </tr>
+          </thead>
 
-        <div className="field">
-          <label>Matricule</label>
-          <input name="matricule" onChange={handleChange}/>
-        </div>
+          <tbody>
+            <tr>
+              <td>Carte séjour</td>
+              <td>9926029750</td>
+              <td>Préfecture</td>
+              <td>19/01/2026</td>
+              <td>18/04/2026</td>
+            </tr>
+          </tbody>
 
-        <div className="field">
-          <label>Date naissance</label>
-          <input type="date" name="dateNaissance" onChange={handleChange}/>
-        </div>
-
-        <div className="field">
-          <label>Nationalité</label>
-          <input name="nationalite" onChange={handleChange}/>
-        </div>
+        </table>
 
       </div>
 
     </div>
 
   );
+
 }

@@ -1,29 +1,27 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import "../Styles/header.css";
 
-export default function Header({ user }) {
-  return (
+export default function Header(){
 
-    <header className="header">
+  return(
+
+    <div className="header">
 
       <div className="logo">
-        <h2>StaffHub</h2>
+        StaffHub
       </div>
 
-      <nav className="menu">
-        <button>Dossier</button>
-        <button>Activités</button>
-      </nav>
+      <div className="menu">
 
-      <div className="user">
-        {user ? (
-          <span>Bonjour {user.prenom} {user.nom}</span>
-        ) : (
-          <span>Bonjour</span>
-        )}
+        <Link to="/home">Accueil</Link>
+        <Link to="/dossiers">Dossiers</Link>
+        <Link to="/activites">Activités</Link>
+
       </div>
 
-    </header>
+    </div>
 
   );
+
 }
