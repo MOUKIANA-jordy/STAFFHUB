@@ -1,3 +1,109 @@
+.home{
+font-family:Arial;
+}
+
+.header{
+
+height:90px;
+
+background:linear-gradient(90deg,#0d4ea6,#1e73d8);
+
+display:flex;
+justify-content:space-between;
+align-items:center;
+
+padding:0 20px;
+
+color:white;
+
+}
+
+.header-left{
+display:flex;
+align-items:center;
+}
+
+.logo{
+font-size:22px;
+font-weight:bold;
+margin-right:40px;
+}
+
+.top-menu{
+display:flex;
+}
+
+.tab{
+
+background:white;
+border:none;
+
+padding:8px 20px;
+
+margin-right:10px;
+
+border-radius:10px 10px 0 0;
+
+cursor:pointer;
+
+}
+
+.tab.active{
+background:#e6e6e6;
+}
+
+.header-right{
+display:flex;
+align-items:center;
+gap:20px;
+}
+
+.user-box{
+display:flex;
+gap:5px;
+}
+
+.user-input{
+width:120px;
+padding:4px;
+border:none;
+}
+
+.icons button{
+border:none;
+background:white;
+cursor:pointer;
+padding:5px;
+margin-left:5px;
+}
+
+.submenu{
+background:#f4f4f4;
+padding:10px 20px;
+border-bottom:1px solid #ddd;
+}
+
+.links{
+display:flex;
+gap:15px;
+}
+
+.links a{
+text-decoration:none;
+color:#333;
+font-size:14px;
+}
+
+.links a:hover{
+text-decoration:underline;
+}
+
+.content{
+padding:20px;
+}
+
+
+
 .top-menu button{
   margin-right:10px;
   padding:8px 15px;
@@ -35,4 +141,70 @@
 
 .links a:hover{
   text-decoration:underline;
+}
+
+.logout{
+  margin-left:10px;
+  padding:5px 10px;
+  background:#e74c3c;
+  border:none;
+  color:white;
+  cursor:pointer;
+  border-radius:4px;
+}
+
+.close-menu{
+  margin-bottom:10px;
+  padding:5px 10px;
+  background:#ccc;
+  border:none;
+  cursor:pointer;
+}
+
+.logout-btn{
+  margin-left:12px;
+  padding:6px 12px;
+  border:none;
+  background:#e74c3c;
+  color:white;
+  border-radius:4px;
+  cursor:pointer;
+}
+
+.logout-btn:hover{
+  background:#c0392b;
+}
+
+.photo-box{
+  grid-column: span 2;
+}
+
+.photo-placeholder{
+  height:120px;
+  border:1px dashed #ccc;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#999;
+}
+
+.form-grid{
+  display:grid;
+  grid-template-columns: repeat(3,1fr);
+  gap:15px;
+}
+
+.form-field{
+  display:flex;
+  flex-direction:column;
+}
+
+.form-field label{
+  font-size:12px;
+}
+
+.form-field input,
+.form-field select{
+  padding:6px;
+  border:1px solid #ccc;
 }
