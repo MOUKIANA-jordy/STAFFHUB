@@ -13,30 +13,60 @@ export default function Home({ user }) {
       {/* HEADER */}
       <div className="header">
 
-        <div className="logo">
-          StaffHub
+        <div className="header-left">
+
+          <div className="logo">
+            StaffHub
+          </div>
+
+          <div className="top-menu">
+
+            <button
+              className={menu === "dossier" ? "tab active" : "tab"}
+              onClick={() => setMenu("dossier")}
+            >
+              Dossier
+            </button>
+
+            <button
+              className={menu === "activites" ? "tab active" : "tab"}
+              onClick={() => setMenu("activites")}
+            >
+              Activités
+            </button>
+
+          </div>
+
         </div>
 
-        <div className="top-menu">
 
-          <button
-            className={menu === "dossier" ? "active" : ""}
-            onClick={() => setMenu("dossier")}
-          >
-            Dossier
-          </button>
+        {/* USER + ICONES */}
+        <div className="header-right">
 
-          <button
-            className={menu === "activites" ? "active" : ""}
-            onClick={() => setMenu("activites")}
-          >
-            Activités
-          </button>
+          <div className="user-box">
 
-        </div>
+            <input
+              className="user-input"
+              value={user?.nom}
+              readOnly
+            />
 
-        <div className="user">
-          Bonjour {user?.prenom} {user?.nom}
+            <input
+              className="user-input"
+              value={user?.prenom}
+              readOnly
+            />
+
+          </div>
+
+          <div className="icons">
+
+            <button title="Workflow">📁</button>
+            <button title="Favoris">⭐</button>
+            <button title="Plein écran">⛶</button>
+
+          </div>
+
         </div>
 
       </div>
@@ -63,7 +93,6 @@ export default function Home({ user }) {
             </div>
 
           </div>
-
 
           <div className="submenu-section">
 
