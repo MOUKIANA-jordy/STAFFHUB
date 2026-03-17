@@ -36,7 +36,7 @@ import "./Styles/input.css";
 function App() {
 
   const user = {
-    prenom: "Utilisateur",
+    prenom: "",
     nom: ""
   };
 
