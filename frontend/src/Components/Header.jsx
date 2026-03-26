@@ -1,8 +1,19 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../Styles/header.css";
 
-export default function Header(){
+export default function Header({ user }){
+
+  const navigate = useNavigate();
+
+  const logout = () => {
+
+    localStorage.removeItem("access");
+    localStorage.removeItem("refresh");
+
+    navigate("/");
+
+  };
 
   return(
 
@@ -17,6 +28,16 @@ export default function Header(){
         <Link to="/home">Accueil</Link>
         <Link to="/dossiers">Dossiers</Link>
         <Link to="/activites">Activités</Link>
+
+      </div>
+
+      <div className="user">
+
+        Bonjour {user?.prenom} {user?.nom}
+
+        <button className="logout-btn" onClick={logout}>
+          Déconnexion
+        </button>
 
       </div>
 

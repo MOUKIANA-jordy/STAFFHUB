@@ -1,65 +1,147 @@
-import React from "react";
+import React, { useState } from "react";
 import "../../../Styles/form.css";
 
 export default function Iban(){
 
-return(
+  const [form,setForm] = useState({
 
-<div className="page">
+    numeroRib:"",
+    ribDefaut:"",
+    natureVersement:"",
+    modePaiement:"",
+    devise:"",
+    dateDebut:"",
+    dateFin:"",
+    paysIban:"",
+    clefIban:"",
+    bbanIban:"",
+    ibanComplet:"",
+    bic1:"",
+    bic2:"",
+    bic3:"",
+    bic4:"",
+    bicComplet:"",
+    domiciliation:"",
+    nomBeneficiaire:""
 
-<h2>Informations bancaires</h2>
+  });
 
-<div className="grid">
+  const handleChange = (e)=>{
+    setForm({
+      ...form,
+      [e.target.name]:e.target.value
+    });
+  };
 
-<div className="field">
-<label>Numéro RIB</label>
-<input/>
-</div>
+  return(
 
-<div className="field">
-<label>RIB défaut</label>
-<input/>
-</div>
+    <div className="form-page">
 
-<div className="field">
-<label>Nature versement</label>
-<input/>
-</div>
+      <h2>Informations bancaires</h2>
 
-<div className="field">
-<label>Mode paiement</label>
-<input/>
-</div>
+      <div className="form-box">
 
-<div className="field">
-<label>Devise</label>
-<input/>
-</div>
+        <div className="form-grid">
 
-<div className="field">
-<label>Date début</label>
-<input type="date"/>
-</div>
+          <div className="form-field">
+            <label>No RIB</label>
+            <input name="numeroRib" onChange={handleChange}/>
+          </div>
 
-<div className="field">
-<label>Pays IBAN</label>
-<input/>
-</div>
+          <div className="form-field">
+            <label>RIB défaut</label>
+            <select name="ribDefaut" onChange={handleChange}>
+              <option>OUI</option>
+              <option>NON</option>
+            </select>
+          </div>
 
-<div className="field">
-<label>IBAN complet</label>
-<input/>
-</div>
+          <div className="form-field">
+            <label>Nature versement</label>
+            <input name="natureVersement" onChange={handleChange}/>
+          </div>
 
-<div className="field">
-<label>BIC complet</label>
-<input/>
-</div>
+          <div className="form-field">
+            <label>Mode paiement</label>
+            <input name="modePaiement" onChange={handleChange}/>
+          </div>
 
-</div>
+          <div className="form-field">
+            <label>Devise</label>
+            <input name="devise" onChange={handleChange}/>
+          </div>
 
-</div>
+          <div className="form-field">
+            <label>Date début</label>
+            <input type="date" name="dateDebut" onChange={handleChange}/>
+          </div>
 
-)
+          <div className="form-field">
+            <label>Date fin</label>
+            <input type="date" name="dateFin" onChange={handleChange}/>
+          </div>
+
+          <div className="form-field">
+            <label>Pays IBAN</label>
+            <input name="paysIban" onChange={handleChange}/>
+          </div>
+
+          <div className="form-field">
+            <label>Clef IBAN</label>
+            <input name="clefIban" onChange={handleChange}/>
+          </div>
+
+          <div className="form-field">
+            <label>BBAN IBAN</label>
+            <input name="bbanIban" onChange={handleChange}/>
+          </div>
+
+          <div className="form-field">
+            <label>IBAN complet</label>
+            <input name="ibanComplet" onChange={handleChange}/>
+          </div>
+
+          <div className="form-field">
+            <label>BIC (1-4)</label>
+            <input name="bic1" onChange={handleChange}/>
+          </div>
+
+          <div className="form-field">
+            <label>BIC (5-6)</label>
+            <input name="bic2" onChange={handleChange}/>
+          </div>
+
+          <div className="form-field">
+            <label>BIC (7-8)</label>
+            <input name="bic3" onChange={handleChange}/>
+          </div>
+
+          <div className="form-field">
+            <label>BIC (9-11)</label>
+            <input name="bic4" onChange={handleChange}/>
+          </div>
+
+          <div className="form-field">
+            <label>BIC complet</label>
+            <input name="bicComplet" onChange={handleChange}/>
+          </div>
+
+          <div className="form-field">
+            <label>Domiciliation bancaire</label>
+            <input name="domiciliation" onChange={handleChange}/>
+          </div>
+
+          <div className="form-field">
+            <label>Nom bénéficiaire</label>
+            <input name="nomBeneficiaire" onChange={handleChange}/>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  );
 
 }

@@ -1,6 +1,8 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import PrivateRoute from "./Components/PrivateRoute";
+import Layout from "./Layout/Layout";
 
 import Acompte from "./Pages/Dossiers/Demandes/Acompte";
 import Avance from "./Pages/Dossiers/Demandes/Avance";
@@ -46,36 +48,43 @@ function App() {
 
       <Routes>
 
+        {/* Pages publiques */}
+
         <Route path="/" element={<Login />} />
-
         <Route path="/forgot" element={<ForgotPassword />} />
-
         <Route path="/reset" element={<ResetPassword />} />
 
-        <Route path="/home" element={<Home user={user} />} />
 
-        {/* Dossiers → Demandes */}
+        {/* Layout principal */}
 
-        <Route path="/dossiers/demandes/acompte" element={<Acompte />} />
-        <Route path="/dossiers/demandes/avance" element={<Avance />} />
-        <Route path="/dossiers/demandes/calendrier" element={<Calendrier />} />
-        <Route path="/dossiers/demandes/fiches" element={<Fiches />} />
-        <Route path="/dossiers/demandes/paiement-cet" element={<PaiementCet />} />
-        <Route path="/dossiers/demandes/paiement-hsup" element={<PaiementHSup />} />
+        <Route element={<PrivateRoute><Layout user={user} /></PrivateRoute>}>
 
-        {/* Dossiers → Informations */}
+          <Route path="/home" element={<Home user={user} />} />
 
-        <Route path="/dossiers/informations/etat-civil" element={<EtatCivil />} />
-        <Route path="/dossiers/informations/adresse" element={<Adresse />} />
-        <Route path="/dossiers/informations/famille" element={<Famille />} />
-        <Route path="/dossiers/informations/iban" element={<Iban />} />
-        <Route path="/dossiers/informations/documents" element={<Documents />} />
+          {/* Dossiers → Demandes */}
 
-        {/* Activités */}
+          <Route path="/dossiers/demandes/acompte" element={<Acompte />} />
+          <Route path="/dossiers/demandes/avance" element={<Avance />} />
+          <Route path="/dossiers/demandes/calendrier" element={<Calendrier />} />
+          <Route path="/dossiers/demandes/fiches" element={<Fiches />} />
+          <Route path="/dossiers/demandes/paiement-cet" element={<PaiementCet />} />
+          <Route path="/dossiers/demandes/paiement-hsup" element={<PaiementHSup />} />
 
-        <Route path="/activites/absences" element={<Absences />} />
-        <Route path="/activites/planning" element={<Planning />} />
-        <Route path="/activites/pointages" element={<Pointages />} />
+          {/* Dossiers → Informations */}
+
+          <Route path="/dossiers/informations/etat-civil" element={<EtatCivil />} />
+          <Route path="/dossiers/informations/adresse" element={<Adresse />} />
+          <Route path="/dossiers/informations/famille" element={<Famille />} />
+          <Route path="/dossiers/informations/iban" element={<Iban />} />
+          <Route path="/dossiers/informations/documents" element={<Documents />} />
+
+          {/* Activités */}
+
+          <Route path="/activites/absences" element={<Absences />} />
+          <Route path="/activites/planning" element={<Planning />} />
+          <Route path="/activites/pointages" element={<Pointages />} />
+
+        </Route>
 
       </Routes>
 

@@ -1,15 +1,29 @@
 import React, { useState } from "react";
 import "../../../Styles/form.css";
 
-export default function Documents() {
+export default function EtatCivil() {
 
   const [form,setForm] = useState({
-    typeDocument:"",
-    numeroDocument:"",
-    organisme:"",
-    dateDelivrance:"",
-    dateExpiration:"",
-    statut:""
+
+    numeroSecu:"",
+    civilite:"",
+    nomUsuel:"",
+    nomPatronymique:"",
+    nomMarital:"",
+    prenom:"",
+    prenom2:"",
+    prenom3:"",
+    sexe:"",
+    situationFamiliale:"",
+    matricule:"",
+    nationalite:"",
+    naturalisation:"",
+    dateNaissance:"",
+    paysNaissance:"",
+    departementNaissance:"",
+    lieuNaissance:"",
+    codeINSEE:""
+
   });
 
   const handleChange = (e)=>{
@@ -23,76 +37,116 @@ export default function Documents() {
 
     <div className="form-page">
 
+      <h2>Etat civil</h2>
+
       <div className="form-box">
 
         <div className="form-grid">
 
           <div className="form-field">
-            <label>Type document</label>
-            <select name="typeDocument" onChange={handleChange}>
-              <option>Carte de séjour</option>
-              <option>Passeport</option>
+            <label>Numéro sécurité sociale</label>
+            <input name="numeroSecu" onChange={handleChange}/>
+          </div>
+
+          <div className="form-field">
+            <label>Civilité</label>
+            <select name="civilite" onChange={handleChange}>
+              <option>Monsieur</option>
+              <option>Madame</option>
             </select>
           </div>
 
           <div className="form-field">
-            <label>N° du document</label>
-            <input name="numeroDocument" onChange={handleChange}/>
+            <label>Nom usuel</label>
+            <input name="nomUsuel" onChange={handleChange}/>
           </div>
 
           <div className="form-field">
-            <label>Organisme</label>
-            <input name="organisme" onChange={handleChange}/>
+            <label>Nom patronymique</label>
+            <input name="nomPatronymique" onChange={handleChange}/>
           </div>
 
           <div className="form-field">
-            <label>Date délivrance</label>
-            <input type="date" name="dateDelivrance" onChange={handleChange}/>
+            <label>Nom marital</label>
+            <input name="nomMarital" onChange={handleChange}/>
           </div>
 
           <div className="form-field">
-            <label>Date expiration</label>
-            <input type="date" name="dateExpiration" onChange={handleChange}/>
+            <label>Prénom</label>
+            <input name="prenom" onChange={handleChange}/>
           </div>
 
           <div className="form-field">
-            <label>Statut document</label>
-            <select name="statut" onChange={handleChange}>
-              <option>Actif</option>
-              <option>Expiré</option>
+            <label>2ème prénom</label>
+            <input name="prenom2" onChange={handleChange}/>
+          </div>
+
+          <div className="form-field">
+            <label>3ème prénom</label>
+            <input name="prenom3" onChange={handleChange}/>
+          </div>
+
+          <div className="form-field">
+            <label>Sexe</label>
+            <select name="sexe" onChange={handleChange}>
+              <option>Masculin</option>
+              <option>Féminin</option>
             </select>
+          </div>
+
+          <div className="form-field">
+            <label>Situation familiale</label>
+            <select name="situationFamiliale" onChange={handleChange}>
+              <option>Célibataire</option>
+              <option>Marié</option>
+              <option>Divorcé</option>
+            </select>
+          </div>
+
+          <div className="form-field">
+            <label>Matricule</label>
+            <input name="matricule" onChange={handleChange}/>
+          </div>
+
+          <div className="form-field">
+            <label>Nationalité</label>
+            <input name="nationalite" onChange={handleChange}/>
+          </div>
+
+          <div className="form-field">
+            <label>Naturalisation française</label>
+            <select name="naturalisation" onChange={handleChange}>
+              <option>Non</option>
+              <option>Oui</option>
+            </select>
+          </div>
+
+          <div className="form-field">
+            <label>Date naissance</label>
+            <input type="date" name="dateNaissance" onChange={handleChange}/>
+          </div>
+
+          <div className="form-field">
+            <label>Pays naissance</label>
+            <input name="paysNaissance" onChange={handleChange}/>
+          </div>
+
+          <div className="form-field">
+            <label>Département naissance</label>
+            <input name="departementNaissance" onChange={handleChange}/>
+          </div>
+
+          <div className="form-field">
+            <label>Lieu naissance</label>
+            <input name="lieuNaissance" onChange={handleChange}/>
+          </div>
+
+          <div className="form-field">
+            <label>Code INSEE</label>
+            <input name="codeINSEE" onChange={handleChange}/>
           </div>
 
         </div>
-
-      </div>
-
-      {/* TABLEAU BAS */}
-      <div className="table-container">
-
-        <table>
-
-          <thead>
-            <tr>
-              <th>Type document</th>
-              <th>N° document</th>
-              <th>Organisme</th>
-              <th>Date délivrance</th>
-              <th>Date expiration</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr>
-              <td>Carte séjour</td>
-              <td>9926029750</td>
-              <td>Préfecture</td>
-              <td>19/01/2026</td>
-              <td>18/04/2026</td>
-            </tr>
-          </tbody>
-
-        </table>
 
       </div>
 

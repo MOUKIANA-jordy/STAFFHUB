@@ -104,3 +104,23 @@ color:white;
   background:white;
   font-weight:bold;
 }
+
+.form-actions{
+  margin-top:15px;
+}
+
+.form-actions button{
+  padding:6px 12px;
+  background:#2b4e7c;
+  color:white;
+  border:none;
+  cursor:pointer;
+}
+
+.delete-btn{
+  background:#e74c3c;
+  border:none;
+  color:white;
+  padding:4px 8px;
+  cursor:pointer;
+}
