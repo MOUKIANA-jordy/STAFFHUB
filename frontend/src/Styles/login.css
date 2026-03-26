@@ -1,108 +1,118 @@
-/* structure principale */
-.login-container{
-  min-height:100vh;
-  background:#f2f4f7;
-  position:relative;
-  display:flex;
-  justify-content:center;
-  align-items:flex-start;
-  padding-top:180px;
+.wrapper {
+
+position: relative;
+width: 420px;
+height: 450px;
+background: seagreen;
+border-radius: 10px;
+color: #fff;
+align-items: center;
+transition: height .2S ease;
+overflow: hidden;
 }
 
-/* bandeau bleu */
-.header-blue{
-  position:absolute;
-  top:0;
-  left:0;
-  width:100%;
-  height:25vh;
-  background:linear-gradient(120deg,#2a66c9,#4fa2ff);
-  overflow:hidden;
+.wrapper.form-box {
+
+width: 100%;
+padding: 40px;
 }
 
-/* vague décorative */
-.wave{
-  position:absolute;
-  bottom:-5px;
-  left:0;
-  width:100%;
-  opacity:0.7;
+form h1 {
+font-size: 36px;
+text-align: center;
 }
 
-/* nom application */
-.app-name{
-  position:absolute;
-  top:25px;
-  left:40px;
-  color:white;
-  font-size:28px;
-  font-weight:600;
-  letter-spacing:1px;
+form.input-box {
+
+position: relative;
+width: 100%;
+height: 50px;
+margin: 30px;
+background: salmon;
 }
 
-/* boite connexion */
-.login-box{
-  width:230px;
-  background:white;
-  border:1px solid #dcdcdc;
-  padding:15px;
-  border-radius:3px;
-  box-shadow:0 3px 8px rgba(0,0,0,0.08);
-  text-align:center;
+.input-box input {
+
+width: 100%;
+height: 100%;
+background: transparent;
+outline: none;
+border: 2px solid rgba(255, 255, 255, 1);
+border-radius: 40px;
+font-size: 16px;
+color: #fff;
+padding: 20px 45px 20px 20px;
 }
 
-/* titre connexion */
-.login-box h2{
-  background:#2a66c9;
-  color:white;
-  font-size:13px;
-  padding:5px;
-  margin:-15px -15px 12px -15px;
+.input-box input :: placehorder {
+
+color: #fff;
 }
 
-/* champs */
-.field{
-  margin-bottom:10px;
-  text-align:left;
+.input-box .icon {
+
+position: absolute;
+right: 20px;
+top: 50%;
+translate: 0 -50%;
+font-size: 16px;
 }
 
-.field label{
-  font-size:11px;
+form .remember-forgot {
+
+display: flex;
+justify-content: space-between;
+font-size: 14,5px;
+margin: -15px 0 15px;
 }
 
-.field input{
-  width:100%;
-  padding:5px;
-  border:1px solid #ccc;
-  font-size:12px;
+.remember-forgot label input {
+
+accent-color: #fff;
+margin-right: 4px;
 }
 
-/* options */
-.options{
-  font-size:11px;
-  display:flex;
-  justify-content:space-between;
-  margin-bottom:10px;
+.remember-forgot a {
+
+color: #fff;
+text-decoration: none;
 }
 
-/* bouton */
-.login-btn{
-  width:100%;
-  background:#2a66c9;
-  border:none;
-  padding:6px;
-  color:white;
-  font-size:12px;
-  cursor:pointer;
+.remember-forgot a:hover {
+
+text-decoration: underline;
 }
 
-.login-btn:hover{
-  background:#1f4fa5;
+form button {
+
+width: 100%;
+height: 45px;
+background: #fff;
+border: none;
+online: none;
+border-radius: 40px;
+box-shadow: 0 0 10px rgba(0, 0, 0, 1);
+cursor: pointer;
+font-size: 16px;
+color: #333;
+font-weight: 700;
 }
 
-/* message erreur */
-.error{
-  color:red;
-  font-size:11px;
-  margin-bottom:8px;
+form .register-link {
+
+font-size: 14,5px;
+text-align: center;
+margin: 20px 0 15px;
+}
+
+.register-link p a {
+
+color: #fff;
+text-decoration: none;
+font-weight: 600;
+}
+
+.register-link p a:hover {
+
+text-decoration: underline;
 }
