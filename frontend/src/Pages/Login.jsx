@@ -1,21 +1,22 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { FaUser, FaLock } from "react-icons/fa";
+import axios from "axios";
 import "../Styles/login.css";
-import API from "../Services/api";
 
-export default function Login() {
+const Login = () => {
 
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    identifiant: "",
+    username: "",
     password: "",
     remember: false
   });
 
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
+  // gestion des inputs
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
@@ -25,116 +26,110 @@ export default function Login() {
     });
   };
 
+  // submit
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // validation
-    if (!form.identifiant || !form.password) {
+    if (!form.username || !form.password) {
       setError("Veuillez remplir tous les champs");
       return;
     }
 
     try {
+      const response = await axios.post(
+        "http://127.0.0.1:8000/api/token/",
+        {
+          username: form.username,
+          password: form.password
+        }
+      );
 
-      const response = await API.post("/api/token/", {
-  	username: form.identifiant,
-  	password: form.password
-      });
+      // stockage tokens
+      if (form.remember) {
+        localStorage.setItem("access", response.data.access);
+        localStorage.setItem("refresh", response.data.refresh);
+      } else {
+        sessionStorage.setItem("access", response.data.access);
+        sessionStorage.setItem("refresh", response.data.refresh);
+      }
 
-      // sauvegarde token
-      localStorage.setItem("access", response.data.access);
-      localStorage.setItem("refresh", response.data.refresh);
-
-      // redirection vers home
       navigate("/home");
 
     } catch (err) {
-
+      console.error(err.response?.data);
       setError("Identifiant ou mot de passe incorrect");
-
     }
   };
 
   return (
-    <div className="login-container">
-	  <div className="header-blue">
+    <div className="wrapper">
 
-  <div className="app-name">StaffHub</div>
-
-  <svg className="wave" viewBox="0 0 1440 320">
-    <path fill="#ffffff" fillOpacity="0.3"
-      d="M0,192L80,197.3C160,203,320,213,480,197.3C640,181,800,139,960,133.3C1120,128,1280,160,1360,176L1440,192L1440,320L0,320Z">
-    </path>
-  </svg>
-
-</div>
-      <div className="login-box">
-
-        <h2>Connexion</h2>
+      <div className="form-box login">
 
         <form onSubmit={handleSubmit}>
 
-          <div className="field">
-            <label>Identifiant</label>
+          <h1>Login</h1>
 
+          {/* USERNAME */}
+          <div className="input-box">
             <input
               type="text"
-              name="identifiant"
-              value={form.identifiant}
+              name="username"
+              placeholder="Username"
+              value={form.username}
               onChange={handleChange}
+              required
             />
-
+            <FaUser className="icon" />
           </div>
 
-          <div className="field password-field">
-
-            <label>Mot de passe</label>
-
-            <div className="password-input">
-
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                value={form.password}
-                onChange={handleChange}
-              />
-
-              <span
-                className="toggle"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-              </span>
-
-            </div>
-
+          {/* PASSWORD */}
+          <div className="input-box">
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={form.password}
+              onChange={handleChange}
+              required
+            />
+            <FaLock className="icon" />
           </div>
 
+          {/* ERROR */}
           {error && <p className="error">{error}</p>}
 
-          <div className="options">
-
+          {/* OPTIONS */}
+          <div className="remember-forgot">
             <label>
               <input
                 type="checkbox"
                 name="remember"
                 onChange={handleChange}
               />
-              Se souvenir de moi
+              remember me
             </label>
 
-            <Link to="/forgot">
-              Mot de passe oublié ?
-            </Link>
-
+            <Link to="/forgot">Forgot password ?</Link>
           </div>
 
-          <button className="login-btn">
-            Se connecter
-          </button>
+          {/* BUTTON */}
+          <button type="submit">Login</button>
+
+          {/* REGISTER */}
+          <div className="register-link">
+            <p>
+              Do not have an account ?{" "}
+              <Link to="/register">Register</Link>
+            </p>
+          </div>
 
         </form>
 
       </div>
+
     </div>
   );
-}
+};
+
+export default Login;
