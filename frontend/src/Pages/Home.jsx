@@ -7,40 +7,10 @@ export default function Home({ user }) {
   const [menu, setMenu] = useState("");
 
   return (
+	
+	  <div className="home">
 
-    <div className="home">
-
-      {/* HEADER */}
-      <div className="header">
-
-        <div className="header-left">
-
-          <div className="logo">
-            StaffHub
-          </div>
-
-          <div className="top-menu">
-
-            <button
-              className={menu === "dossier" ? "tab active" : "tab"}
-              onClick={() => setMenu("dossier")}
-            >
-              Dossier
-            </button>
-
-            <button
-              className={menu === "activites" ? "tab active" : "tab"}
-              onClick={() => setMenu("activites")}
-            >
-              Activités
-            </button>
-
-          </div>
-
-        </div>
-
-
-        {/* USER + ICONES */}
+        /* USER + ICONES */
         <div className="header-right">
 
           <div className="user-box">
@@ -96,7 +66,7 @@ export default function Home({ user }) {
 
           <div className="submenu-section">
 
-            <h3>Informations</h3>
+            <h4>Informations</h4>
 
             <div className="links">
 
@@ -136,13 +106,6 @@ export default function Home({ user }) {
 
       )}
 
-
-      {/* CONTENU */}
-      <div className="content">
-
-        <h2>Bienvenue sur StaffHub</h2>
-
-      </div>
 
     </div>
 
