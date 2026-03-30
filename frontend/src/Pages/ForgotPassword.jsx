@@ -21,40 +21,40 @@ export default function ForgotPassword(){
 
   return(
 
-    <div className="login-container">
+    <div className="wrapper">
 
-      <div className="login-box">
+  <div className="form-box login">
 
-        <h2>Mot de passe oublié</h2>
+    <form onSubmit={handleSubmit}>
 
-        <form onSubmit={handleSubmit}>
+      <h1>Mot de passe oublié</h1>
 
-          <div className="field">
-            <label>Identifiant ou Email</label>
-
-            <input
-              type="text"
-              value={identifiant}
-              onChange={(e)=>setIdentifiant(e.target.value)}
-            />
-
-          </div>
-
-          {message && <p className="error">{message}</p>}
-
-          <button className="login-btn">
-            Envoyer le lien
-          </button>
-
-        </form>
-
-        <div className="options">
-          <Link to="/">Retour à la connexion</Link>
-        </div>
-
+      <div className="input-box">
+        <input
+          type="text"
+          placeholder="Identifiant ou Email"
+          value={identifiant}
+          onChange={(e)=>setIdentifiant(e.target.value)}
+        />
       </div>
 
-    </div>
+      {message && <p className="error">{message}</p>}
+	  
+	  <div className="input-box forgot-input">
+      <button type="submit">Envoyer le lien</button>
+	  </div>
+
+      <div className="register-link">
+        <p>
+          <Link to="/">Retour à la connexion</Link>
+        </p>
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
 
   );
 

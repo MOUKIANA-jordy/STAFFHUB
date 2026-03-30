@@ -2,21 +2,21 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "../Styles/login.css";
 
-export default function ResetPassword(){
+export default function ResetPassword() {
 
-  const [password,setPassword] = useState("");
-  const [confirm,setConfirm] = useState("");
-  const [error,setError] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e)=>{
+  const handleSubmit = (e) => {
     e.preventDefault();
 
-    if(!password || !confirm){
+    if (!password || !confirm) {
       setError("Veuillez remplir tous les champs");
       return;
     }
 
-    if(password !== confirm){
+    if (password !== confirm) {
       setError("Les mots de passe ne correspondent pas");
       return;
     }
@@ -25,54 +25,47 @@ export default function ResetPassword(){
     alert("Mot de passe réinitialisé !");
   };
 
-  return(
+  return (
+    <div className="wrapper">
 
-    <div className="login-container">
-
-      <div className="login-box">
-
-        <h2>Réinitialiser le mot de passe</h2>
+      <div className="form-box login">
 
         <form onSubmit={handleSubmit}>
 
-          <div className="field">
-            <label>Nouveau mot de passe</label>
+          <h1>Réinitialiser le mot de passe</h1>
 
+          <div className="input-box">
             <input
               type="password"
+              placeholder="Nouveau mot de passe"
               value={password}
-              onChange={(e)=>setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
             />
-
           </div>
 
-          <div className="field">
-            <label>Confirmer le mot de passe</label>
-
+          <div className="input-box">
             <input
               type="password"
+              placeholder="Confirmer le mot de passe"
               value={confirm}
-              onChange={(e)=>setConfirm(e.target.value)}
+              onChange={(e) => setConfirm(e.target.value)}
             />
-
           </div>
 
           {error && <p className="error">{error}</p>}
 
-          <button className="login-btn">
-            Réinitialiser
-          </button>
+          <button type="submit">Réinitialiser</button>
+
+          <div className="register-link">
+            <p>
+              <Link to="/">Retour à la connexion</Link>
+            </p>
+          </div>
 
         </form>
-
-        <div className="options">
-          <Link to="/">Retour à la connexion</Link>
-        </div>
 
       </div>
 
     </div>
-
   );
-
 }
