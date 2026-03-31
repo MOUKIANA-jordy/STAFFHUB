@@ -17,21 +17,21 @@ export default function Header({ user }){
 
   return(
 
-    <div className="header">
+    <div className="main-header">
 
       <div className="logo">
         StaffHub
       </div>
 
-      <div className="menu">
+      <div className="main-menu">
 
-        <Link to="/home">Accueil</Link>
         <Link to="/dossiers">Dossiers</Link>
+
         <Link to="/activites">Activités</Link>
 
       </div>
 
-      <div className="user">
+      <div className="header-user">
 
         Bonjour {user?.prenom} {user?.nom}
 

@@ -2,10 +2,12 @@
   position: relative;
   width: 420px;
   height: 450px;
-  background: seagreen;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(12px);
   border-radius: 10px;
-  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   display: flex;
+  color: #fff;
   align-items: center;
   overflow: hidden;
 }
@@ -14,24 +16,31 @@
 .wrapper .form-box {
   width: 100%;
   padding: 40px;
+  background: transparent !important;
 }
 
 .wrapper .form-box.login {
 
-   transition: translate .18s ease;
-   translate: O;
+  transition: transform .18s ease;
+  transform: translateX(0);
 }
 
 .wrapper.active .form-box.login {
 
-transition: none;
-translate: -400px;
+  transition: none;
+  transform: translateX(-400px);
+}
+
+.wrapper.active .form-box.register {
+
+  transition: transform .18s ease;
+  transform: translateX(0);
 }
 
 .wrapper .form-box.register {
 
   position: absolute;
-  translate: 400px;
+  transform: translateX(400px);
   transition: none;
 }
 
@@ -57,7 +66,7 @@ form.input-box {
   border: 2px solid rgba(255, 255, 255,.1);
   border-radius: 40px;
   font-size: 16px;
-  color: #fff;
+  color: #fff; 
   padding: 20px 45px 20px 20px;
 }
 
@@ -99,7 +108,7 @@ form .remember-forgot {
 
 /* button */
 form button {
-  width: 100%;
+  width: 50%;
   height: 45px;
   background: #fff;
   border: none;
@@ -110,10 +119,12 @@ form button {
   font-size: 16px;
   color: #333;
   font-weight: 700;
+  display: block;        /* 🔥 important */
+  margin: 20px auto;     /* 🔥 centre horizontalement */
 }
 
 /* register */
-.register-link {
+form .register-link {
   font-size: 14.5px;
   text-align: center;
   margin: 20px 0 15px;
