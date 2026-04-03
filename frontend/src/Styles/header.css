@@ -1,37 +1,57 @@
-.main-header {
-  background: #2563eb;
-  color: white;
-  padding: 15px;
+.header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background-color: #87CEFA; /* bleu clair */
+  padding: 10px 20px;
 }
 
-.main-menu a {
-  margin-right: 15px;
-  color: white;
-  text-decoration: none;
-}
-
-.main-menu a:hover {
-  text-decoration: underline;
-}
-
-.header-user {
+/* LEFT */
+.header-left {
   display: flex;
-  align-items: center;
   gap: 10px;
 }
 
-.logout-btn {
-  padding: 6px 12px;
+.nav-btn {
+  background: white;
   border: none;
-  background: #e74c3c;
+  padding: 8px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.nav-btn:hover {
+  background-color: #e0f0ff;
+}
+
+.nav-btn.active {
+  background-color: #007bff;
   color: white;
-  border-radius: 4px;
+}
+
+/* RIGHT */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.user-text {
+  margin: 0;
+  font-size: 14px;
+}
+
+.logout-btn {
+  background-color: #ff4d4d;
+  border: none;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
   cursor: pointer;
 }
 
 .logout-btn:hover {
-  background: #c0392b;
+  background-color: #cc0000;
 }
