@@ -28,12 +28,9 @@ import Home from "./Pages/Home";
 
 /* CSS */
 import "./Styles/login.css";
-import "./Styles/button.css";
 import "./Styles/etatcivil.css";
-import "./Styles/form.css";
-import "./Styles/header.css";
 import "./Styles/home.css";
-import "./Styles/input.css";
+import "./Styles/header.css";
 
 function App() {
 

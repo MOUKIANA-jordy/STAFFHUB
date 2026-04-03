@@ -16,7 +16,6 @@ const Login = () => {
 
   const [error, setError] = useState("");
 
-  // gestion des inputs
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
@@ -26,7 +25,6 @@ const Login = () => {
     });
   };
 
-  // submit
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -44,7 +42,6 @@ const Login = () => {
         }
       );
 
-      // stockage tokens
       if (form.remember) {
         localStorage.setItem("access", response.data.access);
         localStorage.setItem("refresh", response.data.refresh);
@@ -56,75 +53,70 @@ const Login = () => {
       navigate("/home");
 
     } catch (err) {
-      console.error(err.response?.data);
       setError("Identifiant ou mot de passe incorrect");
     }
   };
 
   return (
-    <div className="wrapper">
+    <div className="login-page">
 
-      <div className="form-box login">
+      <div className="wrapper">
 
-        <form onSubmit={handleSubmit}>
+        <div className="form-box login">
 
-          <h1>Login</h1>
+          <form onSubmit={handleSubmit}>
 
-          {/* USERNAME */}
-          <div className="input-box">
-            <input
-              type="text"
-              name="username"
-              placeholder="Username"
-              value={form.username}
-              onChange={handleChange}
-              required
-            />
-            <FaUser className="icon" />
-          </div>
+            <h1>Connexion</h1>
 
-          {/* PASSWORD */}
-          <div className="input-box">
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={form.password}
-              onChange={handleChange}
-              required
-            />
-            <FaLock className="icon" />
-          </div>
-
-          {/* ERROR */}
-          {error && <p className="error">{error}</p>}
-
-          {/* OPTIONS */}
-          <div className="remember-forgot">
-            <label>
+            {/* USERNAME */}
+            <div className="input-box">
               <input
-                type="checkbox"
-                name="remember"
+                type="text"
+                name="username"
+                placeholder="Username"
+                value={form.username}
                 onChange={handleChange}
+                required
               />
-              remember me
-            </label>
+              <FaUser className="icon" />
+            </div>
 
-            <Link to="/forgot">Forgot password ?</Link>
-          </div>
+            {/* PASSWORD */}
+            <div className="input-box">
+              <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                value={form.password}
+                onChange={handleChange}
+                required
+              />
+              <FaLock className="icon" />
+            </div>
 
-          {/* BUTTON */}
-          <button type="submit">Login</button>
+            {/* ERROR */}
+            {error && <p className="error">{error}</p>}
 
-          {/* REGISTER */}
-          <div className="register-link">
-            <p>
-              Do not have an account ?{" "}
-              <Link to="/register">Register</Link>
-            </p>
-          </div>
+            {/* OPTIONS */}
+            <div className="remember-forgot">
+              <label>
+                <input
+                  type="checkbox"
+                  name="remember"
+                  onChange={handleChange}
+                />
+                remember me
+              </label>
 
-        </form>
+              <Link to="/forgot">Mot de passe oublié ?</Link>
+            </div>
+
+            {/* BUTTON */}
+            <button type="submit">Se connecter</button>
+
+          </form>
+
+        </div>
 
       </div>
 

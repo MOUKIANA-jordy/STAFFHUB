@@ -6,6 +6,30 @@
   padding: 10px 20px;
 }
 
+.main-header {
+  background: #2563eb;
+  color: white;
+
+  height: 40vh; /* 🔥 40% de la hauteur écran */
+
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start; /* mieux pour grand header */
+  box-sizing: border-box;
+}
+
+.main-menu {
+  display: flex;
+  gap: 15px;
+}
+
+.header-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 /* LEFT */
 .header-left {
   display: flex;

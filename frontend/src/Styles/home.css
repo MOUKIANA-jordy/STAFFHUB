@@ -97,8 +97,7 @@
 /* LINKS */
 .links {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
+  flex-direction: row;
 }
 
 .links a {
@@ -114,4 +113,44 @@
 /* CONTENT */
 .content {
   padding: 30px;
+}
+
+/* boutons niveau 1 */
+.submenu-buttons {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.submenu-buttons button {
+  padding: 10px 20px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.submenu-buttons button:hover {
+  background: #1e4ed8;
+}
+
+/* liens horizontaux */
+.links.horizontal {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.links.horizontal a {
+  padding: 10px 15px;
+  background: #f1f5f9;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #333;
+  white-space: nowrap;
+}
+
+.links.horizontal a:hover {
+  background: #e2e8f0;
 }

@@ -1,66 +1,89 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import Header from "../Components/Header";
+import { Link, useOutletContext } from "react-router-dom";
 import "../Styles/home.css";
 
-export default function Home({ user }) {
+export default function Home() {
 
-  const [menu, setMenu] = useState("");
-
-  const handleLogout = () => {
-    console.log("Déconnexion...");
-  };
+  const { menu } = useOutletContext();
+  const [subMenu, setSubMenu] = useState("");
 
   return (
     <div className="home">
 
-      {/* HEADER */}
-      <Header
-        user={user}
-        menu={menu}
-        setMenu={setMenu}
-        onLogout={handleLogout}
-      />
-
-      {/* MENU DOSSIER */}
+      {/* ================= DOSSIER ================= */}
       {menu === "dossier" && (
         <div className="submenu">
 
-          <div className="submenu-section">
-            <h3>Demandes</h3>
-            <div className="links">
-              <Link to="/dossiers/demandes/acompte">Acompte</Link>
-              <Link to="/dossiers/demandes/avance">Avance</Link>
-              <Link to="/dossiers/demandes/calendrier">Calendrier</Link>
-              <Link to="/dossiers/demandes/fiches">Fiches</Link>
-              <Link to="/dossiers/demandes/paiement-cet">Paiement CET</Link>
-              <Link to="/dossiers/demandes/paiement-hsup">Paiement H Sup</Link>
-            </div>
-          </div>
+          {/* NIVEAU 1 */}
+          {!subMenu && (
+            <div className="submenu-buttons">
+              <button onClick={() => setSubMenu("demandes")}>
+                Demandes
+              </button>
 
-          <div className="submenu-section">
-            <h3>Informations</h3>
-            <div className="links">
-              <Link to="/dossiers/informations/etat-civil">Etat Civil</Link>
-              <Link to="/dossiers/informations/adresse">Adresse</Link>
-              <Link to="/dossiers/informations/famille">Famille</Link>
-              <Link to="/dossiers/informations/iban">IBAN</Link>
-              <Link to="/dossiers/informations/documents">Documents</Link>
+              <button onClick={() => setSubMenu("informations")}>
+                Informations
+              </button>
             </div>
-          </div>
+          )}
+
+          {/* DEMANDES */}
+          {subMenu === "demandes" && (
+            <div>
+
+              {/* BOUTON RETOUR */}
+              <button
+                className="back-btn"
+                onClick={() => setSubMenu("")}
+              >
+                ← Retour
+              </button>
+
+              <div className="links horizontal">
+                <Link to="/dossiers/demandes/acompte">Acompte</Link>
+                <Link to="/dossiers/demandes/avance">Avance</Link>
+                <Link to="/dossiers/demandes/calendrier">Calendrier</Link>
+                <Link to="/dossiers/demandes/fiches">Fiches</Link>
+                <Link to="/dossiers/demandes/paiement-cet">Paiement CET</Link>
+                <Link to="/dossiers/demandes/paiement-hsup">Paiement H Sup</Link>
+              </div>
+
+            </div>
+          )}
+
+          {/* INFORMATIONS */}
+          {subMenu === "informations" && (
+            <div>
+
+              {/* BOUTON RETOUR */}
+              <button
+                className="back-btn"
+                onClick={() => setSubMenu("")}
+              >
+                ← Retour
+              </button>
+
+              <div className="links horizontal">
+                <Link to="/dossiers/informations/etat-civil">Etat Civil</Link>
+                <Link to="/dossiers/informations/adresse">Adresse</Link>
+                <Link to="/dossiers/informations/famille">Famille</Link>
+                <Link to="/dossiers/informations/iban">IBAN</Link>
+                <Link to="/dossiers/informations/documents">Documents</Link>
+              </div>
+
+            </div>
+          )}
 
         </div>
       )}
 
-      {/* MENU ACTIVITES */}
+      {/* ================= ACTIVITES ================= */}
       {menu === "activites" && (
         <div className="submenu">
-          <div className="submenu-section">
-            <div className="links">
-              <Link to="/activites/planning">Planning</Link>
-              <Link to="/activites/absences">Absences</Link>
-              <Link to="/activites/pointages">Pointages</Link>
-            </div>
+          <div className="links horizontal">
+            <Link to="/activites/planning">Planning</Link>
+            <Link to="/activites/absences">Absences</Link>
+            <Link to="/activites/pointages">Pointages</Link>
           </div>
         </div>
       )}
