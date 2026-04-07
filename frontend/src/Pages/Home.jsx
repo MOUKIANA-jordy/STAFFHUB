@@ -17,27 +17,34 @@ export default function Home() {
           {/* NIVEAU 1 */}
           {!subMenu && (
             <div className="submenu-buttons">
-              <button onClick={() => setSubMenu("demandes")}>
+              <button
+                className={subMenu === "demandes" ? "active-btn" : ""}
+                onClick={() => setSubMenu("demandes")}
+              >
                 Demandes
               </button>
 
-              <button onClick={() => setSubMenu("informations")}>
+              <button
+                className={subMenu === "informations" ? "active-btn" : ""}
+                onClick={() => setSubMenu("informations")}
+              >
                 Informations
               </button>
             </div>
           )}
 
-          {/* DEMANDES */}
+          {/* ================= DEMANDES ================= */}
           {subMenu === "demandes" && (
             <div>
 
-              {/* BOUTON RETOUR */}
               <button
                 className="back-btn"
                 onClick={() => setSubMenu("")}
               >
                 ← Retour
               </button>
+
+              <h2 className="section-title">Demandes</h2>
 
               <div className="links horizontal">
                 <Link to="/dossiers/demandes/acompte">Acompte</Link>
@@ -51,17 +58,18 @@ export default function Home() {
             </div>
           )}
 
-          {/* INFORMATIONS */}
+          {/* ================= INFORMATIONS ================= */}
           {subMenu === "informations" && (
             <div>
 
-              {/* BOUTON RETOUR */}
               <button
                 className="back-btn"
                 onClick={() => setSubMenu("")}
               >
                 ← Retour
               </button>
+
+              <h2 className="section-title">Informations</h2>
 
               <div className="links horizontal">
                 <Link to="/dossiers/informations/etat-civil">Etat Civil</Link>
@@ -80,6 +88,8 @@ export default function Home() {
       {/* ================= ACTIVITES ================= */}
       {menu === "activites" && (
         <div className="submenu">
+          <h2 className="section-title">Activités</h2>
+
           <div className="links horizontal">
             <Link to="/activites/planning">Planning</Link>
             <Link to="/activites/absences">Absences</Link>

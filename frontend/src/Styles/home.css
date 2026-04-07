@@ -154,3 +154,9 @@
 .links.horizontal a:hover {
   background: #e2e8f0;
 }
+
+/* titre section */
+.section-title {
+  margin-bottom: 15px;
+  color: #2563eb;
+}
