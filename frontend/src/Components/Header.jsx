@@ -1,37 +1,59 @@
-import React from "react";
+import React, { useState } from "react";
 import "../Styles/header.css";
+import { Bell, LogOut } from "lucide-react";
 
 export default function Header({ user, menu, setMenu, onLogout }) {
+
+  const [openNotif, setOpenNotif] = useState(false);
+  const [openUser, setOpenUser] = useState(false);
+
   return (
     <header className="header">
 
-      {/* GAUCHE */}
+      {/* LEFT */}
       <div className="header-left">
-        <button
-          className={menu === "dossier" ? "nav-btn active" : "nav-btn"}
-          onClick={() => setMenu("dossier")}
-        >
-          Dossier
-        </button>
-
-        <button
-          className={menu === "activites" ? "nav-btn active" : "nav-btn"}
-          onClick={() => setMenu("activites")}
-        >
-          Activité
-        </button>
+        <div className="logo">MyEntreprise</div>
       </div>
 
-      {/* DROITE */}
+      {/* RIGHT */}
       <div className="header-right">
-        <p className="user-text">
-          Vous êtes connecté en tant que <strong>Agent</strong>
-          {user && ` (${user.prenom} ${user.nom})`}
-        </p>
 
+        {/* NOTIFICATIONS */}
+        <div className="notif">
+          <button onClick={() => setOpenNotif(!openNotif)}>
+            <Bell size={18} />
+            <span className="notif-badge">3</span>
+          </button>
+
+          {openNotif && (
+            <div className="notif-dropdown">
+              <p>Nouvelle demande</p>
+              <p>Absence validée</p>
+              <p>Mise à jour RH</p>
+            </div>
+          )}
+        </div>
+
+        {/* USER MENU */}
+        <div className="user-menu">
+          <button onClick={() => setOpenUser(!openUser)} className="user-btn">
+            👤 {user?.prenom}
+          </button>
+
+          {openUser && (
+            <div className="user-dropdown">
+              <p>Mon profil</p>
+              <p>Paramètres</p>
+              <p onClick={onLogout}>Déconnexion</p>
+            </div>
+          )}
+        </div>
+
+        {/* LOGOUT ICON */}
         <button className="logout-btn" onClick={onLogout}>
-          Déconnexion
+          <LogOut size={18} />
         </button>
+
       </div>
 
     </header>
