@@ -1,7 +1,9 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Settings from "./Pages/Settings";
 
 import PrivateRoute from "./Components/PrivateRoute";
+import Sidebar from "./Components/Sidebar";
 import Layout from "./Layout/Layout";
 
 import Acompte from "./Pages/Dossiers/Demandes/Acompte";
@@ -31,6 +33,8 @@ import "./Styles/login.css";
 import "./Styles/etatcivil.css";
 import "./Styles/home.css";
 import "./Styles/header.css";
+import "./Styles/sidebar.css";
+import "./Styles/form.css";
 
 function App() {
 
@@ -57,6 +61,7 @@ function App() {
         <Route element={<PrivateRoute><Layout user={user} /></PrivateRoute>}>
 
           <Route path="/home" element={<Home user={user} />} />
+	  <Route path="/settings" element={<Settings />} />
 
           {/* Dossiers → Demandes */}
 

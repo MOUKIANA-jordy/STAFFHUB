@@ -1,15 +1,15 @@
 import React, { useState } from "react";
+import { useOutletContext } from "react-router-dom";
 import "../../Styles/form.css";
 
 export default function Planning() {
 
+  const { user } = useOutletContext();
+
   const [form, setForm] = useState({
     horizon: "",
     dateDebut: "",
-    dateFin: "",
-    nom: "",
-    prenom: "",
-    emploi: ""
+    dateFin: ""
   });
 
   const handleChange = (e) => {
@@ -20,67 +20,41 @@ export default function Planning() {
   };
 
   return (
-
     <div className="page">
 
-      <h2>Planning</h2>
+      <h2>Mon planning</h2>
 
-      <div className="grid">
+      <div className="user-info">
+        👤 {user.prenom} {user.nom}
+      </div>
 
-        <div className="field">
-          <label>Horizon</label>
-          <select name="horizon" onChange={handleChange}>
-            <option>Mois</option>
-            <option>Année</option>
-            <option>Semaine</option>
-          </select>
-        </div>
+      <div className="form-card">
 
-        <div className="field">
-          <label>Date de début</label>
-          <input
-            type="date"
-            name="dateDebut"
-            onChange={handleChange}
-          />
-        </div>
+        <div className="grid">
 
-        <div className="field">
-          <label>Date de fin</label>
-          <input
-            type="date"
-            name="dateFin"
-            onChange={handleChange}
-          />
-        </div>
+          <div className="field">
+            <label>Horizon</label>
+            <select name="horizon" onChange={handleChange}>
+              <option>Mois</option>
+              <option>Année</option>
+              <option>Semaine</option>
+            </select>
+          </div>
 
-        <div className="field">
-          <label>Nom</label>
-          <input
-            name="nom"
-            onChange={handleChange}
-          />
-        </div>
+          <div className="field">
+            <label>Date début</label>
+            <input type="date" name="dateDebut" onChange={handleChange} />
+          </div>
 
-        <div className="field">
-          <label>Prénom</label>
-          <input
-            name="prenom"
-            onChange={handleChange}
-          />
-        </div>
+          <div className="field">
+            <label>Date fin</label>
+            <input type="date" name="dateFin" onChange={handleChange} />
+          </div>
 
-        <div className="field">
-          <label>Emploi</label>
-          <input
-            name="emploi"
-            onChange={handleChange}
-          />
         </div>
 
       </div>
 
     </div>
-
   );
 }

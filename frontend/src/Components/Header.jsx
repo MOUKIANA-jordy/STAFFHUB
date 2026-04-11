@@ -14,20 +14,20 @@ export default function Header({ user, onLogout }) {
   // 🔎 pages disponibles
   const pages = [
     { name: "Dashboard", path: "/" },
-    { name: "Acompte", path: "/Dossiers/Demandes/acompte" },
-    { name: "Avances", path: "/Dossiers/Demandes/avance" },
-    { name: "Calendrier", path: "/Dossiers/Demandes/calendrier" },
-    { name: "Fiches", path: "/Dossiers/Demandes/fiches" },
-    { name: "Paiement_Cet", path: "/Dossiers/Demandes/paiement_cet" },
-    { name: "H_Sup", path: "/Dossiers/Demandes/h_sup" },
-    { name: "Etat_Civil", path: "/Dossiers/Informations/etat_civil" },
-    { name: "Adresse", path: "/Dossiers/Informations/adresse" },
-    { name: "Famille", path: "/Dossiers/Informations/famille" },
-    { name: "IBAN", path: "/Dossiers/Informations/iban" },
-    { name: "Documents", path: "/Dossiers/Informations/documents" },
-    { name: "Absences", path: "/Activites/absences" },
-    { name: "Planning", path: "/Activites/planning" },
-    { name: "Pointage", path: "/Activites/pointages" },
+    { name: "Acompte", path: "/dossiers/demandes/acompte" },
+    { name: "Avance", path: "/dossiers/demandes/avance" },
+    { name: "Calendrier", path: "/dossiers/demandes/calendrier" },
+    { name: "Fiches", path: "/dossiers/demandes/fiches" },
+    { name: "Paiement CET", path: "/dossiers/demandes/paiement-cet" },
+    { name: "Heures Sup", path: "/dossiers/demandes/paiement-hsup" },
+    { name: "Etat Civil", path: "/dossiers/informations/etat-civil" },
+    { name: "Adresse", path: "/dossiers/informations/adresse" },
+    { name: "Famille", path: "/dossiers/informations/famille" },
+    { name: "IBAN", path: "/dossiers/informations/iban" },
+    { name: "Documents", path: "/dossiers/informations/documents" },
+    { name: "Absences", path: "/activites/absences" },
+    { name: "Planning", path: "/activites/planning" },
+    { name: "Pointages", path: "/activites/pointages" },
   ];
 
   const results = pages.filter((p) =>
@@ -39,6 +39,7 @@ export default function Header({ user, onLogout }) {
 
       {/* LEFT */}
       <div className="header-left">
+
         <div className="logo">MyEntreprise</div>
 
         {/* SEARCH */}
@@ -68,12 +69,13 @@ export default function Header({ user, onLogout }) {
           )}
 
         </div>
+
       </div>
 
       {/* RIGHT */}
       <div className="header-right">
 
-        {/* NOTIF */}
+        {/* 🔔 NOTIFICATIONS */}
         <div className="notif">
           <button onClick={() => setOpenNotif(!openNotif)}>
             <Bell size={18} />
@@ -82,14 +84,41 @@ export default function Header({ user, onLogout }) {
 
           {openNotif && (
             <div className="notif-dropdown">
-              <p>Nouvelle demande</p>
-              <p>Absence validée</p>
-              <p>Mise à jour RH</p>
+
+              {/* Nouvelle demande */}
+              <p className="notif-title">Nouvelle demande</p>
+
+              <p onClick={() => navigate("/dossiers/demandes/acompte")}>
+                → Acompte
+              </p>
+
+              <p onClick={() => navigate("/dossiers/demandes/avance")}>
+                → Avance
+              </p>
+
+              <p onClick={() => navigate("/dossiers/demandes/paiement-cet")}>
+                → Paiement CET
+              </p>
+
+              <p onClick={() => navigate("/dossiers/demandes/paiement-hsup")}>
+                → Heures Sup
+              </p>
+
+              <hr />
+
+              <p onClick={() => navigate("/activites/absences")}>
+                Absence validée
+              </p>
+
+              <p onClick={() => navigate("/home")}>
+                Mise à jour RH
+              </p>
+
             </div>
           )}
         </div>
 
-        {/* USER */}
+        {/* 👤 USER */}
         <div className="user-menu">
           <button onClick={() => setOpenUser(!openUser)} className="user-btn">
             👤 {user?.prenom}
@@ -97,13 +126,22 @@ export default function Header({ user, onLogout }) {
 
           {openUser && (
             <div className="user-dropdown">
-              <p>Mon profil</p>
-              <p>Paramètres</p>
-              <p onClick={onLogout}>Déconnexion</p>
+              <p onClick={() => navigate("/profile")}>
+                Mon profil
+              </p>
+
+              <p onClick={() => navigate("/settings")}>
+                Paramètres
+              </p>
+
+              <p onClick={onLogout}>
+                Déconnexion
+              </p>
             </div>
           )}
         </div>
 
+        {/* 🚪 LOGOUT */}
         <button className="logout-btn" onClick={onLogout}>
           <LogOut size={18} />
         </button>

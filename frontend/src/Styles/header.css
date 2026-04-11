@@ -1,57 +1,29 @@
 .header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #87CEFA; /* bleu clair */
-  padding: 10px 20px;
-}
 
-.main-header {
-  background: #2563eb;
-  color: white;
+  padding: 15px 30px;
 
-  height: 40vh; /* 🔥 40% de la hauteur écran */
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(14px);
 
-  padding: 15px;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start; /* mieux pour grand header */
-  box-sizing: border-box;
-}
-
-.main-menu {
-  display: flex;
-  gap: 15px;
-}
-
-.header-user {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
 /* LEFT */
 .header-left {
   display: flex;
-  gap: 10px;
+  align-items: center;
 }
 
-.nav-btn {
-  background: white;
-  border: none;
-  padding: 8px 15px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: 0.3s;
-}
-
-.nav-btn:hover {
-  background-color: #e0f0ff;
-}
-
-.nav-btn.active {
-  background-color: #007bff;
+.logo {
+  font-weight: 600;
+  font-size: 18px;
   color: white;
 }
 
@@ -59,23 +31,104 @@
 .header-right {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 20px;
 }
 
-.user-text {
-  margin: 0;
-  font-size: 14px;
+/* NOTIF */
+.notif {
+  position: relative;
 }
 
-.logout-btn {
-  background-color: #ff4d4d;
+.notif button {
+  background: transparent;
   border: none;
   color: white;
+  cursor: pointer;
+  position: relative;
+}
+
+.notif-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: red;
+  font-size: 10px;
+  padding: 2px 5px;
+  border-radius: 50%;
+}
+
+.notif-dropdown {
+  position: absolute;
+  top: 35px;
+  right: 0;
+  background: #1e293b;
+  padding: 10px;
+  border-radius: 10px;
+  width: 180px;
+}
+
+/* USER */
+.user-menu {
+  position: relative;
+}
+
+.user-btn {
+  background: rgba(255,255,255,0.08);
+  border: none;
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+}
+
+.user-dropdown {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  background: #1e293b;
+  border-radius: 10px;
+  padding: 10px;
+  width: 150px;
+}
+
+.user-dropdown p {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.user-dropdown p:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+/* LOGOUT */
+.logout-btn {
+  background: rgba(239,68,68,0.15);
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
   cursor: pointer;
 }
 
 .logout-btn:hover {
-  background-color: #cc0000;
+  background: rgba(239,68,68,0.3);
+}
+
+.search {
+  margin-left: 20px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255,255,255,0.08);
+  color: white;
+  outline: none;
+  width: 200px;
+  transition: 0.2s;
+}
+
+.search::placeholder {
+  color: #94a3b8;
+}
+
+.search:focus {
+  background: rgba(255,255,255,0.12);
 }

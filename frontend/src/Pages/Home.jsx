@@ -3,97 +3,87 @@ import { Link, useOutletContext } from "react-router-dom";
 import "../Styles/home.css";
 
 export default function Home() {
-
   const { menu } = useOutletContext();
   const [subMenu, setSubMenu] = useState("");
 
   return (
     <div className="home">
 
-      {/* ================= DOSSIER ================= */}
-      {menu === "dossier" && (
-        <div className="submenu">
+      {/* HERO / HEADER */}
+      <div className="hero">
+        <h1>Gestion d’entreprise</h1>
+        <p>Centralisez vos demandes, informations et activités</p>
+      </div>
 
-          {/* NIVEAU 1 */}
+      {/* DOSSIER */}
+      {menu === "dossier" && (
+        <div className="panel">
+
           {!subMenu && (
-            <div className="submenu-buttons">
-              <button
-                className={subMenu === "demandes" ? "active-btn" : ""}
+            <div className="card-grid">
+
+              <div
+                className="card"
                 onClick={() => setSubMenu("demandes")}
               >
-                Demandes
-              </button>
+                <h3>Demandes</h3>
+                <p>Gérez toutes vos requêtes administratives</p>
+              </div>
 
-              <button
-                className={subMenu === "informations" ? "active-btn" : ""}
+              <div
+                className="card"
                 onClick={() => setSubMenu("informations")}
               >
-                Informations
-              </button>
+                <h3>Informations</h3>
+                <p>Accédez et modifiez vos données personnelles</p>
+              </div>
+
             </div>
           )}
 
-          {/* ================= DEMANDES ================= */}
           {subMenu === "demandes" && (
-            <div>
-
-              <button
-                className="back-btn"
-                onClick={() => setSubMenu("")}
-              >
+            <div className="sub-content">
+              <button className="back-btn" onClick={() => setSubMenu("")}>
                 ← Retour
               </button>
 
-              <h2 className="section-title">Demandes</h2>
-
-              <div className="links horizontal">
-                <Link to="/dossiers/demandes/acompte">Acompte</Link>
-                <Link to="/dossiers/demandes/avance">Avance</Link>
-                <Link to="/dossiers/demandes/calendrier">Calendrier</Link>
-                <Link to="/dossiers/demandes/fiches">Fiches</Link>
-                <Link to="/dossiers/demandes/paiement-cet">Paiement CET</Link>
-                <Link to="/dossiers/demandes/paiement-hsup">Paiement H Sup</Link>
+              <div className="card-grid small">
+                <Link to="/dossiers/demandes/acompte" className="mini-card">Acompte</Link>
+                <Link to="/dossiers/demandes/avance" className="mini-card">Avance</Link>
+                <Link to="/dossiers/demandes/calendrier" className="mini-card">Calendrier</Link>
+                <Link to="/dossiers/demandes/fiches" className="mini-card">Fiches</Link>
+                <Link to="/dossiers/demandes/paiement-cet" className="mini-card">Paiement CET</Link>
+                <Link to="/dossiers/demandes/paiement-hsup" className="mini-card">H Sup</Link>
               </div>
-
             </div>
           )}
 
-          {/* ================= INFORMATIONS ================= */}
           {subMenu === "informations" && (
-            <div>
-
-              <button
-                className="back-btn"
-                onClick={() => setSubMenu("")}
-              >
+            <div className="sub-content">
+              <button className="back-btn" onClick={() => setSubMenu("")}>
                 ← Retour
               </button>
 
-              <h2 className="section-title">Informations</h2>
-
-              <div className="links horizontal">
-                <Link to="/dossiers/informations/etat-civil">Etat Civil</Link>
-                <Link to="/dossiers/informations/adresse">Adresse</Link>
-                <Link to="/dossiers/informations/famille">Famille</Link>
-                <Link to="/dossiers/informations/iban">IBAN</Link>
-                <Link to="/dossiers/informations/documents">Documents</Link>
+              <div className="card-grid small">
+                <Link to="/dossiers/informations/etat-civil" className="mini-card">Etat Civil</Link>
+                <Link to="/dossiers/informations/adresse" className="mini-card">Adresse</Link>
+                <Link to="/dossiers/informations/famille" className="mini-card">Famille</Link>
+                <Link to="/dossiers/informations/iban" className="mini-card">IBAN</Link>
+                <Link to="/dossiers/informations/documents" className="mini-card">Documents</Link>
               </div>
-
             </div>
           )}
 
         </div>
       )}
 
-      {/* ================= ACTIVITES ================= */}
+      {/* ACTIVITES */}
       {menu === "activites" && (
-        <div className="submenu">
-          <h2 className="section-title">Activités</h2>
-
-          <div className="links horizontal">
-            <Link to="/activites/planning">Planning</Link>
-            <Link to="/activites/absences">Absences</Link>
-            <Link to="/activites/pointages">Pointages</Link>
+        <div className="panel">
+          <div className="card-grid small">
+            <Link to="/activites/planning" className="mini-card">Planning</Link>
+            <Link to="/activites/absences" className="mini-card">Absences</Link>
+            <Link to="/activites/pointages" className="mini-card">Pointages</Link>
           </div>
         </div>
       )}

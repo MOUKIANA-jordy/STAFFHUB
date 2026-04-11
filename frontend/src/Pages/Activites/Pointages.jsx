@@ -17,39 +17,34 @@ export default function Pointage() {
   };
 
   return (
-
     <div className="page">
 
-      <h2>Pointage Virtuel</h2>
+      <h2>Pointage virtuel</h2>
 
-      <div className="grid">
+      <div className="form-card">
 
-        <div className="field">
-          <label>Date de début</label>
-          <input
-            type="date"
-            name="dateDebut"
-            onChange={handleChange}
-          />
+        <div className="section-title">Période</div>
+
+        <div className="grid">
+
+          <div className="field">
+            <label>Date de début</label>
+            <input type="date" name="dateDebut" onChange={handleChange} />
+          </div>
+
+          <div className="field">
+            <label>Date de fin</label>
+            <input type="date" name="dateFin" onChange={handleChange} />
+          </div>
+
+          <div className="field">
+            <label>Heure de pointage</label>
+            <input type="time" name="heurePointage" onChange={handleChange} />
+          </div>
+
         </div>
 
-        <div className="field">
-          <label>Date de fin</label>
-          <input
-            type="date"
-            name="dateFin"
-            onChange={handleChange}
-          />
-        </div>
-
-        <div className="field">
-          <label>Heures de pointage</label>
-          <input
-            type="time"
-            name="heurePointage"
-            onChange={handleChange}
-          />
-        </div>
+        <button className="btn-save">Valider</button>
 
       </div>
 
