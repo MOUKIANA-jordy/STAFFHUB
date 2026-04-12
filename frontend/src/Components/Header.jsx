@@ -40,7 +40,7 @@ export default function Header({ user, onLogout }) {
       {/* LEFT */}
       <div className="header-left">
 
-        <div className="logo">MyEntreprise</div>
+        <div className="logo">StaffHub</div>
 
         {/* SEARCH */}
         <div className="search-box">
