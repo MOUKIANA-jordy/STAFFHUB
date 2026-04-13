@@ -5,12 +5,13 @@ from django.utils.crypto import get_random_string
 
 class Salarie(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="salarie")
+
     nom = models.CharField(max_length=100)
     prenom = models.CharField(max_length=100)
     matricule = models.CharField(max_length=50, unique=True)
-    email_personnel = models.EmailField()
-    telephone = models.CharField(max_length=20)
+
     email_personnel = models.EmailField(default="inconnu@domaine.com")
+    telephone = models.CharField(max_length=20)
 
     date_naissance = models.DateField(null=True, blank=True)
 
@@ -32,6 +33,8 @@ class Salarie(models.Model):
         ("ADMIN", "Admin"),
     ]
 
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="SALARIE")
+
     date_debut_contrat = models.DateField()
     date_fin_contrat = models.DateField(null=True, blank=True)
 
@@ -40,20 +43,15 @@ class Salarie(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="SALARIE")
 
     def save(self, *args, **kwargs):
 
-        # Si le compte User n'existe pas encore
-        if not self.user:
+        # Création automatique du User si pas encore existant
+        if not self.pk and not self.user:
 
-            # Génération email professionnel
             email_pro = f"{self.prenom.lower()}.{self.nom.lower()}@staffhub.fr"
-
-            # Mot de passe temporaire
             password_temp = get_random_string(length=10)
 
-            # Création du User Django
             user = User.objects.create_user(
                 username=self.matricule,
                 email=email_pro,
@@ -61,10 +59,6 @@ class Salarie(models.Model):
             )
 
             self.user = user
-
-            print("Compte créé")
-            print("Email pro :", email_pro)
-            print("Mot de passe temporaire :", password_temp)
 
         super().save(*args, **kwargs)
 
