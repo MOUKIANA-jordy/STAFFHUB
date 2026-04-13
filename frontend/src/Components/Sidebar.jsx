@@ -1,45 +1,46 @@
-import React from "react";
-import { Home, Folder, Calendar, Settings } from "lucide-react";
-import "../Styles/sidebar.css";
+import React, { useState } from "react";
 
 export default function Sidebar({ menu, setMenu }) {
-  return (
-    <div className="sidebar">
+  const [collapsed, setCollapsed] = useState(false);
 
-      <div className="sidebar-logo">
-         MyApp
+  return (
+    <div className={`sidebar ${collapsed ? "collapsed" : ""}`}>
+
+      {/* TOP */}
+      <div className="sidebar-top">
+        <h2 className="logo">{collapsed ? "S" : "StaffHub"}</h2>
+
+        <button
+          className="toggle-btn"
+          onClick={() => setCollapsed(!collapsed)}
+        >
+          ☰
+        </button>
       </div>
 
-      <nav className="sidebar-nav">
+      {/* NAV */}
+      <nav className="nav">
 
-        <button
-          className={menu === "dashboard" ? "side-item active" : "side-item"}
-          onClick={() => setMenu("dashboard")}
-        >
-          <Home size={18} />
-          Dashboard
-        </button>
-
-        <button
-          className={menu === "dossier" ? "side-item active" : "side-item"}
+        <div
+          className={`nav-item ${menu === "dossier" ? "active" : ""}`}
           onClick={() => setMenu("dossier")}
         >
-          <Folder size={18} />
-          Dossiers
-        </button>
+          📁 {!collapsed && <span>Dossiers</span>}
+        </div>
 
-        <button
-          className={menu === "activites" ? "side-item active" : "side-item"}
+        <div
+          className={`nav-item ${menu === "activites" ? "active" : ""}`}
           onClick={() => setMenu("activites")}
         >
-          <Calendar size={18} />
-          Activités
-        </button>
+          📊 {!collapsed && <span>Activités</span>}
+        </div>
 
-        <button className="side-item">
-          <Settings size={18} />
-          Paramètres
-        </button>
+        <div
+          className={`nav-item ${menu === "settings" ? "active" : ""}`}
+          onClick={() => setMenu("settings")}
+        >
+          ⚙️ {!collapsed && <span>Settings</span>}
+        </div>
 
       </nav>
 
