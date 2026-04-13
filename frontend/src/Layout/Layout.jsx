@@ -1,42 +1,40 @@
 import React, { useState } from "react";
-import { Outlet } from "react-router-dom";
-import Header from "../Components/Header";
+import { Outlet, useNavigate } from "react-router-dom";
+import useAuth from "../Hooks/useAuth";
+
 import Sidebar from "../Components/Sidebar";
+import Header from "../Components/Header";
 
-export default function MainLayout({ user }) {
+export default function Layout() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const [menu, setMenu] = useState("dashboard");
+  const [menu, setMenu] = useState("dossier");
 
   const handleLogout = () => {
-    console.log("Déconnexion...");
-    // localStorage.clear();
-    // navigate("/");
+    localStorage.removeItem("access");
+    navigate("/");
   };
+
+  console.log("USER FRONT:", user); // 🔥 debug
+
+  if (!user) return <div>Loading...</div>;
 
   return (
     <div className="app-layout">
 
-      {/* SIDEBAR */}
       <Sidebar menu={menu} setMenu={setMenu} />
 
-      {/* CONTENU PRINCIPAL */}
       <div className="main-area">
 
-        {/* HEADER */}
-        <Header
-          user={user}
-          menu={menu}
-          setMenu={setMenu}
-          onLogout={handleLogout}
-        />
+        <Header user={user} onLogout={handleLogout} />
 
-        {/* PAGES */}
         <div className="main-content">
-          <Outlet context={{ menu }} />
+          <h1>{JSON.stringify(user)}</h1> {/* 🔥 TEST */}
+          <Outlet context={{ menu, user, setMenu }} />
         </div>
 
       </div>
-
     </div>
   );
 }

@@ -1,52 +1,52 @@
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions
 from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
 from .models import Salarie
 from .serializers import SalarieSerializer
-from .permissions import IsRHOrAdmin
-from django.contrib.auth import authenticate
-from rest_framework.response import Response
+from .permissions import IsRHOrAdmin, IsOwnerOrRH
 
 
 class SalarieViewSet(viewsets.ModelViewSet):
-    serializer_class = SalarieSerializer
     queryset = Salarie.objects.all()
+    serializer_class = SalarieSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
 
-        # RH ou ADMIN → accès à tous les salariés
-        if user.salarie.role in ["RH", "ADMIN"]:
+        if hasattr(user, "salarie") and user.salarie.role in ["RH", "ADMIN"]:
             return Salarie.objects.all()
 
-        # Sinon → accès uniquement à son propre profil
         return Salarie.objects.filter(user=user)
 
     def get_permissions(self):
-        if self.action in ["list", "destroy"]:
+        if self.action == "list":
             permission_classes = [IsRHOrAdmin]
+        elif self.action in ["destroy", "update", "partial_update"]:
+            permission_classes = [IsOwnerOrRH]
         else:
             permission_classes = [permissions.IsAuthenticated]
 
         return [permission() for permission in permission_classes]
 
 
-@api_view(["POST"])
-def login_view(request):
+@api_view(["GET"])
+def current_user(request):
+    user = request.user
 
-    identifiant = request.data.get("identifiant")
-    password = request.data.get("password")
+    if hasattr(user, "salarie"):
+        salarie = user.salarie
 
-    user = authenticate(username=identifiant, password=password)
-
-    if user is not None:
         return Response({
-            "message": "Connexion réussie",
-            "user": {
-                "username": user.username
-            }
+            "username": user.username,
+            "email": user.email,
+            "nom": salarie.nom,
+            "prenom": salarie.prenom,
+            "matricule": salarie.matricule,
+            "role": salarie.role,
+            "poste": salarie.poste,
+            "etablissement": salarie.etablissement,
         })
 
-    return Response(
-        {"error": "Identifiant ou mot de passe incorrect"},
-        status=status.HTTP_401_UNAUTHORIZED
-    )
+    return Response({"error": "Aucun profil salarié"})

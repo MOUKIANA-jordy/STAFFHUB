@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import Salarie
 
+
 @admin.register(Salarie)
 class SalarieAdmin(admin.ModelAdmin):
 
@@ -9,8 +10,8 @@ class SalarieAdmin(admin.ModelAdmin):
         "prenom",
         "nom",
         "matricule",
-        "email_personnel_affichage",  # Email privé
-        "email_pro_affichage",        # Email pro (User)
+        "email_personnel_affichage",
+        "email_pro_affichage",
         "poste",
         "etablissement",
         "contrat_affichage",
@@ -29,29 +30,27 @@ class SalarieAdmin(admin.ModelAdmin):
         "prenom",
         "nom",
         "matricule",
-        "user__email",        # recherche sur email pro
-        "email_personnel",    # recherche sur email perso
+        "user__email",
+        "email_personnel",
         "poste",
     )
 
     ordering = ("nom", "prenom")
 
-    # Affichage lisible du rôle
+    # ----------- AFFICHAGES -----------
+
     def role_affichage(self, obj):
         return obj.get_role_display()
     role_affichage.short_description = "Rôle"
 
-    # Affichage lisible du type de contrat
     def contrat_affichage(self, obj):
         return obj.get_type_contrat_display()
     contrat_affichage.short_description = "Type de contrat"
 
-    # Affichage de l'email professionnel
     def email_pro_affichage(self, obj):
         return obj.user.email if obj.user else "-"
     email_pro_affichage.short_description = "Email pro"
 
-    # Affichage de l'email personnel
     def email_personnel_affichage(self, obj):
         return obj.email_personnel
     email_personnel_affichage.short_description = "Email perso"

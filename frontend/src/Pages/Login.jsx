@@ -10,18 +10,17 @@ const Login = () => {
 
   const [form, setForm] = useState({
     username: "",
-    password: "",
-    remember: false
+    password: ""
   });
 
   const [error, setError] = useState("");
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
 
     setForm({
       ...form,
-      [name]: type === "checkbox" ? checked : value
+      [name]: value
     });
   };
 
@@ -42,17 +41,16 @@ const Login = () => {
         }
       );
 
-      if (form.remember) {
-        localStorage.setItem("access", response.data.access);
-        localStorage.setItem("refresh", response.data.refresh);
-      } else {
-        sessionStorage.setItem("access", response.data.access);
-        sessionStorage.setItem("refresh", response.data.refresh);
-      }
+      // 🔥 stockage propre JWT
+      localStorage.setItem("access", response.data.access);
+      localStorage.setItem("refresh", response.data.refresh);
+
+      console.log("LOGIN OK", response.data);
 
       navigate("/home");
 
     } catch (err) {
+      console.error(err);
       setError("Identifiant ou mot de passe incorrect");
     }
   };
@@ -97,17 +95,8 @@ const Login = () => {
             {/* ERROR */}
             {error && <p className="error">{error}</p>}
 
-            {/* OPTIONS */}
+            {/* LINK */}
             <div className="remember-forgot">
-              <label>
-                <input
-                  type="checkbox"
-                  name="remember"
-                  onChange={handleChange}
-                />
-                remember me
-              </label>
-
               <Link to="/forgot">Mot de passe oublié ?</Link>
             </div>
 

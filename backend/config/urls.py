@@ -30,6 +30,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework import viewsets, permissions
+from apps.users.views import current_user
 
 router = DefaultRouter()
 router.register(r'salaries', SalarieViewSet)
@@ -48,6 +49,7 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema")),
+    path('api/me/', current_user),
 ]
 
 if settings.DEBUG:

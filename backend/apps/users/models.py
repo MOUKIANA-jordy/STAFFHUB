@@ -4,7 +4,13 @@ from django.utils.crypto import get_random_string
 
 
 class Salarie(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="salarie")
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="salarie",
+        null=True,   # ✅ permet création sans user
+        blank=True   # ✅ évite erreur admin/forms
+    )
 
     nom = models.CharField(max_length=100)
     prenom = models.CharField(max_length=100)
@@ -45,9 +51,8 @@ class Salarie(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-
-        # Création automatique du User si pas encore existant
-        if not self.pk and not self.user:
+        # 🔥 création automatique du User si absent
+        if not self.user:
 
             email_pro = f"{self.prenom.lower()}.{self.nom.lower()}@staffhub.fr"
             password_temp = get_random_string(length=10)
