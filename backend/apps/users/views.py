@@ -1,5 +1,6 @@
 from rest_framework import viewsets, permissions
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import Salarie
@@ -31,7 +32,9 @@ class SalarieViewSet(viewsets.ModelViewSet):
         return [permission() for permission in permission_classes]
 
 
+# 🔥 FIX IMPORTANT ICI
 @api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def current_user(request):
     user = request.user
 
@@ -49,4 +52,9 @@ def current_user(request):
             "etablissement": salarie.etablissement,
         })
 
-    return Response({"error": "Aucun profil salarié"})
+    return Response({
+        "username": user.username,
+        "email": user.email,
+        "prenom": "Utilisateur",
+        "nom": ""
+    })

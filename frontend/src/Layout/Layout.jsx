@@ -30,7 +30,7 @@ export default function Layout() {
         <Header user={user} onLogout={handleLogout} />
 
         <div className="main-content">
-          <h1>{JSON.stringify(user)}</h1> {/* 🔥 TEST */}
+          <h1>Bonjour {user.prenom}</h1>
           <Outlet context={{ menu, user, setMenu }} />
         </div>
 
