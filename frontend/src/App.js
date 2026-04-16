@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import AdminDashboard from "./Pages/AdminDashboard";
 
 import PrivateRoute from "./Components/PrivateRoute";
 import Layout from "./Layout/Layout";
@@ -56,8 +57,11 @@ function App() {
           <Route element={<Layout user={user} />}>
 
             <Route path="/home" element={<Home />} />
+	      <Route path="/home/dossiers" element={<Home />} />
+	      <Route path="/home/activites" element={<Home />} />
 	     <Route path="/profile" element={<Profile />} />
 	     <Route path="/account" element={<Account />} />
+	     <Route path="/admin" element={<AdminDashboard />} />
 
             {/* Dossiers → Demandes */}
             <Route path="/dossiers/demandes/acompte" element={<Acompte />} />

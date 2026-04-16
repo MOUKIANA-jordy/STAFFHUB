@@ -1,120 +1,180 @@
+/* GLOBAL */
 .home {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0f172a, #1e293b);
-  color: #fff;
+  background: linear-gradient(135deg, #0f172a, #020617);
+  color: #e2e8f0;
   font-family: "Poppins", sans-serif;
 }
 
 /* HERO */
 .hero {
-  padding: 60px 40px 30px;
+  padding: 60px 50px 30px;
 }
 
 .hero h1 {
-  font-size: 32px;
+  font-size: 34px;
   font-weight: 600;
+  letter-spacing: -0.5px;
 }
 
 .hero p {
-  opacity: 0.7;
-  margin-top: 10px;
+  opacity: 0.6;
+  margin-top: 8px;
+  font-size: 15px;
 }
 
 /* PANEL */
 .panel {
-  padding: 30px 40px;
+  padding: 20px 50px 40px;
 }
 
 /* GRID */
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 24px;
 }
 
-/* CARDS */
+/* MAIN CARDS (Demandes / Infos) */
 .card {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px);
-  padding: 25px;
-  border-radius: 16px;
+  background: linear-gradient(
+    145deg,
+    rgba(255,255,255,0.06),
+    rgba(255,255,255,0.02)
+  );
+  backdrop-filter: blur(14px);
+  padding: 26px;
+  border-radius: 18px;
   cursor: pointer;
+  transition: all 0.25s ease;
+  border: 1px solid rgba(255,255,255,0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.08), transparent);
+  opacity: 0;
   transition: 0.3s;
-  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.card:hover::before {
+  opacity: 1;
 }
 
 .card:hover {
-  transform: translateY(-5px);
-  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-6px);
+  border: 1px solid rgba(59,130,246,0.4);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 
 .card h3 {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
+  font-size: 18px;
+  font-weight: 500;
 }
 
 .card p {
-  font-size: 14px;
-  opacity: 0.7;
+  font-size: 13px;
+  opacity: 0.6;
 }
 
-/* MINI CARDS */
+/* MINI CARDS (Boutons pages) */
 .mini-card {
-  display: block;
-  padding: 15px;
-  background: rgba(255,255,255,0.06);
-  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 70px;
+
+  background: rgba(255,255,255,0.04);
+  border-radius: 12px;
   text-decoration: none;
-  color: white;
-  transition: 0.25s;
-  text-align: center;
+  color: #e2e8f0;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  transition: all 0.25s ease;
+  border: 1px solid rgba(255,255,255,0.06);
 }
 
 .mini-card:hover {
-  background: rgba(255,255,255,0.12);
-  transform: scale(1.03);
+  background: rgba(59,130,246,0.15);
+  border: 1px solid rgba(59,130,246,0.4);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
 }
 
 /* BACK BUTTON */
 .back-btn {
   margin-bottom: 20px;
-  background: transparent;
+  background: rgba(255,255,255,0.05);
   border: none;
   color: #94a3b8;
+  padding: 8px 14px;
+  border-radius: 8px;
   cursor: pointer;
+  transition: 0.2s;
+}
+
+.back-btn:hover {
+  background: rgba(255,255,255,0.1);
+  color: white;
 }
 
 /* HEADER PREMIUM */
 .header {
   position: sticky;
   top: 0;
-  backdrop-filter: blur(14px);
-  background: rgba(15, 23, 42, 0.7);
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-  padding: 15px 30px;
+  backdrop-filter: blur(18px);
+  background: rgba(2, 6, 23, 0.6);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  padding: 14px 30px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-/* LOGO */
-.logo {
-  font-weight: bold;
-  font-size: 18px;
+/* USER */
+.user-name {
+  font-weight: 500;
 }
 
-/* MENU */
-.tab {
-  color: #94a3b8;
-  padding: 8px 14px;
-  border-radius: 8px;
+/* DROPDOWN */
+.dropdown {
+  position: absolute;
+  right: 20px;
+  top: 60px;
+  background: #020617;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
+
+.dropdown-item {
+  padding: 12px 18px;
+  cursor: pointer;
   transition: 0.2s;
 }
 
-.tab.active {
-  background: #3b82f6;
-  color: white;
+.dropdown-item:hover {
+  background: rgba(255,255,255,0.05);
 }
 
-.tab:hover {
+.logout {
+  color: #ef4444;
+}
+
+/* SCROLLBAR CLEAN */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
   background: rgba(255,255,255,0.1);
+  border-radius: 10px;
 }

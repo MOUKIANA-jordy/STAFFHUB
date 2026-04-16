@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, Link } from "react-router-dom";
+import "../Styles/home.css";
 
 export default function Home() {
   const location = useLocation();
@@ -11,54 +12,84 @@ export default function Home() {
   return (
     <div className="home">
 
-      <h1>Dashboard</h1>
+      {/* HERO */}
+      <div className="hero">
+        <h1>Gestion d’entreprise</h1>
+        <p>Centralisez vos demandes, informations et activités</p>
+      </div>
 
       {/* ===== DOSSIERS ===== */}
       {isDossiers && (
-        <div>
+        <div className="panel">
 
           {!subMenu && (
-            <>
-              <button onClick={() => setSubMenu("demandes")}>
-                Demandes
-              </button>
+            <div className="card-grid">
 
-              <button onClick={() => setSubMenu("infos")}>
-                Informations
-              </button>
-            </>
+              <div className="card" onClick={() => setSubMenu("demandes")}>
+                <h3>Demandes</h3>
+                <p>Gérez vos demandes administratives</p>
+              </div>
+
+              <div className="card" onClick={() => setSubMenu("infos")}>
+                <h3>Informations</h3>
+                <p>Accédez à vos données personnelles</p>
+              </div>
+
+            </div>
           )}
 
           {subMenu === "demandes" && (
             <div>
-              <Link to="/dossiers/demandes/acompte">Acompte</Link>
-              <Link to="/dossiers/demandes/avance">Avance</Link>
-              <Link to="/dossiers/demandes/calendrier">Calendrier</Link>
-              <Link to="/dossiers/demandes/fiches">Fiches</Link>
-              <Link to="/dossiers/demandes/paiement-cet">Paiement CET</Link>
-              <Link to="/dossiers/demandes/paiement-hsup">H Sup</Link>
+              <button className="back-btn" onClick={() => setSubMenu("")}>
+                ← Retour
+              </button>
+
+              <div className="card-grid">
+
+                <Link to="/dossiers/demandes/acompte" className="mini-card">Acompte</Link>
+                <Link to="/dossiers/demandes/avance" className="mini-card">Avance</Link>
+                <Link to="/dossiers/demandes/calendrier" className="mini-card">Calendrier</Link>
+                <Link to="/dossiers/demandes/fiches" className="mini-card">Fiches</Link>
+                <Link to="/dossiers/demandes/paiement-cet" className="mini-card">Paiement CET</Link>
+                <Link to="/dossiers/demandes/paiement-hsup" className="mini-card">H Sup</Link>
+
+              </div>
             </div>
           )}
 
           {subMenu === "infos" && (
             <div>
-              <Link to="/dossiers/informations/etat-civil">Etat Civil</Link>
-              <Link to="/dossiers/informations/adresse">Adresse</Link>
-              <Link to="/dossiers/informations/famille">Famille</Link>
-              <Link to="/dossiers/informations/iban">IBAN</Link>
-              <Link to="/dossiers/informations/documents">Documents</Link>
+              <button className="back-btn" onClick={() => setSubMenu("")}>
+                ← Retour
+              </button>
+
+              <div className="card-grid">
+
+                <Link to="/dossiers/informations/etat-civil" className="mini-card">Etat Civil</Link>
+                <Link to="/dossiers/informations/adresse" className="mini-card">Adresse</Link>
+                <Link to="/dossiers/informations/famille" className="mini-card">Famille</Link>
+                <Link to="/dossiers/informations/iban" className="mini-card">IBAN</Link>
+                <Link to="/dossiers/informations/documents" className="mini-card">Documents</Link>
+
+              </div>
             </div>
           )}
 
         </div>
       )}
 
-      {/* ===== ACTIVITES ===== */}
+      {/* ===== ACTIVITÉS ===== */}
       {isActivites && (
-        <div>
-          <Link to="/activites/absences">Absences</Link>
-          <Link to="/activites/planning">Planning</Link>
-          <Link to="/activites/pointages">Pointages</Link>
+        <div className="panel">
+
+          <div className="card-grid">
+
+            <Link to="/activites/absences" className="mini-card">Absences</Link>
+            <Link to="/activites/planning" className="mini-card">Planning</Link>
+            <Link to="/activites/pointages" className="mini-card">Pointages</Link>
+
+          </div>
+
         </div>
       )}
 

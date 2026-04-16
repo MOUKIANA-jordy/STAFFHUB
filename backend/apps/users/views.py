@@ -7,7 +7,14 @@ from .models import Salarie
 from .serializers import SalarieSerializer
 from .permissions import IsRHOrAdmin, IsOwnerOrRH
 
+# 🔥 IMPORTS POUR DASHBOARD
+from apps.demandes.models import Demande
+from apps.pointage.models import Pointage
 
+
+# ==============================
+# 👥 SALARIE VIEWSET
+# ==============================
 class SalarieViewSet(viewsets.ModelViewSet):
     queryset = Salarie.objects.all()
     serializer_class = SalarieSerializer
@@ -32,7 +39,9 @@ class SalarieViewSet(viewsets.ModelViewSet):
         return [permission() for permission in permission_classes]
 
 
-# 🔥 FIX IMPORTANT ICI
+# ==============================
+# 👤 CURRENT USER
+# ==============================
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def current_user(request):
@@ -52,9 +61,33 @@ def current_user(request):
             "etablissement": salarie.etablissement,
         })
 
+    # fallback si pas de profil salarié
     return Response({
         "username": user.username,
         "email": user.email,
         "prenom": "Utilisateur",
         "nom": ""
+    })
+
+
+# ==============================
+# 📊 ADMIN DASHBOARD
+# ==============================
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def admin_stats(request):
+
+    # 🔐 sécurité (ADMIN + superuser)
+    if not request.user.is_superuser:
+        if not hasattr(request.user, "salarie") or request.user.salarie.role != "ADMIN":
+            return Response({"error": "Accès refusé"}, status=403)
+
+    total_salaries = Salarie.objects.count()
+    total_demandes = Demande.objects.count()
+    total_pointages = Pointage.objects.count()
+
+    return Response({
+        "salaries": total_salaries,
+        "demandes": total_demandes,
+        "pointages": total_pointages,
     })

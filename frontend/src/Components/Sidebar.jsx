@@ -1,48 +1,21 @@
-import React, { useState } from "react";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 
-export default function Sidebar({ menu, setMenu }) {
-  const [collapsed, setCollapsed] = useState(false);
+export default function Sidebar() {
+  const navigate = useNavigate();
 
   return (
-    <div className={`sidebar ${collapsed ? "collapsed" : ""}`}>
+    <div className="sidebar">
 
-      {/* TOP */}
-      <div className="sidebar-top">
-        <h2 className="logo">{collapsed ? "S" : "StaffHub"}</h2>
+      <h2 className="logo">StaffHub</h2>
 
-        <button
-          className="toggle-btn"
-          onClick={() => setCollapsed(!collapsed)}
-        >
-          ☰
-        </button>
+      <div className="nav-item" onClick={() => navigate("/home/dossiers")}>
+        📁 Dossiers
       </div>
 
-      {/* NAV */}
-      <nav className="nav">
-
-        <div
-          className={`nav-item ${menu === "dossier" ? "active" : ""}`}
-          onClick={() => setMenu("dossier")}
-        >
-          📁 {!collapsed && <span>Dossiers</span>}
-        </div>
-
-        <div
-          className={`nav-item ${menu === "activites" ? "active" : ""}`}
-          onClick={() => setMenu("activites")}
-        >
-          📊 {!collapsed && <span>Activités</span>}
-        </div>
-
-        <div
-          className={`nav-item ${menu === "settings" ? "active" : ""}`}
-          onClick={() => setMenu("settings")}
-        >
-          ⚙️ {!collapsed && <span>Settings</span>}
-        </div>
-
-      </nav>
+      <div className="nav-item" onClick={() => navigate("/home/activites")}>
+        📊 Activités
+      </div>
 
     </div>
   );

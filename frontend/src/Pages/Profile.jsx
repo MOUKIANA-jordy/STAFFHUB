@@ -1,5 +1,6 @@
 import React from "react";
 import "../Styles/profile.css";
+import "../Styles/input.css";
 
 export default function Profile() {
   return (
@@ -12,17 +13,17 @@ export default function Profile() {
 
       <div className="form-group">
         <label>Prénom</label>
-        <input type="text" placeholder="John" />
+        <input type="text" placeholder="" />
       </div>
 
       <div className="form-group">
         <label>Nom</label>
-        <input type="text" placeholder="Doe" />
+        <input type="text" placeholder="" />
       </div>
 
       <div className="form-group">
         <label>Email</label>
-        <input type="email" placeholder="john@email.com" />
+        <input type="email" placeholder="jordy@gmail.com" />
       </div>
 
       <div className="form-group">
@@ -36,9 +37,10 @@ export default function Profile() {
       <div className="form-group">
         <label>Statut</label>
         <select>
-          <option>Vacataire</option>
+          <option>Salarié</option>
           <option>Stagiaire</option>
-          <option>Agent</option>
+	  <option>Alternant(e)</option>
+          <option>Vacataire</option>
         </select>
       </div>
 
@@ -53,7 +55,7 @@ export default function Profile() {
       </div>
 
       <div className="form-group">
-        <label>Date d'embauche</label>
+        <label>Debut de Contrat</label>
         <input type="date" />
       </div>
 

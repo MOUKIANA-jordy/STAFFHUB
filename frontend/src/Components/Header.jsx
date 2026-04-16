@@ -14,16 +14,20 @@ export default function Header({ user, onLogout }) {
       {/* RIGHT SIDE */}
       <div className="header-right">
 
-        {/* PROFILE CLICK */}
+        {/* PROFILE */}
         <div
           className="profile"
           onClick={() => setOpen(!open)}
         >
+          {/* AVATAR */}
           <div className="avatar">
             {user?.prenom?.charAt(0)}
           </div>
 
-          <span>{user?.prenom}</span>
+          {/* NOM COMPLET */}
+          <span className="user-name">
+            {user?.prenom} {user?.nom}
+          </span>
         </div>
 
         {/* DROPDOWN */}
@@ -34,7 +38,7 @@ export default function Header({ user, onLogout }) {
               className="dropdown-item"
               onClick={() => {
                 navigate("/profile");
-                setOpen(false); // ferme le menu
+                setOpen(false);
               }}
             >
               Profil
