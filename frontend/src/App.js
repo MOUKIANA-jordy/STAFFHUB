@@ -6,7 +6,7 @@ import PrivateRoute from "./Components/PrivateRoute";
 import Layout from "./Layout/Layout";
 import Profile from "./Pages/Profile";
 import Account from "./Pages/Account";
-import settings from "./Components/settings";
+import settings from "./Components/Settings";
 
 import Acompte from "./Pages/Dossiers/Demandes/Acompte";
 import Avance from "./Pages/Dossiers/Demandes/Avance";
@@ -62,7 +62,8 @@ function App() {
 	      <Route path="/home/activites" element={<Home />} />
 	     <Route path="/profile" element={<Profile />} />
 	     <Route path="/account" element={<Account />} />
-	     <Route path="/admin" element={<AdminDashboard />} />
+	     <Route path="/admin-dashboard" element={<AdminDashboard />} />
+	     <Route path="/settings" element={<Settings />} />
 
             {/* Dossiers → Demandes */}
             <Route path="/dossiers/demandes/acompte" element={<Acompte />} />
