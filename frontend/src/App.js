@@ -6,6 +6,7 @@ import PrivateRoute from "./Components/PrivateRoute";
 import Layout from "./Layout/Layout";
 import Profile from "./Pages/Profile";
 import Account from "./Pages/Account";
+import settings from "./Components/settings";
 
 import Acompte from "./Pages/Dossiers/Demandes/Acompte";
 import Avance from "./Pages/Dossiers/Demandes/Avance";

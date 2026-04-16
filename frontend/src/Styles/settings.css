@@ -1,0 +1,44 @@
+.settings {
+  padding: 20px;
+}
+
+.settings-container {
+  display: flex;
+  margin-top: 20px;
+}
+
+.settings-menu {
+  width: 200px;
+  border-right: 1px solid #ddd;
+}
+
+.settings-menu div {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.settings-menu .active {
+  background: #eee;
+  font-weight: bold;
+}
+
+.settings-content {
+  flex: 1;
+  padding: 20px;
+}
+
+.settings-content input,
+.settings-content select {
+  display: block;
+  margin-bottom: 10px;
+  padding: 8px;
+  width: 300px;
+}
+
+.save-btn {
+  background: black;
+  color: white;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+}

@@ -1,36 +1,46 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import "../Styles/header.css";
 
 export default function Header({ user, onLogout }) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const ref = useRef();
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <div className="header">
 
-      {/* TITRE */}
-      <h3>Dashboard</h3>
+      <div className="header-right" ref={ref}>
 
-      {/* RIGHT SIDE */}
-      <div className="header-right">
-
-        {/* PROFILE */}
         <div
           className="profile"
-          onClick={() => setOpen(!open)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpen(!open);
+          }}
         >
-          {/* AVATAR */}
           <div className="avatar">
-            {user?.prenom?.charAt(0)}
+            {user?.prenom?.charAt(0)}{user?.nom?.charAt(0)}
           </div>
 
-          {/* NOM COMPLET */}
-          <span className="user-name">
-            {user?.prenom} {user?.nom}
-          </span>
+          <div>
+            <span className="user-name">
+              {user?.prenom} {user?.nom}
+            </span>
+            <div className="user-role">{user?.role}</div>
+          </div>
         </div>
 
-        {/* DROPDOWN */}
         {open && (
           <div className="dropdown">
 
@@ -61,7 +71,7 @@ export default function Header({ user, onLogout }) {
                 setOpen(false);
               }}
             >
-              Logout
+              Déconnexion
             </div>
 
           </div>
