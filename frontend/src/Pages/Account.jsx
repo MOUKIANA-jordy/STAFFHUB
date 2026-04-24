@@ -1,55 +1,65 @@
 import React from "react";
-import "../Styles/profile.css";
+import { useNavigate, useLocation } from "react-router-dom";
+import "../Styles/settings.css";
 
 export default function Account() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const isActive = (path) => location.pathname === path ? "active" : "";
+
   return (
-    <div className="card">
+    <div className="settings-page">
 
-      <h2>Mon Compte</h2>
+      {/* SIDEBAR */}
+      <div className="settings-sidebar">
+        <h3>👤 Compte</h3>
 
-      {/* EMAIL */}
-      <h3>Changer email</h3>
+        <div
+          className={isActive("/profile")}
+          onClick={() => navigate("/profile")}
+        >
+          Profil
+        </div>
 
-      <div className="form-group">
-        <label>Nouvel email</label>
-        <input type="email" />
+        <div
+          className={isActive("/account")}
+          onClick={() => navigate("/account")}
+        >
+          Mon compte
+        </div>
       </div>
 
-      {/* MOT DE PASSE */}
-      <h3>Mot de passe</h3>
+      {/* MAIN */}
+      <div className="settings-main">
 
-      <div className="form-group">
-        <label>Ancien mot de passe</label>
-        <input type="password" />
+        <h2 className="settings-title">Mon Compte</h2>
+
+        <div className="settings-card">
+
+          <h3>Changer email</h3>
+          <input type="email" placeholder="Nouvel email" />
+
+          <h3>Mot de passe</h3>
+          <input type="password" placeholder="Ancien mot de passe" />
+          <input type="password" placeholder="Nouveau mot de passe" />
+
+          <h3>Préférences</h3>
+          <select>
+            <option>Français</option>
+            <option>English</option>
+          </select>
+
+          <select>
+            <option>Activées</option>
+            <option>Désactivées</option>
+          </select>
+
+          <button className="save-btn">Sauvegarder</button>
+
+        </div>
+
       </div>
-
-      <div className="form-group">
-        <label>Nouveau mot de passe</label>
-        <input type="password" />
-      </div>
-
-      {/* PRÉFÉRENCES */}
-      <h3>Préférences</h3>
-
-      <div className="form-group">
-        <label>Langue</label>
-        <select>
-          <option>Français</option>
-          <option>English</option>
-        </select>
-      </div>
-
-      <div className="form-group">
-        <label>Notifications</label>
-        <select>
-          <option>Activées</option>
-          <option>Désactivées</option>
-        </select>
-      </div>
-
-      <button className="btn-primary">
-        Sauvegarder
-      </button>
 
     </div>
   );

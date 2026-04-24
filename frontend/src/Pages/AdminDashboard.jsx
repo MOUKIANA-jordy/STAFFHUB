@@ -26,7 +26,7 @@ export default function AdminDashboard() {
   return (
     <div className="admin-dashboard">
 
-      <h1 className="dashboard-title">Dashboard Admin</h1>
+      <h1 className="dashboard-title">Dashboard</h1>
 
       <div className="stats-grid">
 

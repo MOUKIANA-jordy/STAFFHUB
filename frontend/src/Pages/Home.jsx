@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { useLocation, Link } from "react-router-dom";
-import "../Styles/home.css";
+import "../index.css";
 import "./AdminDashboard";
+import settings from "../Components/Settings";
+import "./AdminPanel";
 
 export default function Home() {
   const location = useLocation();

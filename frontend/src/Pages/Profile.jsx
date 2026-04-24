@@ -1,67 +1,67 @@
 import React from "react";
-import "../Styles/profile.css";
-import "../Styles/input.css";
+import { useNavigate, useLocation } from "react-router-dom";
+import "../Styles/settings.css";
 
 export default function Profile() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const isActive = (path) => location.pathname === path ? "active" : "";
+
   return (
-    <div className="card">
+    <div className="settings-page">
 
-      <h2>Mon Profil</h2>
+      {/* SIDEBAR */}
+      <div className="settings-sidebar">
+        <h3>👤 Compte</h3>
 
-      {/* INFOS PERSONNELLES */}
-      <h3>Informations personnelles</h3>
+        <div
+          className={isActive("/profile")}
+          onClick={() => navigate("/profile")}
+        >
+          Profil
+        </div>
 
-      <div className="form-group">
-        <label>Prénom</label>
-        <input type="text" placeholder="" />
+        <div
+          className={isActive("/account")}
+          onClick={() => navigate("/account")}
+        >
+          Mon compte
+        </div>
       </div>
 
-      <div className="form-group">
-        <label>Nom</label>
-        <input type="text" placeholder="" />
+      {/* MAIN */}
+      <div className="settings-main">
+
+        <h2 className="settings-title">Mon Profil</h2>
+
+        <div className="settings-card">
+
+          <h3>Informations personnelles</h3>
+
+          <input type="text" placeholder="Prénom" />
+          <input type="text" placeholder="Nom" />
+          <input type="email" placeholder="Email" />
+          <input type="text" placeholder="Téléphone" />
+
+          <h3>Informations professionnelles</h3>
+
+          <select>
+            <option>Salarié</option>
+            <option>Stagiaire</option>
+            <option>Alternant(e)</option>
+            <option>Vacataire</option>
+          </select>
+
+          <input type="text" placeholder="Poste" />
+          <input type="text" placeholder="Service" />
+          <input type="date" />
+
+          <button className="save-btn">Enregistrer</button>
+
+        </div>
+
       </div>
-
-      <div className="form-group">
-        <label>Email</label>
-        <input type="email" placeholder="jordy@gmail.com" />
-      </div>
-
-      <div className="form-group">
-        <label>Téléphone</label>
-        <input type="text" placeholder="0600000000" />
-      </div>
-
-      {/* INFOS PROFESSIONNELLES */}
-      <h3>Informations professionnelles</h3>
-
-      <div className="form-group">
-        <label>Statut</label>
-        <select>
-          <option>Salarié</option>
-          <option>Stagiaire</option>
-	  <option>Alternant(e)</option>
-          <option>Vacataire</option>
-        </select>
-      </div>
-
-      <div className="form-group">
-        <label>Poste</label>
-        <input type="text" placeholder="Développeur" />
-      </div>
-
-      <div className="form-group">
-        <label>Service</label>
-        <input type="text" placeholder="Informatique" />
-      </div>
-
-      <div className="form-group">
-        <label>Debut de Contrat</label>
-        <input type="date" />
-      </div>
-
-      <button className="btn-primary">
-        Enregistrer
-      </button>
 
     </div>
   );
