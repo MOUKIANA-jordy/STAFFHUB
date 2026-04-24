@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import "../index.css";
 
 export default function Sidebar() {
   const navigate = useNavigate();
@@ -22,11 +23,6 @@ export default function Sidebar() {
       {/* ACTIVITÉS */}
       <div className="nav-item" onClick={() => navigate("/home/activites")}>
         📊 Activités
-      </div>
-
-      {/* PARAMÈTRES */}
-      <div className="nav-item" onClick={() => navigate("/settings")}>
-        ⚙️ Paramètres
       </div>
 
     </div>

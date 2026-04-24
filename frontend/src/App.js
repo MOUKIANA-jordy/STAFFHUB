@@ -6,7 +6,8 @@ import PrivateRoute from "./Components/PrivateRoute";
 import Layout from "./Layout/Layout";
 import Profile from "./Pages/Profile";
 import Account from "./Pages/Account";
-import settings from "./Components/Settings";
+import Settings from "./Components/Settings";
+import AdminPanel from "./Pages/AdminPanel";
 
 import Acompte from "./Pages/Dossiers/Demandes/Acompte";
 import Avance from "./Pages/Dossiers/Demandes/Avance";
@@ -30,13 +31,12 @@ import ForgotPassword from "./Pages/ForgotPassword";
 import ResetPassword from "./Pages/ResetPassword";
 import Home from "./Pages/Home";
 
-/* CSS */
 import "./Styles/login.css";
 import "./Styles/etatcivil.css";
 import "./Styles/home.css";
-import "./Styles/header.css";
-import "./Styles/sidebar.css";
+import "./index.css";
 import "./Styles/form.css";
+
 
 function App() {
   const user = {
@@ -60,10 +60,11 @@ function App() {
             <Route path="/home" element={<Home />} />
 	      <Route path="/home/dossiers" element={<Home />} />
 	      <Route path="/home/activites" element={<Home />} />
-	     <Route path="/profile" element={<Profile />} />
-	     <Route path="/account" element={<Account />} />
-	     <Route path="/admin-dashboard" element={<AdminDashboard />} />
-	     <Route path="/settings" element={<Settings />} />
+	     	<Route path="/profile" element={<Profile />} />
+	     	<Route path="/account" element={<Account />} />
+	     	<Route path="/admin-dashboard" element={<AdminDashboard />} />
+	     	<Route path="/settings" element={<Settings />} />
+	     	<Route path="/admin" element={<AdminPanel />} />
 
             {/* Dossiers → Demandes */}
             <Route path="/dossiers/demandes/acompte" element={<Acompte />} />

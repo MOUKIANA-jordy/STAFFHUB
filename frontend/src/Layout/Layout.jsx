@@ -1,7 +1,6 @@
 import React from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import useAuth from "../Hooks/useAuth";
-
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Header";
 
@@ -26,7 +25,6 @@ export default function Layout() {
         <Header user={user} onLogout={handleLogout} />
 
         <div className="main-content">
-          <h1>Bonjour {user.prenom}</h1>
           <Outlet />
         </div>
 

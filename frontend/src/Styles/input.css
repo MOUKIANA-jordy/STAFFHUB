@@ -1,16 +1,51 @@
-.input-group{
-display:flex;
-flex-direction:column;
-margin-bottom:15px;
+/* GROUP */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 18px;
 }
 
-.input-group label{
-font-size:14px;
-margin-bottom:5px;
+/* LABEL */
+.input-group label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569;
+  margin-bottom: 6px;
 }
 
-.input-group input{
-padding:8px;
-border:1px solid #ccc;
-border-radius:4px;
+/* INPUT */
+.input-group input {
+  padding: 12px 14px;
+
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+
+  background: #f8fafc;
+
+  font-size: 14px;
+
+  outline: none;
+
+  transition: all 0.2s ease;
+}
+
+/* HOVER */
+.input-group input:hover {
+  border-color: #cbd5f5;
+}
+
+/* FOCUS */
+.input-group input:focus {
+  border-color: #22c55e;
+
+  background: white;
+
+  box-shadow: 0 0 0 3px rgba(34,197,94,0.15);
+}
+
+/* DISABLED / READONLY */
+.input-group input:disabled,
+.input-group input[readonly] {
+  background: #f1f5f9;
+  cursor: not-allowed;
 }

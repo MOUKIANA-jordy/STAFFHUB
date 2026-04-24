@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import "../Styles/header.css";
+import "../index.css";
 
 export default function Header({ user, onLogout }) {
   const [open, setOpen] = useState(false);
@@ -22,6 +22,7 @@ export default function Header({ user, onLogout }) {
 
       <div className="header-right" ref={ref}>
 
+        {/* PROFILE */}
         <div
           className="profile"
           onClick={(e) => {
@@ -35,12 +36,12 @@ export default function Header({ user, onLogout }) {
 
           <div>
             <span className="user-name">
-              {user?.prenom} {user?.nom}
+              {user?.prenom}
             </span>
-            <div className="user-role">{user?.role}</div>
           </div>
         </div>
 
+        {/* DROPDOWN */}
         {open && (
           <div className="dropdown">
 
@@ -51,7 +52,7 @@ export default function Header({ user, onLogout }) {
                 setOpen(false);
               }}
             >
-              Profil
+              👤 Profil
             </div>
 
             <div
@@ -61,7 +62,17 @@ export default function Header({ user, onLogout }) {
                 setOpen(false);
               }}
             >
-              Mon compte
+              ⚙️  Mon compte
+            </div>
+
+            <div
+              className="dropdown-item"
+              onClick={() => {
+                navigate("/settings");
+                setOpen(false);
+              }}
+            >
+              🔧 Paramètres
             </div>
 
             <div
@@ -71,7 +82,7 @@ export default function Header({ user, onLogout }) {
                 setOpen(false);
               }}
             >
-              Déconnexion
+              🚪 Déconnexion
             </div>
 
           </div>

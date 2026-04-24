@@ -1,104 +1,91 @@
 import React, { useState } from "react";
-import "../Styles/settings.css";
+import "../index.css";
 
 export default function Settings() {
   const [tab, setTab] = useState("profile");
 
   return (
-    <div className="settings">
+    <div className="settings-container">
 
-      <h2>⚙️ Paramètres</h2>
+      {/* SIDEBAR */}
+      <div className="settings-sidebar">
+        <h3>⚙️ Paramètres de Compte</h3>
 
-      <div className="settings-container">
+        <button onClick={() => setTab("profile")} className={tab === "profile" ? "active" : ""}>
+          👤 Profil
+        </button>
 
-        {/* MENU LATÉRAL */}
-        <div className="settings-menu">
-          <div onClick={() => setTab("profile")} className={tab === "profile" ? "active" : ""}>Profil</div>
-          <div onClick={() => setTab("security")} className={tab === "security" ? "active" : ""}>Sécurité</div>
-          <div onClick={() => setTab("notifications")} className={tab === "notifications" ? "active" : ""}>Notifications</div>
-          <div onClick={() => setTab("preferences")} className={tab === "preferences" ? "active" : ""}>Préférences</div>
-          <div onClick={() => setTab("company")} className={tab === "company" ? "active" : ""}>Entreprise</div>
-        </div>
+        <button onClick={() => setTab("security")} className={tab === "security" ? "active" : ""}>
+          🔐 Sécurité
+        </button>
 
-        {/* CONTENU */}
-        <div className="settings-content">
+        <button onClick={() => setTab("notifications")} className={tab === "notifications" ? "active" : ""}>
+          🔔 Notifications
+        </button>
 
-          {/* PROFIL */}
+        <button onClick={() => setTab("preferences")} className={tab === "preferences" ? "active" : ""}>
+          🎨 Préférences
+        </button>
+
+        <button onClick={() => setTab("company")} className={tab === "company" ? "active" : ""}>
+          🏢 Entreprise
+        </button>
+      </div>
+
+      {/* MAIN */}
+      <div className="settings-main">
+
+        <h2>Paramètres du compte</h2>
+
+        <div className="settings-card">
+
           {tab === "profile" && (
-            <div>
-              <h3>👤 Profil</h3>
-
-              <input type="text" placeholder="Prénom" />
-              <input type="text" placeholder="Nom" />
-              <input type="email" placeholder="Email" />
-
+            <>
+              <h3>Profil</h3>
+              <input placeholder="Prénom" />
+              <input placeholder="Nom" />
+              <input placeholder="Email" />
               <button className="save-btn">Sauvegarder</button>
-            </div>
+            </>
           )}
 
-          {/* SÉCURITÉ */}
           {tab === "security" && (
-            <div>
-              <h3>🔐 Sécurité</h3>
-
+            <>
+              <h3>Sécurité</h3>
               <input type="password" placeholder="Ancien mot de passe" />
               <input type="password" placeholder="Nouveau mot de passe" />
-              <input type="password" placeholder="Confirmer mot de passe" />
-
               <button className="save-btn">Changer mot de passe</button>
-            </div>
+            </>
           )}
 
-          {/* NOTIFICATIONS */}
           {tab === "notifications" && (
-            <div>
-              <h3>🔔 Notifications</h3>
-
-              <label>
-                <input type="checkbox" /> Email notifications
-              </label>
-
-              <label>
-                <input type="checkbox" /> Notifications système
-              </label>
-
-              <button className="save-btn">Sauvegarder</button>
-            </div>
+            <>
+              <h3>Notifications</h3>
+              <label><input type="checkbox" /> Email</label>
+              <label><input type="checkbox" /> Système</label>
+            </>
           )}
 
-          {/* PRÉFÉRENCES */}
           {tab === "preferences" && (
-            <div>
-              <h3>🎨 Préférences</h3>
-
+            <>
+              <h3>Préférences</h3>
               <select>
                 <option>Français</option>
                 <option>English</option>
               </select>
-
-              <select>
-                <option>Mode clair</option>
-                <option>Mode sombre</option>
-              </select>
-
-              <button className="save-btn">Sauvegarder</button>
-            </div>
+            </>
           )}
 
-          {/* ENTREPRISE */}
           {tab === "company" && (
-            <div>
-              <h3>🏢 Entreprise</h3>
-
-              <input type="text" placeholder="Nom entreprise" />
-              <input type="text" placeholder="Adresse" />
-              <input type="text" placeholder="SIRET" />
-
-              <button className="save-btn">Sauvegarder</button>
-            </div>
+            <>
+              <h3>Entreprise</h3>
+              <input placeholder="Nom entreprise" />
+              <input placeholder="SIRET" />
+            </>
           )}
 
         </div>
+
       </div>
     </div>
   );

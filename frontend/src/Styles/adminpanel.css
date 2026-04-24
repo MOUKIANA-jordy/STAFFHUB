@@ -1,0 +1,47 @@
+.admin-container {
+  display: flex;
+  margin-top: 20px;
+}
+
+.admin-menu {
+  width: 200px;
+  border-right: 1px solid #ddd;
+}
+
+.admin-menu div {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.admin-menu .active {
+  background: #eee;
+  font-weight: bold;
+}
+
+.admin-content {
+  flex: 1;
+  padding: 20px;
+}
+
+.stats-grid {
+  display: flex;
+  gap: 20px;
+}
+
+.stat-card {
+  background: #f5f5f5;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.admin-table {
+  width: 100%;
+  margin-top: 20px;
+  border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+}
