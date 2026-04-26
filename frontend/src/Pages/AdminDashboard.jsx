@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import AbsencesChart from "../Components/AbsencesChart";
 import "../Styles/admin.css";
 
 export default function AdminDashboard() {
@@ -21,28 +22,62 @@ export default function AdminDashboard() {
     fetchStats();
   }, []);
 
-  if (!stats) return <div>Loading stats...</div>;
+  if (!stats) return <p>Chargement...</p>;
 
   return (
     <div className="admin-dashboard">
 
-      <h1 className="dashboard-title">Dashboard</h1>
+      <h1 className="dashboard-title">Dashboard RH</h1>
 
+      {/* ===== STATS ===== */}
       <div className="stats-grid">
 
-        <div className="stat-card">
-          <h3>Salariés</h3>
-          <p>{stats.salaries}</p>
+        <div className="stat-card blue">
+          <p>Salariés</p>
+          <h2>{stats.salaries}</h2>
         </div>
 
-        <div className="stat-card">
-          <h3>Demandes</h3>
-          <p>{stats.demandes}</p>
+        <div className="stat-card purple">
+          <p>Demandes</p>
+          <h2>{stats.demandes}</h2>
         </div>
 
-        <div className="stat-card">
-          <h3>Pointages</h3>
-          <p>{stats.pointages}</p>
+        <div className="stat-card green">
+          <p>Fiches de paie</p>
+          <h2>{stats.fiches}</h2>
+        </div>
+
+        <div className="stat-card pink">
+          <p>Plannings</p>
+          <h2>{stats.plannings}</h2>
+        </div>
+
+      </div>
+
+      {/* ===== SECTION BAS ===== */}
+      <div className="charts-grid">
+
+        {/* CALENDRIER */}
+        <div className="chart-card">
+          <h3>📅 Calendrier de paie</h3>
+
+          <ul className="calendar">
+            <li>Janvier → 31/01</li>
+            <li>Février → 28/02</li>
+            <li>Mars → 31/03</li>
+            <li>Avril → 30/04</li>
+            <li>Mai → 31/05</li>
+            <li>Juin → 30/06</li>
+          </ul>
+        </div>
+
+        {/* FICHES */}
+        <div className="chart-card small">
+          <h3>📄 Fiches de paie</h3>
+
+          <div className="fake-bar">
+            Total : {stats.fiches}
+          </div>
         </div>
 
       </div>
