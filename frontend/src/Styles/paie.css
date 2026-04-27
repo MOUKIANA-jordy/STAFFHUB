@@ -1,0 +1,31 @@
+.page {
+  padding: 30px;
+  color: white;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+.calendar-card {
+  background: #020617;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 300px;
+}
+
+button {
+  background: #3b82f6;
+  color: white;
+  padding: 8px;
+  border-radius: 8px;
+  border: none;
+}

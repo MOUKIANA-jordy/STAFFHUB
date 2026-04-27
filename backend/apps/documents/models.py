@@ -16,7 +16,7 @@ class Document(models.Model):
     type_document = models.CharField(max_length=50, choices=TYPE_CHOICES)
     fichier = models.FileField(upload_to="documents/")
     date_expiration = models.DateField(null=True, blank=True)
-
+    numero = models.CharField(max_length=100, null=True, blank=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

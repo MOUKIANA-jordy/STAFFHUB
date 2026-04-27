@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import API from "../../../Services/api";
 import "../../../Styles/form.css";
 
 export default function FamilleContact() {
@@ -25,10 +26,17 @@ export default function FamilleContact() {
   });
 
   const handleChange = (e)=>{
-    setForm({
-      ...form,
-      [e.target.name]:e.target.value
-    });
+    setForm({...form,[e.target.name]:e.target.value});
+  };
+
+  const handleSubmit = async () => {
+    try {
+      await API.post("/api/famille/", form);
+      alert("Famille enregistrée");
+    } catch (err) {
+      console.error(err);
+      alert("Erreur");
+    }
   };
 
   return(
@@ -132,6 +140,7 @@ export default function FamilleContact() {
             <label>Justificatif</label>
             <input name="justificatif" onChange={handleChange}/>
           </div>
+	  <button onClick={handleSubmit}>💾 Enregistrer</button>
 
         </div>
 

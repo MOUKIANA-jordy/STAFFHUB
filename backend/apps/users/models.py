@@ -1,7 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
+import uuid
 
+
+def generate_matricule():
+    return f"EMP-{uuid.uuid4().hex[:6].upper()}"
 
 class Salarie(models.Model):
     user = models.OneToOneField(

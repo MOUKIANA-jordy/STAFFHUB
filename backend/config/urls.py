@@ -19,6 +19,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from apps.users.views import SalarieViewSet
 from apps.dossiers.views import DossierViewSet
+from apps.dossiers.views import AdresseViewSet, EtatCivilViewSet, FamilleViewSet, IbanViewSet
 from apps.demandes.views import DemandeViewSet
 from apps.documents.views import DocumentViewSet
 from apps.planning.views import PlanningViewSet
@@ -32,6 +33,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework import viewsets, permissions
 from apps.users.views import current_user
 from apps.users.views import admin_stats
+from apps.paie.views import generate_fiche_paie
 
 router = DefaultRouter()
 router.register(r'salaries', SalarieViewSet)
@@ -41,6 +43,10 @@ router.register(r'documents', DocumentViewSet)
 router.register(r'planning', PlanningViewSet)
 router.register(r'pointage', PointageViewSet)
 router.register(r'paie', PaieViewSet)
+router.register(r'adresses', AdresseViewSet)
+router.register(r'etatcivil', EtatCivilViewSet)
+router.register(r'famille', FamilleViewSet)
+router.register(r'iban', IbanViewSet)
 router.register(r'notifications', NotificationViewSet)
 
 urlpatterns = [
@@ -52,6 +58,7 @@ urlpatterns = [
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema")),
     path('api/me/', current_user),
     path('api/admin/stats/', admin_stats),
+    path("api/paie/<int:pk>/pdf/", generate_fiche_paie),
 ]
 
 if settings.DEBUG:

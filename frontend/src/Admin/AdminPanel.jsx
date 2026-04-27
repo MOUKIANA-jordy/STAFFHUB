@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import API from "../Services/api";
 import "../Styles/adminpanel.css";
 
 export default function AdminPanel() {
@@ -6,21 +7,46 @@ export default function AdminPanel() {
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState(null);
 
-  // 🔥 Charger stats
+  const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState("ALL");
+
+  // 🔥 STATS
   useEffect(() => {
-    fetch("/api/admin/stats/")
-      .then(res => res.json())
-      .then(data => setStats(data))
+    API.get("/api/admin/stats/")
+      .then(res => setStats(res.data))
       .catch(err => console.log(err));
   }, []);
 
-  // 🔥 Charger users
+  // 🔥 USERS
   useEffect(() => {
-    fetch("/api/admin/users/")
-      .then(res => res.json())
-      .then(data => setUsers(data))
+    API.get("/api/salaries/")
+      .then(res => setUsers(res.data))
       .catch(err => console.log(err));
   }, []);
+
+  // 🔥 DELETE
+  const handleDelete = async (id) => {
+    if (!window.confirm("Supprimer ce salarié ?")) return;
+
+    try {
+      await API.delete(`/api/salaries/${id}/`);
+      setUsers(users.filter(u => u.id !== id));
+    } catch (err) {
+      alert("Erreur suppression");
+    }
+  };
+
+  // 🔥 FILTER + SEARCH
+  const filteredUsers = users.filter(u => {
+    const matchSearch =
+      u.nom.toLowerCase().includes(search.toLowerCase()) ||
+      u.prenom.toLowerCase().includes(search.toLowerCase());
+
+    const matchRole =
+      roleFilter === "ALL" || u.role === roleFilter;
+
+    return matchSearch && matchRole;
+  });
 
   return (
     <div className="admin-panel">
@@ -34,9 +60,11 @@ export default function AdminPanel() {
           <div onClick={() => setTab("stats")} className={tab === "stats" ? "active" : ""}>
             📊 Statistiques
           </div>
+
           <div onClick={() => setTab("users")} className={tab === "users" ? "active" : ""}>
-            👥 Utilisateurs
+            👥 Salariés
           </div>
+
           <div onClick={() => setTab("requests")} className={tab === "requests" ? "active" : ""}>
             📁 Demandes
           </div>
@@ -45,7 +73,7 @@ export default function AdminPanel() {
         {/* CONTENU */}
         <div className="admin-content">
 
-          {/* STATS */}
+          {/* 📊 STATS */}
           {tab === "stats" && (
             <div>
               <h3>Statistiques globales</h3>
@@ -65,27 +93,59 @@ export default function AdminPanel() {
           {/* 👥 USERS */}
           {tab === "users" && (
             <div>
-              <h3>Gestion des utilisateurs</h3>
+
+              <div className="users-header">
+                <h3>Gestion des salariés</h3>
+
+                <div className="users-actions">
+                  <input
+                    type="text"
+                    placeholder="🔍 Rechercher..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+
+                  <select
+                    value={roleFilter}
+                    onChange={(e) => setRoleFilter(e.target.value)}
+                  >
+                    <option value="ALL">Tous</option>
+                    <option value="ADMIN">Admin</option>
+                    <option value="RH">RH</option>
+                    <option value="SALARIE">Salarié</option>
+                  </select>
+                </div>
+              </div>
 
               <table className="admin-table">
                 <thead>
                   <tr>
                     <th>Nom</th>
                     <th>Email</th>
+                    <th>Poste</th>
+                    <th>Établissement</th>
                     <th>Rôle</th>
                     <th>Action</th>
                   </tr>
                 </thead>
 
                 <tbody>
-                  {users.map((u) => (
+                  {filteredUsers.map((u) => (
                     <tr key={u.id}>
                       <td>{u.prenom} {u.nom}</td>
-                      <td>{u.email}</td>
-                      <td>{u.role}</td>
+                      <td>{u.user?.email || "-"}</td>
+                      <td>{u.poste}</td>
+                      <td>{u.etablissement}</td>
+
                       <td>
-                        <button>Modifier</button>
-                        <button style={{color:"red"}}>Supprimer</button>
+                        <span className={`badge ${u.role.toLowerCase()}`}>
+                          {u.role}
+                        </span>
+                      </td>
+
+                      <td>
+                        <button className="edit-btn">✏️</button>
+                        <button className="delete-btn" onClick={() => handleDelete(u.id)}>🗑</button>
                       </td>
                     </tr>
                   ))}
@@ -98,7 +158,8 @@ export default function AdminPanel() {
           {/* 📁 DEMANDES */}
           {tab === "requests" && (
             <div>
-              <h3>Toutes les demandes</h3>
+              <h3>Gestion des demandes</h3>
+              <p>👉 Prochaine étape : validation RH</p>
             </div>
           )}
 

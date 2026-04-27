@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import API from "../../../Services/api";
 import "../../../Styles/form.css";
 
 export default function Adresse(){
@@ -29,6 +30,16 @@ export default function Adresse(){
       ...form,
       [e.target.name]:e.target.value
     });
+  };
+
+  const handleSubmit = async () => {
+    try {
+      await API.post("/api/adresses/", form);
+      alert("Adresse enregistrée");
+    } catch (err) {
+      console.error(err);
+      alert("Erreur");
+    }
   };
 
   return(
@@ -130,6 +141,8 @@ export default function Adresse(){
             <label>Mail professionnel</label>
             <input name="mailProfessionnel" value={form.mailProfessionnel} onChange={handleChange}/>
           </div>
+
+        <button onClick={handleSubmit}>💾 Enregistrer</button>
 
         </div>
 

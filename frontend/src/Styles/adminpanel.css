@@ -1,47 +1,227 @@
+/* ===== GLOBAL ===== */
+.admin-panel {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a, #020617);
+  color: #e2e8f0;
+  font-family: "Poppins", sans-serif;
+  padding: 40px;
+}
+
+/* ===== TITLE ===== */
+.admin-panel h2 {
+  font-size: 28px;
+  margin-bottom: 25px;
+}
+
+/* ===== LAYOUT HORIZONTAL ===== */
 .admin-container {
   display: flex;
-  margin-top: 20px;
+  gap: 25px;
 }
 
+/* ===== MENU (GAUCHE) ===== */
 .admin-menu {
-  width: 200px;
-  border-right: 1px solid #ddd;
+  width: 220px;
+
+  background: linear-gradient(
+    145deg,
+    rgba(255,255,255,0.06),
+    rgba(255,255,255,0.02)
+  );
+  backdrop-filter: blur(14px);
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.08);
 }
 
+/* MENU ITEMS */
 .admin-menu div {
-  padding: 10px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  border-radius: 10px;
   cursor: pointer;
+  transition: 0.25s;
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.admin-menu div:hover {
+  background: rgba(59,130,246,0.15);
+  opacity: 1;
 }
 
 .admin-menu .active {
-  background: #eee;
-  font-weight: bold;
+  background: rgba(59,130,246,0.25);
+  border: 1px solid rgba(59,130,246,0.5);
+  opacity: 1;
 }
 
+/* ===== CONTENT (DROITE) ===== */
 .admin-content {
   flex: 1;
-  padding: 20px;
+
+  background: linear-gradient(
+    145deg,
+    rgba(255,255,255,0.04),
+    rgba(255,255,255,0.02)
+  );
+  backdrop-filter: blur(14px);
+  padding: 25px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.08);
 }
 
+/* ===== STATS ===== */
 .stats-grid {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 20px;
 }
 
 .stat-card {
-  background: #f5f5f5;
-  padding: 20px;
-  border-radius: 10px;
+  background: linear-gradient(
+    145deg,
+    rgba(255,255,255,0.06),
+    rgba(255,255,255,0.02)
+  );
+  padding: 22px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: 0.25s;
+  cursor: pointer;
 }
 
+.stat-card:hover {
+  transform: translateY(-6px);
+  border: 1px solid rgba(59,130,246,0.4);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+/* ===== TABLE ===== */
 .admin-table {
   width: 100%;
-  margin-top: 20px;
   border-collapse: collapse;
+  margin-top: 20px;
 }
 
-.admin-table th,
+.admin-table th {
+  text-align: left;
+  padding: 12px;
+  font-size: 13px;
+  opacity: 0.6;
+}
+
 .admin-table td {
-  border: 1px solid #ddd;
-  padding: 10px;
+  padding: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+/* HOVER ROW */
+.admin-table tr:hover {
+  background: rgba(59,130,246,0.08);
+}
+
+/* ===== BUTTONS ===== */
+button {
+  padding: 6px 12px;
+  margin-right: 6px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  transition: 0.2s;
+}
+
+/* Modifier */
+button:first-child {
+  background: rgba(59,130,246,0.2);
+  color: #3b82f6;
+}
+
+button:first-child:hover {
+  background: rgba(59,130,246,0.4);
+}
+
+/* Supprimer */
+button:last-child {
+  background: rgba(239,68,68,0.2);
+  color: #ef4444;
+}
+
+button:last-child:hover {
+  background: rgba(239,68,68,0.4);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+  .admin-container {
+    flex-direction: column;
+  }
+
+  .admin-menu {
+    width: 100%;
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+  }
+
+  .admin-menu div {
+    white-space: nowrap;
+  }
+}
+
+.users-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.users-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.users-actions input,
+.users-actions select {
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: white;
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.badge.admin {
+  background: rgba(239,68,68,0.2);
+  color: #ef4444;
+}
+
+.badge.rh {
+  background: rgba(59,130,246,0.2);
+  color: #3b82f6;
+}
+
+.badge.salarie {
+  background: rgba(34,197,94,0.2);
+  color: #22c55e;
+}
+
+.edit-btn {
+  color: #fbbf24;
+  margin-right: 5px;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.delete-btn {
+  color: #ef4444;
+  cursor: pointer;
+  background: none;
+  border: none;
 }

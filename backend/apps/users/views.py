@@ -5,11 +5,13 @@ from rest_framework.response import Response
 
 from .models import Salarie
 from .serializers import SalarieSerializer
-from .permissions import IsRHOrAdmin, IsOwnerOrRH
+from .permissions import IsRHOrAdmin, IsOwnerOrRH, IsAdminOrRH
 
-# 🔥 IMPORTS POUR DASHBOARD
+# IMPORTS POUR DASHBOARD
 from apps.demandes.models import Demande
 from apps.pointage.models import Pointage
+from apps.paie.models import Paie
+from apps.planning.models import Planning
 
 
 # ==============================
@@ -71,23 +73,16 @@ def current_user(request):
 
 
 # ==============================
-# 📊 ADMIN DASHBOARD
+# ADMIN DASHBOARD
 # ==============================
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, IsAdminOrRH])
 def admin_stats(request):
 
-    # 🔐 sécurité (ADMIN + superuser)
-    if not request.user.is_superuser:
-        if not hasattr(request.user, "salarie") or request.user.salarie.role != "ADMIN":
-            return Response({"error": "Accès refusé"}, status=403)
-
-    total_salaries = Salarie.objects.count()
-    total_demandes = Demande.objects.count()
-    total_pointages = Pointage.objects.count()
-
     return Response({
-        "salaries": total_salaries,
-        "demandes": total_demandes,
-        "pointages": total_pointages,
+        "salaries": Salarie.objects.count(),
+        "demandes": Demande.objects.count(),
+        "pointages": Pointage.objects.count(),
+        "fiches": Paie.objects.count(),        # ✅ fiches de paie
+        "plannings": Planning.objects.count(), # ✅ planning
     })

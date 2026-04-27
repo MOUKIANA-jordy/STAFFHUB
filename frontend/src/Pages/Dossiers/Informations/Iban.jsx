@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import API from "../../../Services/api";
 import "../../../Styles/form.css";
 
 export default function Iban(){
@@ -27,11 +28,19 @@ export default function Iban(){
   });
 
   const handleChange = (e)=>{
-    setForm({
-      ...form,
-      [e.target.name]:e.target.value
-    });
+    setForm({...form,[e.target.name]:e.target.value});
   };
+
+  const handleSubmit = async () => {
+    try {
+      await API.post("/api/iban/", form);
+      alert("IBAN enregistré");
+    } catch (err) {
+      console.error(err);
+      alert("Erreur");
+    }
+  };
+
 
   return(
 
@@ -135,6 +144,7 @@ export default function Iban(){
             <label>Nom bénéficiaire</label>
             <input name="nomBeneficiaire" onChange={handleChange}/>
           </div>
+	  <button onClick={handleSubmit}>💾 Enregistrer</button>
 
         </div>
 

@@ -11,8 +11,13 @@ export default function Sidebar() {
       <h2 className="logo">StaffHub</h2>
 
       {/* DASHBOARD */}
-      <div className="nav-item" onClick={() => navigate("/admin-dashboard")}>
+      <div className="nav-item" onClick={() => navigate("/admin")}>
         🏠 Dashboard
+      </div>
+
+      {/* PANEL ADMIN */}
+      <div className="nav-item" onClick={() => navigate("/admin/panel")}>
+        ⚙️ Admin Panel
       </div>
 
       {/* DOSSIERS */}

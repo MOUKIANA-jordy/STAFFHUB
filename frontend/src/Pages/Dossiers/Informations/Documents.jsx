@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import API from "../../../Services/api";
 import "../../../Styles/form.css";
 
 export default function DocumentsOfficiels() {
@@ -25,10 +26,17 @@ export default function DocumentsOfficiels() {
   });
 
   const handleChange = (e)=>{
-    setForm({
-      ...form,
-      [e.target.name]:e.target.value
-    });
+    setForm({...form,[e.target.name]:e.target.value});
+  };
+
+  const handleSubmit = async () => {
+    try {
+      await API.post("/api/documents/", form);
+      alert("Document enregistré");
+    } catch (err) {
+      console.error(err);
+      alert("Erreur");
+    }
   };
 
   return (
@@ -127,6 +135,7 @@ export default function DocumentsOfficiels() {
             <label>Commentaires</label>
             <input name="commentaires" onChange={handleChange}/>
           </div>
+	  <button onClick={handleSubmit}>💾 Enregistrer</button>
 
         </div>
 
