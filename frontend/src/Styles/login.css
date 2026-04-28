@@ -12,6 +12,14 @@
   overflow: hidden;
 }
 
+.wrapper a {
+  color: #fff !important;
+}
+
+.wrapper button {
+  color: #fff !important;
+}
+
 /* form box */
 .wrapper .form-box {
   width: 100%;
@@ -61,7 +69,7 @@ form.input-box {
 .input-box input {
   width: 100%;
   height: 100%;
-  background: transparent;
+  background: transparent !important;
   outline: none;
   border: 2px solid rgba(255, 255, 255,.1);
   border-radius: 40px;
@@ -133,7 +141,7 @@ form button {
     rgba(0,0,0,0.6),
     rgba(0,0,0,0.6)
   ),
-  url('../Components/background3.jpg') no-repeat;
+  url('../Components/img44.png') no-repeat;
 
   background-size: cover;
   background-position: center;
