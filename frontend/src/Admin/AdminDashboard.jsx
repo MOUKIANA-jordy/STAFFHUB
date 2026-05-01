@@ -1,84 +1,183 @@
 import React, { useEffect, useState } from "react";
-import AbsencesChart from "../Components/AbsencesChart";
+import { useNavigate } from "react-router-dom";
+import API from "../Services/api";
 import "../Styles/admin.css";
 
+import {
+  LineChart,
+  Line,
+  XAxis,
+  Tooltip,
+  ResponsiveContainer
+} from "recharts";
+
 export default function AdminDashboard() {
-  const [stats, setStats] = useState(null);
+  const [stats, setStats] = useState({});
+  const [absences, setAbsences] = useState([]);
+  const [planning, setPlanning] = useState([]);
+  const [requests, setRequests] = useState([]);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchStats = async () => {
-      const token = localStorage.getItem("access");
-
-      const res = await fetch("http://127.0.0.1:8000/api/admin/stats/", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await res.json();
-      setStats(data);
-    };
-
-    fetchStats();
+    API.get("/api/admin/stats/").then(res => setStats(res.data));
+    API.get("/api/admin/absences/").then(res => setAbsences(res.data));
+    API.get("/api/planning/").then(res => setPlanning(res.data));
+    API.get("/api/demandes/").then(res => setRequests(res.data));
   }, []);
 
-  if (!stats) return <p>Chargement...</p>;
+  // 🔥 calcul dynamique %
+  const total = stats.demandes || 0;
+
+  const percentEncours = total ? (stats.en_cours / total) * 100 : 0;
+  const percentAcceptees = total ? (stats.acceptees / total) * 100 : 0;
+  const percentRefusees = total
+    ? ((total - stats.acceptees - stats.en_cours) / total) * 100
+    : 0;
 
   return (
     <div className="admin-dashboard">
 
       <h1 className="dashboard-title">Dashboard RH</h1>
 
-      {/* ===== STATS ===== */}
+      {/* ===== KPI ===== */}
       <div className="stats-grid">
 
         <div className="stat-card blue">
-          <p>Salariés</p>
-          <h2>{stats.salaries}</h2>
-        </div>
-
-        <div className="stat-card purple">
-          <p>Demandes</p>
-          <h2>{stats.demandes}</h2>
+          <h3>Salariés</h3>
+          <p>{stats.salaries || 0}</p>
         </div>
 
         <div className="stat-card green">
-          <p>Fiches de paie</p>
-          <h2>{stats.fiches}</h2>
+          <h3>Demandes</h3>
+          <p>{stats.demandes || 0}</p>
         </div>
 
-        <div className="stat-card pink">
-          <p>Plannings</p>
-          <h2>{stats.plannings}</h2>
+        <div className="stat-card purple">
+          <h3>En cours</h3>
+          <p>{stats.en_cours || 0}</p>
+        </div>
+
+        <div className="stat-card dark">
+          <h3>Acceptées</h3>
+          <p>{stats.acceptees || 0}</p>
         </div>
 
       </div>
 
-      {/* ===== SECTION BAS ===== */}
+      {/* ===== CHART + OVERVIEW ===== */}
       <div className="charts-grid">
 
-        {/* CALENDRIER */}
+        {/* 📊 GRAPH */}
         <div className="chart-card">
-          <h3>📅 Calendrier de paie</h3>
+          <h2>📊 Absences mensuelles</h2>
 
-          <ul className="calendar">
-            <li>Janvier → 31/01</li>
-            <li>Février → 28/02</li>
-            <li>Mars → 31/03</li>
-            <li>Avril → 30/04</li>
-            <li>Mai → 31/05</li>
-            <li>Juin → 30/06</li>
-          </ul>
+          <ResponsiveContainer width="100%" height={250}>
+            <LineChart data={absences}>
+              <XAxis dataKey="month" stroke="#ccc" />
+              <Tooltip />
+              <Line
+                type="monotone"
+                dataKey="value"
+                stroke="#3b82f6"
+                strokeWidth={3}
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
 
-        {/* FICHES */}
-        <div className="chart-card small">
-          <h3>📄 Fiches de paie</h3>
+        {/* 🔥 OVERVIEW */}
+        <div className="overview-item">
+  <span>En cours</span>
 
-          <div className="fake-bar">
-            Total : {stats.fiches}
-          </div>
+  <div className="bar">
+    <div
+      className="bar-fill blue"
+      style={{ width: `${percentEncours}%` }}
+    ></div>
+  </div>
+</div>
+
+<div className="overview-item">
+  <span>Acceptées</span>
+
+  <div className="bar">
+    <div
+      className="bar-fill green"
+      style={{ width: `${percentAcceptees}%` }}
+    ></div>
+  </div>
+</div>
+
+<div className="overview-item">
+  <span>Refusées</span>
+
+  <div className="bar">
+    <div
+      className="bar-fill purple"
+      style={{ width: `${percentRefusees}%` }}
+    ></div>
+  </div>
+</div>
         </div>
+
+      </div>
+
+      {/* ===== PLANNING ===== */}
+      <div className="chart-card">
+        <h2>📅 Planning</h2>
+
+        <ul>
+          {planning.slice(0, 6).map((p, i) => (
+            <li key={i}>
+              {p.date} → {p.type}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* ===== DEMANDES ===== */}
+      <div className="table-container">
+
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <h2>📁 Dernières demandes</h2>
+
+          <button
+            className="btn-primary"
+            onClick={() => navigate("/admin/requests")}
+          >
+            Voir tout →
+          </button>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Salarié</th>
+              <th>Type</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {requests.slice(0, 5).map((r) => (
+              <tr
+                key={r.id}
+                onClick={() => navigate(`/admin/requests/${r.id}`)}
+                style={{ cursor: "pointer" }}
+              >
+                <td>{r.salarie_nom}</td>
+                <td>{r.type}</td>
+                <td>
+                  <span className={`status ${r.status.toLowerCase()}`}>
+                    {r.status}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+
+        </table>
 
       </div>
 
