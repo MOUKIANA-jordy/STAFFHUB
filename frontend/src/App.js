@@ -9,6 +9,7 @@ import Layout from "./Layout/Layout";
 import Login from "./Pages/Login";
 import ForgotPassword from "./Pages/ForgotPassword";
 import ResetPassword from "./Pages/ResetPassword";
+import SetPassword from "./Pages/SetPassword";
 
 /* CORE */
 import Home from "./Pages/Home";
@@ -63,6 +64,7 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/forgot" element={<ForgotPassword />} />
         <Route path="/reset" element={<ResetPassword />} />
+	<Route path="/set-password/:uid/:token" element={<SetPassword />} />
 
         {/* ================= PROTECTED ================= */}
         <Route element={<PrivateRoute />}>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import logo from "../assets/logo.png";
 import "../index.css";
 
 export default function Header({ user, onLogout }) {
@@ -20,9 +21,15 @@ export default function Header({ user, onLogout }) {
   return (
     <div className="header">
 
+      {/* LEFT (LOGO + TITLE) */}
+      <div className="header-left">
+        <img src={logo} alt="logo" className="header-logo" />
+        <h2 className="app-name">StaffHub</h2>
+      </div>
+
+      {/* RIGHT (USER) */}
       <div className="header-right" ref={ref}>
 
-        {/* PROFILE */}
         <div
           className="profile"
           onClick={(e) => {
@@ -36,7 +43,7 @@ export default function Header({ user, onLogout }) {
 
           <div>
             <span className="user-name">
-              {user?.prenom}
+              {user?.prenom} {user?.nom}
             </span>
           </div>
         </div>
@@ -62,7 +69,7 @@ export default function Header({ user, onLogout }) {
                 setOpen(false);
               }}
             >
-              ⚙️  Mon compte
+              ⚙️ Mon compte
             </div>
 
             <div
@@ -87,7 +94,6 @@ export default function Header({ user, onLogout }) {
 
           </div>
         )}
-
       </div>
 
     </div>

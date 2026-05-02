@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaUser, FaLock } from "react-icons/fa";
 import axios from "axios";
-import API from "../Services/api";
 import "../Styles/login.css";
 
 const Login = () => {
@@ -48,15 +47,8 @@ const Login = () => {
 
       console.log("LOGIN OK");
 
-      // récupérer user connecté
-      const me = await API.get("/api/me/");
-
-      // REDIRECTION INTELLIGENTE
-      if (me.data.must_change_password) {
-        navigate("/change-password");
-      } else {
-        navigate("/home");
-      }
+      // redirection simple
+      navigate("/home");
 
     } catch (err) {
       console.error(err);
