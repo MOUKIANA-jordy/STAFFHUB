@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from .models import Salarie
 from .serializers import SalarieSerializer
 from .permissions import IsRHOrAdmin, IsOwnerOrRH, IsAdminOrRH
+from django.core.mail import send_mail
 
 # IMPORTS POUR DASHBOARD
 from apps.demandes.models import Demande
@@ -29,6 +30,43 @@ class SalarieViewSet(viewsets.ModelViewSet):
             return Salarie.objects.all()
 
         return Salarie.objects.filter(user=user)
+
+    def create(self, request, *args, **kwargs):
+    serializer = self.get_serializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    salarie = serializer.save()
+
+    email = getattr(salarie, "_email", "")
+    password = getattr(salarie, "_temp_password", "")
+    username = request.data.get("username")
+
+    # 🔥 ENVOI EMAIL
+    send_mail(
+        subject="Bienvenue sur StaffHub",
+        message=f"""
+Bonjour {salarie.prenom},
+
+Votre compte a été créé.
+
+Identifiant : {username}
+Mot de passe temporaire : {password}
+
+Connectez-vous ici :
+http://localhost:3000/login
+
+Merci.
+        """,
+        from_email="noreply@staffhub.com",
+        recipient_list=[email],
+        fail_silently=True,
+    )
+
+    return Response({
+        "message": "Salarié créé + email envoyé",
+        "username": username,
+        "email": email,
+        "password_temporaire": password
+    }), status=status.HTTP_201_CREATED)
 
     def get_permissions(self):
         if self.action == "list":
@@ -83,6 +121,6 @@ def admin_stats(request):
         "salaries": Salarie.objects.count(),
         "demandes": Demande.objects.count(),
         "pointages": Pointage.objects.count(),
-        "fiches": Paie.objects.count(),        # ✅ fiches de paie
-        "plannings": Planning.objects.count(), # ✅ planning
+        "fiches": Paie.objects.count(),
+        "plannings": Planning.objects.count(),
     })
