@@ -1,60 +1,55 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../Services/api";
 
 export default function DemandesAdmin() {
   const [demandes, setDemandes] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     API.get("/api/demandes/")
-      .then(res => setDemandes(res.data));
+      .then(res => setDemandes(res.data))
+      .catch(err => console.error(err));
   }, []);
 
-  const updateStatut = (id, statut) => {
-    API.patch(`/api/demandes/${id}/`, { statut })
-      .then(() => {
-        setDemandes(prev =>
-          prev.map(d =>
-            d.id === id ? { ...d, statut } : d
-          )
-        );
-      });
-  };
-
   return (
-    <div className="page">
+    <div className="admin-dashboard">
 
-      <h1>📊 Suivi des demandes</h1>
+      <h1 className="dashboard-title">📊 Demandes</h1>
 
-      <table>
-        <thead>
-          <tr>
-            <th>Salarié</th>
-            <th>Type</th>
-            <th>Statut</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {demandes.map(d => (
-            <tr key={d.id}>
-              <td>{d.salarie_nom}</td>
-              <td>{d.type}</td>
-              <td>{d.statut}</td>
-
-              <td>
-                <button onClick={() => updateStatut(d.id, "VALIDE")}>
-                  ✔️
-                </button>
-
-                <button onClick={() => updateStatut(d.id, "REFUSE")}>
-                  ❌
-                </button>
-              </td>
+      <div className="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Salarié</th>
+              <th>Type</th>
+              <th>Statut</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {demandes.map(d => (
+              <tr
+                key={d.id}
+                className="clickable-row"
+                onClick={() => navigate(`/admin/demandes/${d.id}`)}
+              >
+                <td>{d.salarie_nom}</td>
+
+                <td>{d.type_demande}</td>
+
+                <td>
+                  {{
+                    EN_ATTENTE: "🕐 En attente",
+                    APPROUVE: "✅ Approuvé",
+                    REFUSE: "❌ Refusé"
+                  }[d.statut]}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
     </div>
   );

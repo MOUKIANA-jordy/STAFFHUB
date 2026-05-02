@@ -1,186 +1,148 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import "../Styles/adminpanel.css";
 import API from "../Services/api";
-import "../Styles/admin.css";
 
-import {
-  LineChart,
-  Line,
-  XAxis,
-  Tooltip,
-  ResponsiveContainer
-} from "recharts";
-
-export default function AdminDashboard() {
-  const [stats, setStats] = useState({});
-  const [absences, setAbsences] = useState([]);
-  const [planning, setPlanning] = useState([]);
-  const [requests, setRequests] = useState([]);
+export default function AdminPanel() {
+  const [tab, setTab] = useState("stats");
+  const [users, setUsers] = useState([]);
+  const [demandes, setDemandes] = useState([]);
+  const [stats, setStats] = useState(null);
 
   const navigate = useNavigate();
 
+  // ===== STATS =====
   useEffect(() => {
-    API.get("/api/admin/stats/").then(res => setStats(res.data));
-    API.get("/api/admin/absences/").then(res => setAbsences(res.data));
-    API.get("/api/planning/").then(res => setPlanning(res.data));
-    API.get("/api/demandes/").then(res => setRequests(res.data));
+    API.get("/api/admin/stats/")
+      .then(res => setStats(res.data))
+      .catch(err => console.error(err));
   }, []);
 
-  // 🔥 calcul dynamique %
-  const total = stats.demandes || 0;
+  // ===== USERS =====
+  useEffect(() => {
+    API.get("/api/salaries/")
+      .then(res => setUsers(res.data))
+      .catch(err => console.error(err));
+  }, []);
 
-  const percentEncours = total ? (stats.en_cours / total) * 100 : 0;
-  const percentAcceptees = total ? (stats.acceptees / total) * 100 : 0;
-  const percentRefusees = total
-    ? ((total - stats.acceptees - stats.en_cours) / total) * 100
-    : 0;
+  // ===== DEMANDES =====
+  useEffect(() => {
+    API.get("/api/demandes/")
+      .then(res => setDemandes(res.data))
+      .catch(err => console.error(err));
+  }, []);
+
+  // ===== UPDATE DEMANDE =====
+  const updateDemande = (id, statut) => {
+    API.patch(`/api/demandes/${id}/`, { statut })
+      .then(() => {
+        setDemandes(prev =>
+          prev.map(d => (d.id === id ? { ...d, statut } : d))
+        );
+      });
+  };
 
   return (
-    <div className="admin-dashboard">
+    <div className="admin-panel">
 
-      <h1 className="dashboard-title">Dashboard RH</h1>
+      <h2>Admin Panel</h2>
 
-      {/* ===== KPI ===== */}
-      <div className="stats-grid">
+      <div className="admin-container">
 
-        <div className="stat-card blue">
-          <h3>Salariés</h3>
-          <p>{stats.salaries || 0}</p>
+        {/* ===== MENU ===== */}
+        <div className="admin-menu">
+          <div onClick={() => setTab("stats")} className={tab==="stats"?"active":""}>📊 Dashboard</div>
+          <div onClick={() => setTab("users")} className={tab==="users"?"active":""}>👥 Salariés</div>
+          <div onClick={() => setTab("demandes")} className={tab==="demandes"?"active":""}>📁 Demandes</div>
         </div>
 
-        <div className="stat-card green">
-          <h3>Demandes</h3>
-          <p>{stats.demandes || 0}</p>
-        </div>
+        {/* ===== CONTENT ===== */}
+        <div className="admin-content">
 
-        <div className="stat-card purple">
-          <h3>En cours</h3>
-          <p>{stats.en_cours || 0}</p>
-        </div>
+          {/* ===== STATS ===== */}
+          {tab === "stats" && (
+            <>
+              <h3>Statistiques</h3>
 
-        <div className="stat-card dark">
-          <h3>Acceptées</h3>
-          <p>{stats.acceptees || 0}</p>
-        </div>
+              {stats ? (
+                <div className="stats-grid">
+                  <div className="stat-card">👥 {stats.salaries}</div>
+                  <div className="stat-card">📁 {stats.demandes}</div>
+                  <div className="stat-card">📄 {stats.fiches}</div>
+                  <div className="stat-card">📅 {stats.plannings}</div>
+                </div>
+              ) : <p>Chargement...</p>}
+            </>
+          )}
 
+          {/* ===== USERS ===== */}
+          {tab === "users" && (
+            <>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <h3>Salariés</h3>
+
+                {/* 🔥 BOUTON AJOUT */}
+                <button
+                  className="btn-primary"
+                  onClick={() => navigate("/admin/salarie/create")}
+                >
+                  ➕ Ajouter un salarié
+                </button>
+              </div>
+
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Nom</th>
+                    <th>Poste</th>
+                    <th>Établissement</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {users.map(u => (
+                    <tr key={u.id}>
+                      <td>{u.prenom} {u.nom}</td>
+                      <td>{u.poste}</td>
+                      <td>{u.etablissement}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          )}
+
+          {/* ===== DEMANDES ===== */}
+          {tab === "demandes" && (
+            <>
+              <h3>Demandes</h3>
+
+              {demandes.map(d => (
+                <div key={d.id} className="card">
+                  <p><b>{d.type_demande}</b></p>
+
+                  <p>
+                    {{
+                      EN_ATTENTE: "🕐 En attente",
+                      APPROUVE: "✅ Approuvé",
+                      REFUSE: "❌ Refusé"
+                    }[d.statut]}
+                  </p>
+
+                  <button onClick={() => updateDemande(d.id, "APPROUVE")}>
+                    ✔️
+                  </button>
+
+                  <button onClick={() => updateDemande(d.id, "REFUSE")}>
+                    ❌
+                  </button>
+                </div>
+              ))}
+            </>
+          )}
+
+        </div>
       </div>
-
-      {/* ===== CHART + OVERVIEW ===== */}
-      <div className="charts-grid">
-
-        {/* 📊 GRAPH */}
-        <div className="chart-card">
-          <h2>📊 Absences mensuelles</h2>
-
-          <ResponsiveContainer width="100%" height={250}>
-            <LineChart data={absences}>
-              <XAxis dataKey="month" stroke="#ccc" />
-              <Tooltip />
-              <Line
-                type="monotone"
-                dataKey="value"
-                stroke="#3b82f6"
-                strokeWidth={3}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* 🔥 OVERVIEW */}
-        <div className="overview-item">
-  <span>En cours</span>
-
-  <div className="bar">
-    <div
-      className="bar-fill blue"
-      style={{ width: `${percentEncours}%` }}
-    ></div>
-  </div>
-</div>
-
-<div className="overview-item">
-  <span>Acceptées</span>
-
-  <div className="bar">
-    <div
-      className="bar-fill green"
-      style={{ width: `${percentAcceptees}%` }}
-    ></div>
-  </div>
-</div>
-
-<div className="overview-item">
-  <span>Refusées</span>
-
-  <div className="bar">
-    <div
-      className="bar-fill purple"
-      style={{ width: `${percentRefusees}%` }}
-    ></div>
-  </div>
-</div>
-        </div>
-
-      </div>
-
-      {/* ===== PLANNING ===== */}
-      <div className="chart-card">
-        <h2>📅 Planning</h2>
-
-        <ul>
-          {planning.slice(0, 6).map((p, i) => (
-            <li key={i}>
-              {p.date} → {p.type}
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* ===== DEMANDES ===== */}
-      <div className="table-container">
-
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <h2>📁 Dernières demandes</h2>
-
-          <button
-            className="btn-primary"
-            onClick={() => navigate("/admin/requests")}
-          >
-            Voir tout →
-          </button>
-        </div>
-
-        <table>
-          <thead>
-            <tr>
-              <th>Salarié</th>
-              <th>Type</th>
-              <th>Statut</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {requests.slice(0, 5).map((r) => (
-              <tr
-                key={r.id}
-                onClick={() => navigate(`/admin/requests/${r.id}`)}
-                style={{ cursor: "pointer" }}
-              >
-                <td>{r.salarie_nom}</td>
-                <td>{r.type}</td>
-                <td>
-                  <span className={`status ${r.status.toLowerCase()}`}>
-                    {r.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-
-        </table>
-
-      </div>
-
     </div>
   );
 }
