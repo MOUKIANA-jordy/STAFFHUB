@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaUser, FaLock } from "react-icons/fa";
 import axios from "axios";
+import API from "../Services/api";
 import "../Styles/login.css";
 
 const Login = () => {
@@ -41,13 +42,21 @@ const Login = () => {
         }
       );
 
-      // 🔥 stockage propre JWT
+      // stockage JWT
       localStorage.setItem("access", response.data.access);
       localStorage.setItem("refresh", response.data.refresh);
 
-      console.log("LOGIN OK", response.data);
+      console.log("LOGIN OK");
 
-      navigate("/home");
+      // récupérer user connecté
+      const me = await API.get("/api/me/");
+
+      // REDIRECTION INTELLIGENTE
+      if (me.data.must_change_password) {
+        navigate("/change-password");
+      } else {
+        navigate("/home");
+      }
 
     } catch (err) {
       console.error(err);
@@ -95,12 +104,10 @@ const Login = () => {
             {/* ERROR */}
             {error && <p className="error">{error}</p>}
 
-            {/* LINK */}
             <div className="remember-forgot">
               <Link to="/forgot">Mot de passe oublié ?</Link>
             </div>
 
-            {/* BUTTON */}
             <button type="submit">Se connecter</button>
 
           </form>

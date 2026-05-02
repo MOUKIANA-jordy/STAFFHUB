@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "../Styles/adminpanel.css";
-import API from "../Services/api"; // 🔥 IMPORTANT
+import API from "../Services/api";
 
 export default function AdminPanel() {
   const [tab, setTab] = useState("stats");
@@ -8,28 +9,30 @@ export default function AdminPanel() {
   const [demandes, setDemandes] = useState([]);
   const [stats, setStats] = useState(null);
 
-  // 🔥 STATS
+  const navigate = useNavigate();
+
+  // ===== STATS =====
   useEffect(() => {
     API.get("/api/admin/stats/")
       .then(res => setStats(res.data))
       .catch(err => console.error(err));
   }, []);
 
-  // 🔥 USERS
+  // ===== USERS =====
   useEffect(() => {
     API.get("/api/salaries/")
       .then(res => setUsers(res.data))
       .catch(err => console.error(err));
   }, []);
 
-  // 🔥 DEMANDES
+  // ===== DEMANDES =====
   useEffect(() => {
     API.get("/api/demandes/")
       .then(res => setDemandes(res.data))
       .catch(err => console.error(err));
   }, []);
 
-  // 🔥 UPDATE DEMANDE
+  // ===== UPDATE DEMANDE =====
   const updateDemande = (id, statut) => {
     API.patch(`/api/demandes/${id}/`, { statut })
       .then(() => {
@@ -46,20 +49,21 @@ export default function AdminPanel() {
 
       <div className="admin-container">
 
-        {/* MENU */}
+        {/* ===== MENU ===== */}
         <div className="admin-menu">
           <div onClick={() => setTab("stats")} className={tab==="stats"?"active":""}>📊 Dashboard</div>
           <div onClick={() => setTab("users")} className={tab==="users"?"active":""}>👥 Salariés</div>
           <div onClick={() => setTab("demandes")} className={tab==="demandes"?"active":""}>📁 Demandes</div>
         </div>
 
-        {/* CONTENT */}
+        {/* ===== CONTENT ===== */}
         <div className="admin-content">
 
-          {/* STATS */}
+          {/* ===== STATS ===== */}
           {tab === "stats" && (
             <>
               <h3>Statistiques</h3>
+
               {stats ? (
                 <div className="stats-grid">
                   <div className="stat-card">👥 {stats.salaries}</div>
@@ -71,10 +75,20 @@ export default function AdminPanel() {
             </>
           )}
 
-          {/* USERS */}
+          {/* ===== USERS ===== */}
           {tab === "users" && (
             <>
-              <h3>Salariés</h3>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <h3>Salariés</h3>
+
+                {/* 🔥 BOUTON AJOUT */}
+                <button
+                  className="btn-primary"
+                  onClick={() => navigate("/admin/salarie/create")}
+                >
+                  ➕ Ajouter un salarié
+                </button>
+              </div>
 
               <table className="admin-table">
                 <thead>
@@ -98,7 +112,7 @@ export default function AdminPanel() {
             </>
           )}
 
-          {/* DEMANDES */}
+          {/* ===== DEMANDES ===== */}
           {tab === "demandes" && (
             <>
               <h3>Demandes</h3>

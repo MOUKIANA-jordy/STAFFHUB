@@ -43,6 +43,7 @@ import Calendar from "./Admin/Calendar";
 import Paie from "./Admin/Paie";
 import Settings from "./Admin/Settings";
 import AdminPanel from "./Admin/AdminPanel";
+import CreateSalarie from "./Admin/CreateSalarie";
 
 /* CSS */
 import "./Styles/login.css";
@@ -80,6 +81,7 @@ function App() {
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/users" element={<Users />} />
             <Route path="/admin/demandes" element={<Demandes />} />
+	    <Route path="/admin/salarie/create" element={<CreateSalarie />} />
             <Route path="/admin/calendar" element={<Calendar />} />
             <Route path="/admin/paie" element={<Paie />} />
             <Route path="/admin/settings" element={<Settings />} />

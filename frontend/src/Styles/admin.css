@@ -147,3 +147,15 @@ td, th {
 .bar-fill.purple {
   background: linear-gradient(90deg, #a855f7, #7c3aed);
 }
+
+.status.en_attente {
+  color: #fbbf24;
+}
+
+.status.approuve {
+  color: #22c55e;
+}
+
+.status.refuse {
+  color: #ef4444;
+}
