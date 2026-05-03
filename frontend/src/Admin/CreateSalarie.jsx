@@ -1,102 +1,126 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
 import API from "../Services/api";
+
+import EtatCivil from "../Pages/Dossiers/Informations/EtatCivil";
+import Adresse from "../Pages/Dossiers/Informations/Adresse";
+import Famille from "../Pages/Dossiers/Informations/Famille";
+import Iban from "../Pages/Dossiers/Informations/Iban";
+import Documents from "../Pages/Dossiers/Informations/Documents";
 
 export default function CreateSalarie() {
 
-  const navigate = useNavigate();
-
-  const [form, setForm] = useState({
-    username: "",
-    password: "",
+  // ========================
+  //  STATE GLOBAL
+  // ========================
+  const [data, setData] = useState({
+    // SALARIE
     nom: "",
     prenom: "",
     role: "SALARIE",
     matricule: "",
     telephone: "",
     poste: "",
-    etablissement: ""
+    etablissement: "",
+
+    // ETAT CIVIL
+    numeroSecu: "",
+    civilite: "",
+    nomUsuel: "",
+    nomPatronymique: "",
+    prenom: "",
+    sexe: "",
+    situationFamiliale: "",
+    nationalite: "",
+    dateNaissance: "",
+
+    // ADRESSE
+    numero: "",
+    voie: "",
+    codePostal: "",
+    commune: "",
+    pays: "",
+
+    // IBAN
+    ibanComplet: "",
+    bicComplet: "",
+    nomBeneficiaire: "",
+
+    // FAMILLE
+    lienParente: "",
+    telephonePortable: "",
+
+    // DOCUMENT
+    typeDocument: "",
+    numeroDocument: ""
   });
 
+  // ========================
+  //  HANDLE CHANGE
+  // ========================
   const handleChange = (e) => {
-    setForm({
-      ...form,
+    setData({
+      ...data,
       [e.target.name]: e.target.value
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // ========================
+  // SUBMIT GLOBAL
+  // ========================
+  const handleSubmit = async () => {
 
     try {
-      await API.post("/api/salaries/", form);
-      alert("Salarié créé !");
-      navigate("/admin/users");
+      await API.post("/api/salaries/", data);
+
+      alert("Salarié créé");
     } catch (err) {
       console.error(err);
       alert("Erreur création");
     }
   };
 
+  // ========================
+  // UI
+  // ========================
   return (
-    <div className="card">
+    <div className="form-page">
 
-      <h2>➕ Créer un salarié</h2>
+      <h1> Création  salarié (RH)</h1>
 
-      <form onSubmit={handleSubmit}>
+      {/* INFOS SALARIE */}
+      <div className="form-box">
+        <h3>Informations générales</h3>
 
-        <div className="form-group">
-          <label>Username</label>
-          <input name="username" onChange={handleChange} required />
-        </div>
+        <div className="form-grid">
 
-        <div className="form-group">
-          <label>Mot de passe</label>
-          <input type="password" name="password" onChange={handleChange} required />
-        </div>
+          <input name="nom" placeholder="Nom" onChange={handleChange}/>
+          <input name="prenom" placeholder="Prénom" onChange={handleChange}/>
+          <input name="matricule" placeholder="Matricule" onChange={handleChange}/>
+          <input name="telephone" placeholder="Téléphone" onChange={handleChange}/>
+          <input name="poste" placeholder="Poste" onChange={handleChange}/>
+          <input name="etablissement" placeholder="Établissement" onChange={handleChange}/>
 
-        <div className="form-group">
-          <label>Nom</label>
-          <input name="nom" onChange={handleChange} />
-        </div>
-
-        <div className="form-group">
-          <label>Prénom</label>
-          <input name="prenom" onChange={handleChange} />
-        </div>
-
-        <div className="form-group">
-          <label>Rôle</label>
           <select name="role" onChange={handleChange}>
             <option value="SALARIE">Salarié</option>
             <option value="RH">RH</option>
             <option value="ADMIN">Admin</option>
           </select>
+
         </div>
+      </div>
 
-        <div className="form-group">
-          <label>Matricule</label>
-          <input name="matricule" onChange={handleChange} />
-        </div>
+      {/* FORMULAIRES */}
+      <EtatCivil data={data} setData={setData} />
+      <Adresse data={data} setData={setData} />
+      <Famille data={data} setData={setData} />
+      <Iban data={data} setData={setData} />
+      <Documents data={data} setData={setData} />
 
-        <div className="form-group">
-          <label>Téléphone</label>
-          <input name="telephone" onChange={handleChange} />
-        </div>
+      {/* SUBMIT */}
+      <button className="btn-primary" onClick={handleSubmit}>
+         Créer le salarié complet
+      </button>
 
-        <div className="form-group">
-          <label>Poste</label>
-          <input name="poste" onChange={handleChange} />
-        </div>
-
-        <div className="form-group">
-          <label>Établissement</label>
-          <input name="etablissement" onChange={handleChange} />
-        </div>
-
-        <button className="btn-primary">Créer</button>
-
-      </form>
     </div>
   );
 }
