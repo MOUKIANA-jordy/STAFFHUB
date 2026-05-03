@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'apps.pointage',
     'apps.planning',
     'apps.dossiers',
+    'django_extensions',
 ]
 
 MIDDLEWARE = [

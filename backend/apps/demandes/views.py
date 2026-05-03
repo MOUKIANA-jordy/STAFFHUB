@@ -1,11 +1,16 @@
-from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+
+from django.db.models import Count
+from django.db.models.functions import TruncMonth
+
 from .models import Demande
 from .serializers import DemandeSerializer
 from apps.users.permissions import IsOwnerOrRH
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
+from apps.notifications.models import Notification
+
 
 class DemandeViewSet(viewsets.ModelViewSet):
     queryset = Demande.objects.all()
@@ -25,14 +30,24 @@ class DemandeViewSet(viewsets.ModelViewSet):
 
         return Demande.objects.filter(salarie=salarie)
 
+    def perform_update(self, serializer):
+        demande = serializer.save()
+
+        if demande.statut in ["APPROUVE", "REFUSE"]:
+            Notification.objects.create(
+                user=demande.salarie.user,
+                message=f"Votre demande {demande.get_type_demande_display()} a été {demande.statut}"
+            )
+
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def absences_stats(request):
 
     data = (
         Demande.objects
-        .filter(type="ABSENCE")  # 🔥 important
-        .annotate(month=TruncMonth("created_at"))
+        .filter(type_demande="ABSENCE")
+        .annotate(month=TruncMonth("date_demande"))
         .values("month")
         .annotate(total=Count("id"))
         .order_by("month")
