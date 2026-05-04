@@ -1,155 +1,42 @@
-import React, { useState } from "react";
-import API from "../../../Services/api";
+import React from "react";
 import "../../../Styles/form.css";
 
-export default function Adresse(){
+export default function Adresse({ data, setData }) {
 
-  const [form,setForm] = useState({
-    type:"",
-    justificatif:"",
-    numero:"",
-    bisTer:"",
-    typeVoie:"",
-    voie:"",
-    complement:"",
-    codePostal:"",
-    communeInsee:"",
-    codeInsee:"",
-    commune:"",
-    pays:"",
-    telMobile:"",
-    telPerso:"",
-    telBureau:"",
-    telMobilePro:"",
-    mailPersonnel:"",
-    mailProfessionnel:""
-  });
-
-  const handleChange = (e)=>{
-    setForm({
-      ...form,
-      [e.target.name]:e.target.value
+  const handleChange = (e) => {
+    setData({
+      ...data,
+      [e.target.name]: e.target.value
     });
   };
 
-  const handleSubmit = async () => {
-    try {
-      await API.post("/api/adresses/", form);
-      alert("Adresse enregistrée");
-    } catch (err) {
-      console.error(err);
-      alert("Erreur");
-    }
-  };
-
-  return(
-
+  return (
     <div className="form-page">
 
       <h2>Adresse</h2>
 
       <div className="form-box">
-
         <div className="form-grid">
 
-          <div className="form-field">
-            <label>Type</label>
-            <input name="type" value={form.type} onChange={handleChange}/>
-          </div>
+          <input name="type" placeholder="Type" value={data.type || ""} onChange={handleChange}/>
+          <input name="justificatif" placeholder="Justificatif" value={data.justificatif || ""} onChange={handleChange}/>
+          <input name="numero" placeholder="N°" value={data.numero || ""} onChange={handleChange}/>
+          <input name="bisTer" placeholder="Bis/Ter" value={data.bisTer || ""} onChange={handleChange}/>
+          <input name="typeVoie" placeholder="Type voie" value={data.typeVoie || ""} onChange={handleChange}/>
+          <input name="voie" placeholder="Voie" value={data.voie || ""} onChange={handleChange}/>
+          <input name="complement" placeholder="Complément" value={data.complement || ""} onChange={handleChange}/>
+          <input name="codePostal" placeholder="Code postal" value={data.codePostal || ""} onChange={handleChange}/>
+          <input name="commune" placeholder="Commune" value={data.commune || ""} onChange={handleChange}/>
+          <input name="pays" placeholder="Pays" value={data.pays || ""} onChange={handleChange}/>
 
-          <div className="form-field">
-            <label>Justificatif</label>
-            <input name="justificatif" value={form.justificatif} onChange={handleChange}/>
-          </div>
-
-          <div className="form-field">
-            <label>N°</label>
-            <input name="numero" value={form.numero} onChange={handleChange}/>
-          </div>
-
-          <div className="form-field">
-            <label>Bis/Ter</label>
-            <input name="bisTer" value={form.bisTer} onChange={handleChange}/>
-          </div>
-
-          <div className="form-field">
-            <label>Type Voie</label>
-            <input name="typeVoie" value={form.typeVoie} onChange={handleChange}/>
-          </div>
-
-          <div className="form-field">
-            <label>Voie</label>
-            <input name="voie" value={form.voie} onChange={handleChange}/>
-          </div>
-
-          <div className="form-field">
-            <label>Complément</label>
-            <input name="complement" value={form.complement} onChange={handleChange}/>
-          </div>
-
-          <div className="form-field">
-            <label>Code Postal</label>
-            <input name="codePostal" value={form.codePostal} onChange={handleChange}/>
-          </div>
-
-          <div className="form-field">
-            <label>Commune Insee</label>
-            <input name="communeInsee" value={form.communeInsee} onChange={handleChange}/>
-          </div>
-
-          <div className="form-field">
-            <label>Code Insee</label>
-            <input name="codeInsee" value={form.codeInsee} onChange={handleChange}/>
-          </div>
-
-          <div className="form-field">
-            <label>Commune</label>
-            <input name="commune" value={form.commune} onChange={handleChange}/>
-          </div>
-
-          <div className="form-field">
-            <label>Pays</label>
-            <input name="pays" value={form.pays} onChange={handleChange}/>
-          </div>
-
-          <div className="form-field">
-            <label>Tél mobile</label>
-            <input name="telMobile" value={form.telMobile} onChange={handleChange}/>
-          </div>
-
-          <div className="form-field">
-            <label>Tél perso</label>
-            <input name="telPerso" value={form.telPerso} onChange={handleChange}/>
-          </div>
-
-          <div className="form-field">
-            <label>Tél bureau</label>
-            <input name="telBureau" value={form.telBureau} onChange={handleChange}/>
-          </div>
-
-          <div className="form-field">
-            <label>Tél mobile pro</label>
-            <input name="telMobilePro" value={form.telMobilePro} onChange={handleChange}/>
-          </div>
-
-          <div className="form-field">
-            <label>Mail personnel</label>
-            <input name="mailPersonnel" value={form.mailPersonnel} onChange={handleChange}/>
-          </div>
-
-          <div className="form-field">
-            <label>Mail professionnel</label>
-            <input name="mailProfessionnel" value={form.mailProfessionnel} onChange={handleChange}/>
-          </div>
-
-        <button onClick={handleSubmit}>💾 Enregistrer</button>
+          <input name="telMobile" placeholder="Tel mobile" value={data.telMobile || ""} onChange={handleChange}/>
+          <input name="telPerso" placeholder="Tel perso" value={data.telPerso || ""} onChange={handleChange}/>
+          <input name="mailPersonnel" placeholder="Mail personnel" value={data.mailPersonnel || ""} onChange={handleChange}/>
+          <input name="mailProfessionnel" placeholder="Mail pro" value={data.mailProfessionnel || ""} onChange={handleChange}/>
 
         </div>
-
       </div>
 
     </div>
-
   );
-
 }

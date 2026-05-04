@@ -1,45 +1,16 @@
-import React, { useState } from "react";
-import API from "../../../Services/api";
+import React from "react";
 import "../../../Styles/form.css";
 
-export default function FamilleContact() {
+export default function FamilleContact({ data, setData }) {
 
-  const [form,setForm] = useState({
-
-    nom:"",
-    prenom:"",
-    lienParente:"",
-    dateNaissance:"",
-    sexe:"",
-    arriveeFoyer:"",
-    departFoyer:"",
-    dateDeces:"",
-    aCharge:"",
-    beneficiaireMutuelle:"",
-    finEffet:"",
-    personnePrevenir:"",
-    telephonePortable:"",
-    telephoneFixe:"",
-    mail:"",
-    justificatif:""
-
-  });
-
-  const handleChange = (e)=>{
-    setForm({...form,[e.target.name]:e.target.value});
+  const handleChange = (e) => {
+    setData({
+      ...data,
+      [e.target.name]: e.target.value
+    });
   };
 
-  const handleSubmit = async () => {
-    try {
-      await API.post("/api/famille/", form);
-      alert("Famille enregistrée");
-    } catch (err) {
-      console.error(err);
-      alert("Erreur");
-    }
-  };
-
-  return(
+  return (
 
     <div className="form-page">
 
@@ -51,27 +22,28 @@ export default function FamilleContact() {
 
           <div className="form-field">
             <label>Nom</label>
-            <input name="nom" onChange={handleChange}/>
+            <input name="nom" value={data.nom || ""} onChange={handleChange}/>
           </div>
 
           <div className="form-field">
             <label>Prénom</label>
-            <input name="prenom" onChange={handleChange}/>
+            <input name="prenom" value={data.prenom || ""} onChange={handleChange}/>
           </div>
 
           <div className="form-field">
             <label>Lien de parenté</label>
-            <input name="lienParente" onChange={handleChange}/>
+            <input name="lienParente" value={data.lienParente || ""} onChange={handleChange}/>
           </div>
 
           <div className="form-field">
             <label>Date naissance</label>
-            <input type="date" name="dateNaissance" onChange={handleChange}/>
+            <input type="date" name="dateNaissance" value={data.dateNaissance || ""} onChange={handleChange}/>
           </div>
 
           <div className="form-field">
             <label>Sexe</label>
-            <select name="sexe" onChange={handleChange}>
+            <select name="sexe" value={data.sexe || ""} onChange={handleChange}>
+              <option value="">-- Choisir --</option>
               <option>Masculin</option>
               <option>Féminin</option>
             </select>
@@ -79,22 +51,23 @@ export default function FamilleContact() {
 
           <div className="form-field">
             <label>Arrivée au foyer</label>
-            <input type="date" name="arriveeFoyer" onChange={handleChange}/>
+            <input type="date" name="arriveeFoyer" value={data.arriveeFoyer || ""} onChange={handleChange}/>
           </div>
 
           <div className="form-field">
             <label>Départ du foyer</label>
-            <input type="date" name="departFoyer" onChange={handleChange}/>
+            <input type="date" name="departFoyer" value={data.departFoyer || ""} onChange={handleChange}/>
           </div>
 
           <div className="form-field">
             <label>Date décès</label>
-            <input type="date" name="dateDeces" onChange={handleChange}/>
+            <input type="date" name="dateDeces" value={data.dateDeces || ""} onChange={handleChange}/>
           </div>
 
           <div className="form-field">
             <label>A charge</label>
-            <select name="aCharge" onChange={handleChange}>
+            <select name="aCharge" value={data.aCharge || ""} onChange={handleChange}>
+              <option value="">-- Choisir --</option>
               <option>OUI</option>
               <option>NON</option>
             </select>
@@ -102,7 +75,8 @@ export default function FamilleContact() {
 
           <div className="form-field">
             <label>Bénéf. Mutuelle</label>
-            <select name="beneficiaireMutuelle" onChange={handleChange}>
+            <select name="beneficiaireMutuelle" value={data.beneficiaireMutuelle || ""} onChange={handleChange}>
+              <option value="">-- Choisir --</option>
               <option>OUI</option>
               <option>NON</option>
             </select>
@@ -110,12 +84,13 @@ export default function FamilleContact() {
 
           <div className="form-field">
             <label>Fin effet</label>
-            <input type="date" name="finEffet" onChange={handleChange}/>
+            <input type="date" name="finEffet" value={data.finEffet || ""} onChange={handleChange}/>
           </div>
 
           <div className="form-field">
             <label>Personne à prévenir</label>
-            <select name="personnePrevenir" onChange={handleChange}>
+            <select name="personnePrevenir" value={data.personnePrevenir || ""} onChange={handleChange}>
+              <option value="">-- Choisir --</option>
               <option>OUI</option>
               <option>NON</option>
             </select>
@@ -123,24 +98,23 @@ export default function FamilleContact() {
 
           <div className="form-field">
             <label>Téléphone portable</label>
-            <input name="telephonePortable" onChange={handleChange}/>
+            <input name="telephonePortable" value={data.telephonePortable || ""} onChange={handleChange}/>
           </div>
 
           <div className="form-field">
             <label>Téléphone fixe</label>
-            <input name="telephoneFixe" onChange={handleChange}/>
+            <input name="telephoneFixe" value={data.telephoneFixe || ""} onChange={handleChange}/>
           </div>
 
           <div className="form-field">
             <label>Mail</label>
-            <input type="email" name="mail" onChange={handleChange}/>
+            <input type="email" name="mail" value={data.mail || ""} onChange={handleChange}/>
           </div>
 
           <div className="form-field">
             <label>Justificatif</label>
-            <input name="justificatif" onChange={handleChange}/>
+            <input name="justificatif" value={data.justificatif || ""} onChange={handleChange}/>
           </div>
-	  <button onClick={handleSubmit}>💾 Enregistrer</button>
 
         </div>
 
@@ -149,5 +123,4 @@ export default function FamilleContact() {
     </div>
 
   );
-
 }

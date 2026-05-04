@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import API from "../Services/api";
+import "../Styles/form.css";
 
 import EtatCivil from "../Pages/Dossiers/Informations/EtatCivil";
 import Adresse from "../Pages/Dossiers/Informations/Adresse";

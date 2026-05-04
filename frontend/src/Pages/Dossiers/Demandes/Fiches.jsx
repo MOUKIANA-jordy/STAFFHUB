@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import API from "../../../Services/api";
+import "../../../Styles/form.css";
 
 export default function Fiches() {
   const [fiches, setFiches] = useState([]);

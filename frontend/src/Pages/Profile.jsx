@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import "../Styles/settings.css";
+import "../Styles/profile.css";
 
 export default function Profile() {
   const navigate = useNavigate();

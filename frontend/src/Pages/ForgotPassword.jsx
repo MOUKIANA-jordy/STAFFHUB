@@ -2,60 +2,65 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "../Styles/login.css";
 
-export default function ForgotPassword(){
+export default function ForgotPassword() {
 
-  const [identifiant,setIdentifiant] = useState("");
-  const [message,setMessage] = useState("");
+  const [identifiant, setIdentifiant] = useState("");
+  const [message, setMessage] = useState("");
 
-  const handleSubmit = (e)=>{
+  const handleSubmit = (e) => {
     e.preventDefault();
 
-    if(!identifiant){
+    if (!identifiant) {
       setMessage("Veuillez entrer votre identifiant");
       return;
     }
 
-    // simulation envoi email
+    // Simulation envoi email
     setMessage("Un lien de réinitialisation a été envoyé.");
   };
 
-  return(
+  return (
+    <div className="login-page"> {/* CENTRAGE */}
 
-    <div className="wrapper">
+      <div className="wrapper">
 
-  <div className="form-box login">
+        <div className="form-box login">
 
-    <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit}>
 
-      <h1>Mot de passe oublié</h1>
+            <h1>Mot de passe oublié</h1>
 
-      <div className="input-box">
-        <input
-          type="text"
-          placeholder="Identifiant ou Email"
-          value={identifiant}
-          onChange={(e)=>setIdentifiant(e.target.value)}
-        />
+            {/* INPUT */}
+            <div className="input-box">
+              <input
+                type="text"
+                placeholder="Identifiant ou Email"
+                value={identifiant}
+                onChange={(e) => setIdentifiant(e.target.value)}
+              />
+            </div>
+
+            {/* MESSAGE */}
+            {message && <p className="error">{message}</p>}
+
+            {/* BUTTON */}
+            <div className="input-box forgot-input">
+              <button type="submit">Envoyer le lien</button>
+            </div>
+
+            {/* BACK */}
+            <div className="register-link">
+              <p>
+                <Link to="/">Retour à la connexion</Link>
+              </p>
+            </div>
+
+          </form>
+
+        </div>
+
       </div>
 
-      {message && <p className="error">{message}</p>}
-	  
-	  <div className="input-box forgot-input">
-      <button type="submit">Envoyer le lien</button>
-	  </div>
-
-      <div className="register-link">
-        <p>
-          <Link to="/">Retour à la connexion</Link>
-        </p>
-      </div>
-
-    </form>
-
-  </div>
-
-</div>
-
+    </div>
   );
-
 }

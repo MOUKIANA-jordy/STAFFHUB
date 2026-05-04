@@ -130,7 +130,7 @@ body {
 }
 
 .header-logo {
-  width: 32px;
+  width: 100px;
 }
 
 .app-name {
@@ -332,4 +332,154 @@ input::placeholder {
 
 .btn-primary:hover {
   transform: translateY(-1px);
+}
+
+/* ========================= */
+/* PROFILE STRIPE */
+/* ========================= */
+
+.profile.stripe {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.profile.stripe:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-info .name {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.profile-info .role {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ========================= */
+/* DROPDOWN STRIPE */
+/* ========================= */
+
+.stripe-menu {
+  position: absolute;
+  top: 70px;
+  right: 20px;
+  width: 260px;
+  background: #020617;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 10px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+}
+
+/* USER CARD */
+.user-card {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+}
+
+.user-card .email {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* DIVIDER */
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 8px 0;
+}
+
+/* ITEMS */
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.dropdown-item:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+/* LOGOUT */
+.logout {
+  color: #ef4444;
+}
+
+.logout:hover {
+  background: rgba(239,68,68,0.1);
+}
+
+/* SEARCH */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #020617;
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  border-radius: 10px;
+  width: 260px;
+}
+
+.search-bar input {
+  border: none;
+  outline: none;
+  background: transparent;
+  color: white;
+  width: 100%;
+}
+
+/* ICON BUTTON */
+.icon-btn {
+  position: relative;
+  margin-right: 15px;
+  cursor: pointer;
+}
+
+/* BADGE */
+.notif-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: red;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 50%;
+}
+
+/* NOTIF DROPDOWN */
+.notif-menu {
+  position: absolute;
+  top: 70px;
+  right: 80px;
+  width: 250px;
+  background: #020617;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px;
+}
+
+/* EMPTY */
+.empty {
+  text-align: center;
+  padding: 10px;
+  color: var(--muted);
 }
