@@ -79,15 +79,6 @@ export default function Acompte() {
             <input type="number" name="montant" value={form.montant} onChange={handleChange}/>
           </div>
 
-          <div className="field">
-            <label>Statut</label>
-            <select name="statut" value={form.statut} onChange={handleChange}>
-              <option value="demande">Demandé</option>
-              <option value="accepte">Accepté</option>
-              <option value="refuse">Refusé</option>
-            </select>
-          </div>
-
           <button className="btn-save">Enregistrer</button>
 
         </form>
