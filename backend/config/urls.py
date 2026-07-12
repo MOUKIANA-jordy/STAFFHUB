@@ -10,7 +10,7 @@ from apps.users.views import SalarieViewSet, current_user, admin_stats
 
 # MODULES
 from apps.dossiers.views import DossierViewSet, AdresseViewSet, EtatCivilViewSet, FamilleViewSet, IbanViewSet
-from apps.demandes.views import DemandeViewSet, absences_stats
+from apps.demandes.views import DemandeViewSet
 from apps.documents.views import DocumentViewSet
 from apps.planning.views import PlanningViewSet
 from apps.pointage.views import PointageViewSet
@@ -29,7 +29,7 @@ from django.conf.urls.static import static
 router = DefaultRouter()
 router.register(r'salaries', SalarieViewSet)
 router.register(r'dossiers', DossierViewSet)
-router.register(r'demandes', DemandeViewSet)
+router.register(r'demandes', DemandeViewSet, basename="demande")
 router.register(r'documents', DocumentViewSet)
 router.register(r'planning', PlanningViewSet)
 router.register(r'pointage', PointageViewSet)

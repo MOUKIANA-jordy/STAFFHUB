@@ -1,125 +1,69 @@
-import React, { useState } from "react";
-import "../../../Styles/form.css";
+import React from "react";
+import RequestFormPage from "../../../Components/RequestFormPage";
 
 export default function Acompte() {
-
-  const [form, setForm] = useState({
-    nom: "",
-    prenom: "",
-    matricule: "",
-    periode: "",
-    dateDemande: "",
-    montant: "",
-    statut: "demande"
-  });
-
-  const [acompteList, setAcompteList] = useState([]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    setForm({
-      ...form,
-      [name]: value
-    });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    setAcompteList([...acompteList, form]);
-
-    setForm({
-      nom: "",
-      prenom: "",
-      matricule: "",
-      periode: "",
-      dateDemande: "",
-      montant: "",
-      statut: "demande"
-    });
-  };
-
   return (
-    <div className="page">
-
-      <h2>Acompte</h2>
-
-      {/* FORM CARD */}
-      <div className="form-card">
-        <form onSubmit={handleSubmit} className="grid">
-
-          <div className="field">
-            <label>Nom</label>
-            <input name="nom" value={form.nom} onChange={handleChange}/>
-          </div>
-
-          <div className="field">
-            <label>Prénom</label>
-            <input name="prenom" value={form.prenom} onChange={handleChange}/>
-          </div>
-
-          <div className="field">
-            <label>Matricule</label>
-            <input name="matricule" value={form.matricule} onChange={handleChange}/>
-          </div>
-
-          <div className="field">
-            <label>Période</label>
-            <input name="periode" value={form.periode} onChange={handleChange}/>
-          </div>
-
-          <div className="field">
-            <label>Date de demande</label>
-            <input type="date" name="dateDemande" value={form.dateDemande} onChange={handleChange}/>
-          </div>
-
-          <div className="field">
-            <label>Montant</label>
-            <input type="number" name="montant" value={form.montant} onChange={handleChange}/>
-          </div>
-
-          <button className="btn-save">Enregistrer</button>
-
-        </form>
-      </div>
-
-      {/* TABLE */}
-      <h3>Récapitulatif</h3>
-
-      <table className="table">
-        <thead>
-          <tr>
-            <th>Nom</th>
-            <th>Prénom</th>
-            <th>Matricule</th>
-            <th>Période</th>
-            <th>Date</th>
-            <th>Montant</th>
-            <th>Statut</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {acompteList.map((item, index) => (
-            <tr key={index}>
-              <td>{item.nom}</td>
-              <td>{item.prenom}</td>
-              <td>{item.matricule}</td>
-              <td>{item.periode}</td>
-              <td>{item.dateDemande}</td>
-              <td>{item.montant}</td>
-
-              <td>
-                <span className={`badge ${item.statut}`}>
-                  {item.statut}
-                </span>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-    </div>
+    <RequestFormPage
+      endpoint="/api/demandes/"
+      requestType="ACOMPTE"
+      description="Demandez le versement anticipé d’une partie de votre salaire."
+      icon="€"
+      accent="blue"
+      submitLabel="Envoyer la demande d’acompte"
+      fields={[
+        {
+          name: "amount",
+          label: "Montant souhaité",
+          type: "number",
+          min: 1,
+          step: "0.01",
+          placeholder: "Exemple : 300",
+          required: true,
+        },
+        {
+          name: "paymentDate",
+          label: "Date de versement souhaitée",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "reason",
+          label: "Commentaire",
+          type: "textarea",
+          placeholder: "Précisez éventuellement votre demande...",
+          fullWidth: true,
+        },
+      ]}
+      information={[
+        {
+          title: "Montant autorisé",
+          text: "Le montant dépend du salaire déjà acquis pendant le mois.",
+        },
+        {
+          title: "Délai de traitement",
+          text: "La demande est généralement traitée sous quelques jours.",
+        },
+        {
+          title: "Validation",
+          text: "La demande doit être validée par le service paie.",
+        },
+      ]}
+      history={[
+        {
+          id: 1,
+          date: "5 juin 2026",
+          title: "Acompte",
+          detail: "300 €",
+          status: "paid",
+        },
+        {
+          id: 2,
+          date: "8 avril 2026",
+          title: "Acompte",
+          detail: "250 €",
+          status: "approved",
+        },
+      ]}
+    />
   );
 }

@@ -1,50 +1,73 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || "http://localhost:8000",
+  baseURL:
+    process.env.REACT_APP_API_URL || "http://localhost:8000",
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
-// REQUEST INTERCEPTOR
-API.interceptors.request.use((config) => {
-  const token = localStorage.getItem("access");
+// Ajout automatique du token d'accès
+API.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("access");
 
-  if (token) {
-    config.headers["Authorization"] = `Bearer ${token}`;
-  }
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
 
-  return config;
-});
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
-// RESPONSE INTERCEPTOR (refresh token)
+// Renouvellement automatique du token
 API.interceptors.response.use(
   (response) => response,
-  async (error) => {
 
+  async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (
+      error.response?.status === 401 &&
+      originalRequest &&
+      !originalRequest._retry
+    ) {
       originalRequest._retry = true;
 
-      try {
-        const refresh = localStorage.getItem("refresh");
+      const refresh = localStorage.getItem("refresh");
 
-        const res = await axios.post(
+      if (!refresh) {
+        localStorage.removeItem("access");
+        localStorage.removeItem("refresh");
+        window.location.href = "/";
+
+        return Promise.reject(error);
+      }
+
+      try {
+        const response = await axios.post(
           `${API.defaults.baseURL}/api/token/refresh/`,
           { refresh }
         );
 
-        const newAccess = res.data.access;
+        const newAccess = response.data.access;
 
         localStorage.setItem("access", newAccess);
 
-        API.defaults.headers.common["Authorization"] = `Bearer ${newAccess}`;
-        originalRequest.headers["Authorization"] = `Bearer ${newAccess}`;
+        originalRequest.headers.Authorization =
+          `Bearer ${newAccess}`;
 
         return API(originalRequest);
+      } catch (refreshError) {
+        localStorage.removeItem("access");
+        localStorage.removeItem("refresh");
+        localStorage.removeItem("user");
 
-      } catch (err) {
-        localStorage.clear();
-        window.location.href = "/login";
+        window.location.href = "/";
+
+        return Promise.reject(refreshError);
       }
     }
 

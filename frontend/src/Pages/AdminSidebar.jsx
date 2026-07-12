@@ -1,31 +1,106 @@
-import { LayoutDashboard, Users, Calendar, Bell } from "lucide-react";
+import React from "react";
+import { NavLink } from "react-router-dom";
+import useAuth from "../Hooks/useAuth";
+import "../Styles/sidebar.css";
+
+const userLinks = [
+  { label: "Accueil", icon: "⌂", path: "/home" },
+  { label: "Dossiers", icon: "▣", path: "/home/dossiers" },
+  { label: "Activités", icon: "◫", path: "/home/activites" },
+  {
+    label: "Documents",
+    icon: "▤",
+    path: "/dossiers/informations/documents",
+  },
+  { label: "Planning", icon: "▦", path: "/activites/planning" },
+  { label: "Pointages", icon: "◷", path: "/activites/pointages" },
+];
+
+const adminLinks = [
+  { label: "Tableau de bord", icon: "◉", path: "/admin" },
+  { label: "Utilisateurs", icon: "♟", path: "/admin/users" },
+  { label: "Demandes", icon: "▤", path: "/admin/demandes" },
+  { label: "Calendrier", icon: "▦", path: "/admin/calendar" },
+  { label: "Paie", icon: "€", path: "/admin/paie" },
+  { label: "Paramètres", icon: "⚙", path: "/admin/settings" },
+];
 
 export default function Sidebar() {
+  const { user } = useAuth();
+
+  const isAdmin =
+    user?.is_staff ||
+    user?.is_superuser ||
+    user?.role === "admin" ||
+    user?.role === "administrateur";
+
+  const navClassName = ({ isActive }) =>
+    `sidebar-link${isActive ? " sidebar-link-active" : ""}`;
+
   return (
-    <div className="w-64 bg-[#020617] p-5 flex flex-col justify-between">
-      <div>
-        <h1 className="text-xl font-bold mb-8">StaffHub</h1>
+    <aside className="sidebar">
+      <div className="sidebar-brand">
+        <div className="sidebar-logo">G</div>
 
-        <nav className="space-y-3">
-          <div className="flex items-center gap-2 bg-blue-600 p-2 rounded">
-            <LayoutDashboard size={18} /> Dashboard
-          </div>
-
-          <div className="flex items-center gap-2 opacity-70 hover:opacity-100">
-            <Users size={18} /> Salarie
-          </div>
-
-          <div className="flex items-center gap-2 opacity-70">
-            <Calendar size={18} /> Attendance
-          </div>
-
-          <div className="flex items-center gap-2 opacity-70">
-            <Bell size={18} /> Notifications
-          </div>
-        </nav>
+        <div className="sidebar-brand-text">
+          <strong>GestioPro</strong>
+          <span>Gestion d’entreprise</span>
+        </div>
       </div>
 
-      <div className="opacity-70">Logout</div>
-    </div>
+      <nav className="sidebar-nav" aria-label="Navigation principale">
+        <div className="sidebar-section">
+          {userLinks.map((link) => (
+            <NavLink
+              key={link.path}
+              to={link.path}
+              className={navClassName}
+              end={link.path === "/home"}
+            >
+              <span className="sidebar-link-icon">{link.icon}</span>
+              <span className="sidebar-link-label">{link.label}</span>
+            </NavLink>
+          ))}
+        </div>
+
+        {isAdmin && (
+          <div className="sidebar-section sidebar-admin-section">
+            <p className="sidebar-section-title">Administration</p>
+
+            {adminLinks.map((link) => (
+              <NavLink
+                key={link.path}
+                to={link.path}
+                className={navClassName}
+                end={link.path === "/admin"}
+              >
+                <span className="sidebar-link-icon">{link.icon}</span>
+                <span className="sidebar-link-label">{link.label}</span>
+              </NavLink>
+            ))}
+          </div>
+        )}
+      </nav>
+
+      <div className="sidebar-footer">
+        <NavLink to="/profile" className={navClassName}>
+          <span className="sidebar-avatar">
+            {user?.first_name?.charAt(0)?.toUpperCase() ||
+              user?.username?.charAt(0)?.toUpperCase() ||
+              "U"}
+          </span>
+
+          <span className="sidebar-user">
+            <strong>
+              {user?.first_name && user?.last_name
+                ? `${user.first_name} ${user.last_name}`
+                : user?.username || "Utilisateur"}
+            </strong>
+
+            <small>{isAdmin ? "Administrateur" : "Salarié"}</small>
+          </span>
+        </NavLink>
+      </div>
+    </aside>
   );
 }

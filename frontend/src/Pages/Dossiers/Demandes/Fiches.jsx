@@ -1,107 +1,85 @@
-import { useEffect, useState } from "react";
-import API from "../../../Services/api";
-import "../../../Styles/form.css";
+import React from "react";
+import RequestFormPage from "../../../Components/RequestFormPage";
 
 export default function Fiches() {
-  const [fiches, setFiches] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  // ===============================
-  // 📡 FETCH FICHES
-  // ===============================
-  useEffect(() => {
-    API.get("/api/paie/")
-      .then((res) => {
-        setFiches(res.data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setLoading(false);
-      });
-  }, []);
-
-  // ===============================
-  // 👁️ PREVIEW PDF
-  // ===============================
-  const previewPDF = (id) => {
-    const token = localStorage.getItem("access");
-
-    window.open(
-      `http://127.0.0.1:8000/api/paie/${id}/pdf/?token=${token}`,
-      "_blank"
-    );
-  };
-
-  // ===============================
-  // 📄 DOWNLOAD PDF
-  // ===============================
-  const downloadPDF = async (id) => {
-    try {
-      const token = localStorage.getItem("access");
-
-      const res = await fetch(
-        `http://127.0.0.1:8000/api/paie/${id}/pdf/`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `fiche_${id}.pdf`;
-      a.click();
-    } catch (err) {
-      console.error("Erreur téléchargement:", err);
-    }
-  };
-
-  // ===============================
-  // UI
-  // ===============================
-  if (loading) return <p>Chargement...</p>;
-
   return (
-    <div className="fiches-page">
-
-      <h1>📄 Fiches de paie</h1>
-
-      <div className="fiches-grid">
-
-        {fiches.length === 0 ? (
-          <p>Aucune fiche disponible</p>
-        ) : (
-          fiches.map((fiche) => (
-            <div key={fiche.id} className="fiche-card">
-
-              <h3>{fiche.salarie_nom || "Salarié"}</h3>
-              <p>Mois : {fiche.mois}</p>
-              <p>Salaire : {fiche.salaire} €</p>
-
-              <div className="actions">
-
-                {/* 👁️ PREVIEW */}
-                <button onClick={() => previewPDF(fiche.id)}>
-                  👁️ Voir
-                </button>
-
-                {/* 📄 DOWNLOAD */}
-                <button onClick={() => downloadPDF(fiche.id)}>
-                  📄 Télécharger
-                </button>
-
-              </div>
-
-            </div>
-          ))
-        )}
-
-      </div>
-    </div>
+    <RequestFormPage
+      endpoint="/api/demandes/"
+      requestType="FICHE"
+      title="Demande de fiche"
+      description="Demandez une fiche de paie ou un document lié à votre rémunération."
+      icon="▤"
+      accent="orange"
+      submitLabel="Envoyer la demande de fiche"
+      fields={[
+        {
+          name: "documentType",
+          label: "Document demandé",
+          type: "select",
+          options: [
+            "Fiche de paie",
+            "Duplicata de fiche de paie",
+            "Attestation de salaire",
+            "Relevé annuel",
+            "Autre document",
+          ],
+          required: true,
+        },
+        {
+          name: "period",
+          label: "Période concernée",
+          type: "month",
+          required: true,
+        },
+        {
+          name: "deliveryMethod",
+          label: "Mode de réception",
+          type: "select",
+          options: [
+            "Téléchargement dans l’espace salarié",
+            "Envoi par e-mail",
+            "Remise en main propre",
+          ],
+          required: true,
+        },
+        {
+          name: "comment",
+          label: "Commentaire",
+          type: "textarea",
+          placeholder: "Ajoutez une précision si nécessaire...",
+          fullWidth: true,
+        },
+      ]}
+      information={[
+        {
+          title: "Documents disponibles",
+          text: "Certaines fiches sont déjà accessibles dans la rubrique Documents.",
+        },
+        {
+          title: "Duplicata",
+          text: "Un duplicata peut être généré pour une période passée.",
+        },
+        {
+          title: "Confidentialité",
+          text: "Les documents sont accessibles uniquement depuis votre compte.",
+        },
+      ]}
+      history={[
+        {
+          id: 1,
+          date: "1 juillet 2026",
+          title: "Fiche de paie",
+          detail: "Juin 2026",
+          status: "approved",
+        },
+        {
+          id: 2,
+          date: "4 mars 2026",
+          title: "Attestation de salaire",
+          detail: "Année 2025",
+          status: "approved",
+        },
+      ]}
+    />
   );
 }

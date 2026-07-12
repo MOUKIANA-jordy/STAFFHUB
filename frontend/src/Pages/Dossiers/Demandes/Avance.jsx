@@ -1,86 +1,79 @@
-import React, { useState } from "react";
-import "../../../Styles/form.css";
+import React from "react";
+import RequestFormPage from "../../../Components/RequestFormPage";
 
-export default function Avances() {
-
-  const [form, setForm] = useState({
-    dateDebutContrat: "",
-    dateFinContrat: "",
-    legende: "",
-    debutRemboursement: "",
-    finRemboursement: "",
-    montantTotal: "",
-    nombreMensualite: "",
-    echeanceMensuelle: ""
-  });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    setForm({
-      ...form,
-      [name]: value
-    });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Avance enregistrée :", form);
-  };
-
+export default function Avance() {
   return (
-    <div className="page">
-
-      <h2>Avances</h2>
-
-      <div className="form-card">
-        <form onSubmit={handleSubmit} className="grid">
-
-          <div className="field">
-            <label>Date début contrat</label>
-            <input type="date" name="dateDebutContrat" onChange={handleChange} />
-          </div>
-
-          <div className="field">
-            <label>Date fin contrat</label>
-            <input type="date" name="dateFinContrat" onChange={handleChange} />
-          </div>
-
-          <div className="field">
-            <label>Légende</label>
-            <input type="text" name="legende" onChange={handleChange} />
-          </div>
-
-          <div className="field">
-            <label>Début remboursement</label>
-            <input type="date" name="debutRemboursement" onChange={handleChange} />
-          </div>
-
-          <div className="field">
-            <label>Fin remboursement</label>
-            <input type="date" name="finRemboursement" onChange={handleChange} />
-          </div>
-
-          <div className="field">
-            <label>Montant total</label>
-            <input type="number" name="montantTotal" onChange={handleChange} />
-          </div>
-
-          <div className="field">
-            <label>Nombre mensualités</label>
-            <input type="number" name="nombreMensualite" onChange={handleChange} />
-          </div>
-
-          <div className="field">
-            <label>Échéance mensuelle</label>
-            <input type="number" name="echeanceMensuelle" onChange={handleChange} />
-          </div>
-
-          <button className="btn-save">Enregistrer</button>
-
-        </form>
-      </div>
-
-    </div>
+    <RequestFormPage
+      endpoint="/api/demandes/"
+      requestType="AVANCE"
+      title="Demande d’avance"
+      description="Demandez une avance exceptionnelle sur salaire."
+      icon="⇄"
+      accent="green"
+      submitLabel="Envoyer la demande d’avance"
+      fields={[
+        {
+          name: "amount",
+          label: "Montant demandé",
+          type: "number",
+          min: 1,
+          step: "0.01",
+          placeholder: "Exemple : 500",
+          required: true,
+        },
+        {
+          name: "repaymentMonths",
+          label: "Nombre de mensualités",
+          type: "select",
+          options: [
+            { value: "1", label: "1 mensualité" },
+            { value: "2", label: "2 mensualités" },
+            { value: "3", label: "3 mensualités" },
+            { value: "4", label: "4 mensualités" },
+            { value: "6", label: "6 mensualités" },
+          ],
+          required: true,
+        },
+        {
+          name: "reason",
+          label: "Motif de la demande",
+          type: "textarea",
+          placeholder: "Expliquez brièvement votre besoin...",
+          fullWidth: true,
+          required: true,
+        },
+        {
+          name: "document",
+          label: "Justificatif",
+          type: "file",
+          accept: ".pdf,.jpg,.jpeg,.png",
+          fullWidth: true,
+          help: "Formats acceptés : PDF, JPG ou PNG.",
+        },
+      ]}
+      information={[
+        {
+          title: "Demande exceptionnelle",
+          text: "Une avance concerne généralement un salaire qui n’est pas encore acquis.",
+        },
+        {
+          title: "Étude du dossier",
+          text: "L’entreprise peut accepter ou refuser la demande.",
+        },
+        {
+          title: "Remboursement",
+          text: "Les modalités sont définies avec le service paie.",
+        },
+      ]}
+      history={[
+        {
+          id: 1,
+          date: "10 février 2026",
+          title: "Avance",
+          detail: "600 € sur 3 mois",
+          status: "approved",
+        },
+      ]}
+    />
   );
 }
