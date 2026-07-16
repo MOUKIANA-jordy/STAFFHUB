@@ -1,0 +1,149 @@
+.header{
+
+    height:80px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:0 30px;
+
+    background:#081d37;
+
+    border-bottom:1px solid rgba(255,255,255,.08);
+
+}
+
+.header-search{
+
+    width:540px;
+
+    height:48px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    background:#0b2649;
+
+    border-radius:10px;
+
+    padding:0 18px;
+
+    color:#8fa7c8;
+
+}
+
+.header-search input{
+
+    width:100%;
+
+    background:none;
+
+    border:none;
+
+    outline:none;
+
+    color:white;
+
+    font-size:15px;
+
+}
+
+.header-right{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:25px;
+
+}
+
+.header-icon{
+
+    width:42px;
+
+    height:42px;
+
+    border:none;
+
+    background:transparent;
+
+    color:white;
+
+    position:relative;
+
+    cursor:pointer;
+
+}
+
+.badge{
+
+    position:absolute;
+
+    top:0;
+
+    right:0;
+
+    width:18px;
+
+    height:18px;
+
+    border-radius:50%;
+
+    background:#2563eb;
+
+    color:white;
+
+    font-size:11px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+}
+
+.header-profile{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+}
+
+.header-profile img{
+
+    width:52px;
+
+    height:52px;
+
+    border-radius:50%;
+
+    object-fit:cover;
+
+}
+
+.header-profile strong{
+
+    display:block;
+
+    color:white;
+
+}
+
+.header-profile span{
+
+    color:#9fb0c5;
+
+    font-size:13px;
+
+}
