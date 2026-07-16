@@ -57,7 +57,6 @@ urlpatterns = [
 
     # ADMIN
     path('api/admin/stats/', admin_stats),
-    path('api/admin/absences/', absences_stats),
 
     # PAIE PDF
     path('api/paie/<int:pk>/pdf/', generate_fiche_paie),
