@@ -10,24 +10,24 @@ export default function Layout() {
 
   const handleLogout = () => {
     localStorage.removeItem("access");
-    navigate("/");
+    localStorage.removeItem("refresh");
+    navigate("/", { replace: true });
   };
 
-  if (!user) return <div>Loading...</div>;
+  if (!user) {
+    return <div className="app-loading">Chargement...</div>;
+  }
 
   return (
     <div className="app-layout">
-
       <Sidebar />
 
       <div className="main-area">
-
         <Header user={user} onLogout={handleLogout} />
 
-        <div className="main-content">
+        <main className="main-content">
           <Outlet />
-        </div>
-
+        </main>
       </div>
     </div>
   );

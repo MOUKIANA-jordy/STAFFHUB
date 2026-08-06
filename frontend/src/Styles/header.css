@@ -82,6 +82,27 @@
 
 }
 
+.header-icon,
+.header-profile {
+  text-decoration: none;
+}
+
+.header-logout {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  color: #ff6262;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.header-logout:hover {
+  background: rgba(255, 98, 98, 0.1);
+}
+
 .badge{
 
     position:absolute;
@@ -113,6 +134,8 @@
 .header-profile{
 
     display:flex;
+
+    color: inherit;
 
     align-items:center;
 

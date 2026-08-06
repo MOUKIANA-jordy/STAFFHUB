@@ -1,7 +1,8 @@
 .messaging-page {
-  height: calc(100vh - 80px);
+  height: 100%;
+  min-height: 600px;
   display: grid;
-  grid-template-columns: 350px 1fr;
+  grid-template-columns: 350px minmax(0, 1fr);
   color: #ffffff;
 }
 

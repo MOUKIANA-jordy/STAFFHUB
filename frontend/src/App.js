@@ -74,14 +74,14 @@ function App() {
 
             {/* HOME */}
             <Route path="/home" element={<Home />} />
-	    <Route path="notifications" element={<Notifications />} />
-            <Route path="messagerie" element={<Messagerie />} />
-            <Route path="profil" element={<Profil />} />
+	    <Route path="/home/notifications" element={<Notifications />} />
+            <Route path="/home/messagerie" element={<Messagerie />} />
+            <Route path="/home/profil" element={<Profil />} />
             <Route path="/home/dossiers" element={<Home />} />
             <Route path="/home/activites" element={<Home />} />
 
             {/* USER */}
-            <Route path="/account" element={<Account />} />
+            <Route path="/home/account" element={<Account />} />
 
             {/* ================= ADMIN ================= */}
             <Route path="/admin" element={<AdminDashboard />} />
