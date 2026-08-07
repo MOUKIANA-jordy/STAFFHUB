@@ -1,7 +1,11 @@
+from django.core.exceptions import ValidationError
 from django.db import models
-from django.contrib.auth.models import User
-from django.utils.crypto import get_random_string
+from django.contrib.auth import get_user_model
+
 import uuid
+
+
+User = get_user_model()
 
 
 def generate_matricule():
@@ -9,12 +13,24 @@ def generate_matricule():
 
 
 class Salarie(models.Model):
+    class TypeContrat(models.TextChoices):
+        CDI = "CDI", "CDI"
+        CDD = "CDD", "CDD"
+        VACATAIRE = "VACATAIRE", "Vacataire"
+        STAGIAIRE = "STAGIAIRE", "Stagiaire"
+        ALTERNANT = "ALTERNANT", "Alternant"
+
+    class Role(models.TextChoices):
+        SALARIE = "SALARIE", "Salarié"
+        RH = "RH", "Ressources humaines"
+        ADMIN = "ADMIN", "Administrateur"
+
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
         related_name="salarie",
         null=True,
-        blank=True
+        blank=True,
     )
 
     nom = models.CharField(max_length=100)
@@ -23,36 +39,42 @@ class Salarie(models.Model):
     matricule = models.CharField(
         max_length=50,
         unique=True,
-        default=generate_matricule
+        default=generate_matricule,
+        db_index=True,
     )
 
-    email_personnel = models.EmailField(default="inconnu@domaine.com")
-    telephone = models.CharField(max_length=20)
+    email_personnel = models.EmailField()
+    telephone = models.CharField(
+        max_length=20,
+        blank=True,
+        default="",
+    )
 
-    date_naissance = models.DateField(null=True, blank=True)
+    date_naissance = models.DateField(
+        null=True,
+        blank=True,
+    )
 
     type_contrat = models.CharField(
         max_length=30,
-        choices=[
-            ("CDI", "CDI"),
-            ("CDD", "CDD"),
-            ("VACATAIRE", "Vacataire"),
-            ("STAGIAIRE", "Stagiaire"),
-            ("ALTERNANT", "Alternant"),
-        ],
-        default="CDI"
+        choices=TypeContrat.choices,
+        default=TypeContrat.CDI,
+        db_index=True,
     )
 
-    ROLE_CHOICES = [
-        ("SALARIE", "Salarié"),
-        ("RH", "RH"),
-        ("ADMIN", "Admin"),
-    ]
-
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="SALARIE")
+    role = models.CharField(
+        max_length=10,
+        choices=Role.choices,
+        default=Role.SALARIE,
+        db_index=True,
+    )
 
     date_debut_contrat = models.DateField()
-    date_fin_contrat = models.DateField(null=True, blank=True)
+
+    date_fin_contrat = models.DateField(
+        null=True,
+        blank=True,
+    )
 
     poste = models.CharField(max_length=100)
     etablissement = models.CharField(max_length=150)
@@ -62,27 +84,37 @@ class Salarie(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def save(self, *args, **kwargs):
+    class Meta:
+        ordering = ["nom", "prenom"]
+        indexes = [
+            models.Index(fields=["role", "etablissement"]),
+            models.Index(fields=["type_contrat", "etablissement"]),
+        ]
 
-        # Création automatique du User
-        if not self.user:
+    def clean(self):
+        errors = {}
 
-            email_pro = f"{self.prenom.lower()}.{self.nom.lower()}@staffhub.com"
-            password_temp = get_random_string(length=10)
-
-            user = User.objects.create_user(
-                username=self.matricule,
-                email=email_pro,
-                password=password_temp
+        if (
+            self.date_fin_contrat
+            and self.date_debut_contrat
+            and self.date_fin_contrat < self.date_debut_contrat
+        ):
+            errors["date_fin_contrat"] = (
+                "La date de fin du contrat ne peut pas être "
+                "antérieure à la date de début."
             )
 
-            self.user = user
+        if (
+            self.type_contrat == self.TypeContrat.CDI
+            and self.date_fin_contrat
+        ):
+            errors["date_fin_contrat"] = (
+                "Un contrat CDI ne doit normalement pas avoir "
+                "de date de fin."
+            )
 
-            # STOCKAGE TEMPORAIRE POUR EMAIL
-            self._email = email_pro
-            self._temp_password = password_temp
-
-        super().save(*args, **kwargs)
+        if errors:
+            raise ValidationError(errors)
 
     def __str__(self):
         return f"{self.prenom} {self.nom} ({self.matricule})"

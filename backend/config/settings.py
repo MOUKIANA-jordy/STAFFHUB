@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'drf_spectacular',
     'apps.paie',
     'apps.demandes',
@@ -54,7 +55,9 @@ INSTALLED_APPS = [
     'apps.pointage',
     'apps.planning',
     'apps.dossiers',
+    'apps.messagerie',
     'django_extensions',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -125,6 +128,9 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
     ),
+    "DEFAULT_SCHEMA_CLASS": (
+        "drf_spectacular.openapi.AutoSchema"
+    ),
 }
 
 SIMPLE_JWT = {
@@ -134,7 +140,6 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
 }
-
 # ==============================
 # SWAGGER / API DOC
 # ==============================
@@ -143,6 +148,7 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "API Gestion RH",
     "DESCRIPTION": "Backend RH - Salariés, Paie, Pointage, Documents",
     "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }
 
 # Internationalization

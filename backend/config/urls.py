@@ -16,6 +16,11 @@ from apps.planning.views import PlanningViewSet
 from apps.pointage.views import PointageViewSet
 from apps.paie.views import PaieViewSet, generate_fiche_paie
 from apps.notifications.views import NotificationViewSet
+from apps.messagerie.views import (
+    ConversationViewSet,
+    MessageViewSet,
+    PieceJointeViewSet,
+)
 
 # DOCS
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
@@ -27,19 +32,21 @@ from django.conf.urls.static import static
 
 # ===== ROUTER =====
 router = DefaultRouter()
-router.register(r'salaries', SalarieViewSet)
-router.register(r'dossiers', DossierViewSet)
+router.register(r'salaries', SalarieViewSet, basename="salarie")
+router.register(r'dossiers', DossierViewSet, basename="dossier")
 router.register(r'demandes', DemandeViewSet, basename="demande")
-router.register(r'documents', DocumentViewSet)
-router.register(r'planning', PlanningViewSet)
-router.register(r'pointage', PointageViewSet)
-router.register(r'paie', PaieViewSet)
-router.register(r'adresses', AdresseViewSet)
-router.register(r'etatcivil', EtatCivilViewSet)
-router.register(r'famille', FamilleViewSet)
-router.register(r'iban', IbanViewSet)
-router.register(r'notifications', NotificationViewSet)
-
+router.register(r'documents', DocumentViewSet, basename="document")
+router.register(r'planning', PlanningViewSet, basename="planning")
+router.register(r'pointage', PointageViewSet, basename="pointage")
+router.register(r'paie', PaieViewSet, basename="paie")
+router.register(r'adresses', AdresseViewSet, basename="adresse")
+router.register(r'etatcivil', EtatCivilViewSet, basename="etatcivil")
+router.register(r'famille', FamilleViewSet, basename="famille")
+router.register(r'iban', IbanViewSet, basename="iban")
+router.register(r'notifications', NotificationViewSet, basename="notification")
+router.register(r'conversations', ConversationViewSet, basename="conversation")
+router.register(r'messages', MessageViewSet, basename="message")
+router.register(r'pieces-jointes', PieceJointeViewSet, basename="piece-jointe")
 
 # ===== URLS =====
 urlpatterns = [
