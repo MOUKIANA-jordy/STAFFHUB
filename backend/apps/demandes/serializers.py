@@ -1,7 +1,9 @@
 import json
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from rest_framework import serializers
+
+from apps.users.models import CompteCET
 
 from .models import Demande
 
@@ -151,7 +153,18 @@ class DemandeSerializer(serializers.ModelSerializer):
             None,
         )
 
-        request = self.context.get("request")
+        details = attrs.get(
+            "details",
+            getattr(
+                instance,
+                "details",
+                {},
+            ),
+        ) or {}
+
+        request = self.context.get(
+            "request"
+        )
 
         user = getattr(
             request,
@@ -165,17 +178,15 @@ class DemandeSerializer(serializers.ModelSerializer):
             None,
         ) if user else None
 
-        # Sur une modification, la demande appartient
-        # toujours au salarié déjà enregistré.
         demande_salarie = (
             instance.salarie
             if instance
             else current_salarie
         )
 
-        # ========================================
+        # =====================================
         # DEMANDE DÉJÀ TRAITÉE
-        # ========================================
+        # =====================================
 
         if (
             instance
@@ -187,9 +198,9 @@ class DemandeSerializer(serializers.ModelSerializer):
                 "ne peut plus être modifiée."
             )
 
-        # ========================================
+        # =====================================
         # ACOMPTE / AVANCE
-        # ========================================
+        # =====================================
 
         if type_demande in [
             Demande.TypeDemande.ACOMPTE,
@@ -210,25 +221,9 @@ class DemandeSerializer(serializers.ModelSerializer):
                     )
                 })
 
-        # ========================================
-        # ABSENCE
-        # ========================================
-
-        if (
-            type_demande
-            == Demande.TypeDemande.ABSENCE
-            and montant is not None
-        ):
-            raise serializers.ValidationError({
-                "montant_souhaite": (
-                    "Une absence ne doit pas "
-                    "avoir de montant."
-                )
-            })
-
-        # ========================================
+        # =====================================
         # AVANCE : CDI UNIQUEMENT
-        # ========================================
+        # =====================================
 
         if (
             type_demande
@@ -243,9 +238,167 @@ class DemandeSerializer(serializers.ModelSerializer):
                 )
             })
 
-        # ========================================
+        # =====================================
+        # ABSENCE
+        # =====================================
+
+        if (
+            type_demande
+            == Demande.TypeDemande.ABSENCE
+            and montant is not None
+        ):
+            raise serializers.ValidationError({
+                "montant_souhaite": (
+                    "Une absence ne doit pas "
+                    "avoir de montant."
+                )
+            })
+
+        # =====================================
+        # CET
+        # =====================================
+
+        if (
+            type_demande
+            == Demande.TypeDemande.CET
+        ):
+            if not demande_salarie:
+                raise serializers.ValidationError({
+                    "details": (
+                        "Aucun salarié n’est associé "
+                        "à cette demande."
+                    )
+                })
+
+            heures_cet = details.get(
+                "heures_cet"
+            )
+
+            if heures_cet is None:
+                raise serializers.ValidationError({
+                    "details": {
+                        "heures_cet": (
+                            "Le nombre d'heures CET "
+                            "est obligatoire."
+                        )
+                    }
+                })
+
+            try:
+                heures_cet = Decimal(
+                    str(heures_cet)
+                )
+
+            except (
+                InvalidOperation,
+                TypeError,
+                ValueError,
+            ):
+                raise serializers.ValidationError({
+                    "details": {
+                        "heures_cet": (
+                            "Le nombre d'heures CET "
+                            "doit être valide."
+                        )
+                    }
+                })
+
+            if heures_cet <= Decimal("0.00"):
+                raise serializers.ValidationError({
+                    "details": {
+                        "heures_cet": (
+                            "Le nombre d'heures CET "
+                            "doit être supérieur à zéro."
+                        )
+                    }
+                })
+
+            compte_cet = (
+                CompteCET.objects
+                .filter(
+                    salarie=demande_salarie
+                )
+                .first()
+            )
+
+            if not compte_cet:
+                raise serializers.ValidationError({
+                    "details": (
+                        "Aucun compte CET n’est configuré "
+                        "pour ce salarié."
+                    )
+                })
+
+            if heures_cet > compte_cet.solde_heures:
+                raise serializers.ValidationError({
+                    "details": {
+                        "heures_cet": (
+                            f"Solde CET insuffisant. "
+                            f"Disponible : "
+                            f"{compte_cet.solde_heures} h."
+                        )
+                    }
+                })
+
+            # Le montant sera calculé par le backend.
+            if montant is not None:
+                raise serializers.ValidationError({
+                    "montant_souhaite": (
+                        "Le montant d'un paiement CET "
+                        "est calculé automatiquement."
+                    )
+                })
+       
+# =====================================
+# FICHE DE PAIE
+# =====================================
+
+if (
+    type_demande
+    == Demande.TypeDemande.FICHE
+):
+    mois = details.get("mois")
+
+    if not mois:
+        raise serializers.ValidationError({
+            "details": {
+                "mois": (
+                    "Le mois de la fiche de paie "
+                    "est obligatoire."
+                )
+            }
+        })
+
+    try:
+        from datetime import datetime
+
+        datetime.strptime(
+            str(mois),
+            "%Y-%m",
+        )
+
+    except ValueError as error:
+        raise serializers.ValidationError({
+            "details": {
+                "mois": (
+                    "Le mois doit être au format "
+                    "AAAA-MM, par exemple 2026-08."
+                )
+            }
+        }) from error
+
+    if montant is not None:
+        raise serializers.ValidationError({
+            "montant_souhaite": (
+                "Une demande de fiche de paie "
+                "ne doit pas avoir de montant."
+            )
+        })
+
+
+        # =====================================
         # HEURES SUPPLÉMENTAIRES
-        # ========================================
+        # =====================================
 
         if (
             type_demande
@@ -265,8 +418,9 @@ class DemandeSerializer(serializers.ModelSerializer):
             ):
                 raise serializers.ValidationError({
                     "pointages": (
-                        "Sélectionnez au moins un pointage "
-                        "contenant des heures supplémentaires."
+                        "Sélectionnez au moins "
+                        "un pointage contenant "
+                        "des heures supplémentaires."
                     )
                 })
 
@@ -275,17 +429,15 @@ class DemandeSerializer(serializers.ModelSerializer):
                 periodes_paie = set()
 
                 for pointage in pointages:
-                    # Le pointage doit appartenir
-                    # au salarié de la demande.
                     if (
                         pointage.salarie_id
                         != demande_salarie.id
                     ):
                         raise serializers.ValidationError({
                             "pointages": (
-                                "Tous les pointages doivent "
-                                "appartenir au salarié "
-                                "de la demande."
+                                "Vous ne pouvez utiliser "
+                                "que les pointages "
+                                "du salarié concerné."
                             )
                         })
 
@@ -315,8 +467,6 @@ class DemandeSerializer(serializers.ModelSerializer):
                         pointage.mois_paie
                     )
 
-                    # Empêche un double paiement
-                    # du même pointage.
                     demandes_existantes = (
                         pointage
                         .demandes_heures_sup
@@ -351,7 +501,6 @@ class DemandeSerializer(serializers.ModelSerializer):
                         )
                     })
 
-                # Une demande = une seule période de paie.
                 if len(periodes_paie) > 1:
                     raise serializers.ValidationError({
                         "pointages": (
@@ -361,8 +510,6 @@ class DemandeSerializer(serializers.ModelSerializer):
                         )
                     })
 
-        # Les pointages ne sont utilisables que
-        # pour HEURES_SUP.
         elif pointages:
             raise serializers.ValidationError({
                 "pointages": (

@@ -1,3 +1,6 @@
+from datetime import date, timedelta
+from decimal import Decimal, InvalidOperation
+
 from django.db import transaction
 from django.utils import timezone
 
@@ -12,20 +15,41 @@ from rest_framework import (
     viewsets,
 )
 from rest_framework.decorators import action
-from rest_framework.permissions import (
-    IsAuthenticated,
-)
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.notifications.models import Notification
 from apps.paie.models import Paie
+from apps.planning.models import Planning
 from apps.remunerations.models import Remuneration
-from apps.users.models import Salarie
+from apps.users.models import (
+    CompteCET,
+    Salarie,
+)
 
 from .models import Demande
 from .permissions import DemandePermission
 from .serializers import DemandeSerializer
 
+from calendar import monthrange
+from datetime import datetime
+from io import BytesIO
+
+from django.core.files.base import ContentFile
+
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import (
+    Paragraph,
+    SimpleDocTemplate,
+    Spacer,
+    Table,
+    TableStyle,
+)
+
+# ============================================================
+# UTILITAIRE RH / ADMIN
+# ============================================================
 
 def is_rh_or_admin(user):
     if (
@@ -52,15 +76,21 @@ def is_rh_or_admin(user):
     )
 
 
-class DemandeViewSet(
-    viewsets.ModelViewSet
-):
+# ============================================================
+# DEMANDES
+# ============================================================
+
+class DemandeViewSet(viewsets.ModelViewSet):
     serializer_class = DemandeSerializer
 
     permission_classes = [
         IsAuthenticated,
         DemandePermission,
     ]
+
+    # ========================================================
+    # FILTRES / RECHERCHE / TRI
+    # ========================================================
 
     filter_backends = [
         DjangoFilterBackend,
@@ -95,7 +125,18 @@ class DemandeViewSet(
         "-date_demande",
     ]
 
+    # ========================================================
+    # QUERYSET
+    # ========================================================
+
     def get_queryset(self):
+        if getattr(
+            self,
+            "swagger_fake_view",
+            False,
+        ):
+            return Demande.objects.none()
+
         user = self.request.user
 
         queryset = (
@@ -128,6 +169,10 @@ class DemandeViewSet(
             salarie=salarie,
         )
 
+    # ========================================================
+    # CRÉATION D'UNE DEMANDE
+    # ========================================================
+
     def perform_create(
         self,
         serializer,
@@ -151,6 +196,10 @@ class DemandeViewSet(
             statut=Demande.Statut.EN_ATTENTE,
         )
 
+    # ========================================================
+    # VÉRIFICATION RH / ADMIN
+    # ========================================================
+
     def _verifier_admin(
         self,
         request,
@@ -161,17 +210,18 @@ class DemandeViewSet(
             return Response(
                 {
                     "detail": (
-                        "Seuls les RH ou "
-                        "administrateurs peuvent "
-                        "traiter une demande."
+                        "Seuls les RH ou administrateurs "
+                        "peuvent traiter une demande."
                     )
                 },
-                status=(
-                    status.HTTP_403_FORBIDDEN
-                ),
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         return None
+
+    # ========================================================
+    # NOTIFICATIONS
+    # ========================================================
 
     def _creer_notification(
         self,
@@ -192,18 +242,26 @@ class DemandeViewSet(
                 f"/home/demandes/"
                 f"{demande.id}"
             ),
-            created_by=(
-                self.request.user
-            ),
+            created_by=self.request.user,
         )
+
+    # ========================================================
+    # PAIE
+    # ========================================================
 
     def _creer_paiement(
         self,
         demande,
     ):
         """
-        Transforme automatiquement certaines demandes
-        approuvées en élément de paie.
+        Crée automatiquement une ligne de paie
+        lorsqu'une demande financière est approuvée.
+
+        Types concernés :
+        - ACOMPTE
+        - AVANCE
+        - CET
+        - HEURES_SUP
         """
 
         mapping = {
@@ -224,13 +282,12 @@ class DemandeViewSet(
             demande.type_demande
         )
 
-        # ABSENCE / FICHE / CALENDRIER :
-        # pas de ligne de paiement automatique.
+        # ABSENCE / FICHE / CALENDRIER
+        # ne créent pas de paiement.
         if not type_paiement:
             return None, False
 
-        # Protection supplémentaire contre
-        # la création d'un deuxième paiement.
+        # Protection contre un double paiement.
         paiement_existant = (
             Paie.objects
             .filter(
@@ -247,9 +304,9 @@ class DemandeViewSet(
 
         montant = demande.montant_souhaite
 
-        # Pour acompte / avance, la date actuelle
-        # est utilisée pour l'instant.
-        date_paiement = timezone.localdate()
+        date_paiement = (
+            timezone.localdate()
+        )
 
         commentaire = (
             f"Paiement généré automatiquement "
@@ -257,9 +314,9 @@ class DemandeViewSet(
             f"#{demande.id}."
         )
 
-        # ======================================
+        # ====================================================
         # HEURES SUPPLÉMENTAIRES
-        # ======================================
+        # ====================================================
 
         if (
             demande.type_demande
@@ -277,12 +334,14 @@ class DemandeViewSet(
                     )
                 })
 
-            # Rémunération active du salarié.
             remuneration = (
                 Remuneration.objects
                 .filter(
                     salarie=demande.salarie,
                     actif=True,
+                )
+                .order_by(
+                    "-date_debut"
                 )
                 .first()
             )
@@ -295,8 +354,7 @@ class DemandeViewSet(
                     )
                 })
 
-            # Calcul :
-            # heures × taux horaire × majoration.
+            # heures × taux horaire × majoration
             montant = (
                 remuneration
                 .calculer_heures_sup(
@@ -338,7 +396,6 @@ class DemandeViewSet(
                     )
                 })
 
-            # La date de paiement vient du pointage.
             date_paiement = next(
                 iter(periodes_paie)
             )
@@ -352,23 +409,150 @@ class DemandeViewSet(
                 f"Demande #{demande.id}."
             )
 
-        # ======================================
+        # ====================================================
         # CET
-        # ======================================
+        # ====================================================
 
         elif (
             demande.type_demande
             == Demande.TypeDemande.CET
         ):
-            commentaire = (
-                f"Paiement CET généré après "
-                f"approbation de la demande "
-                f"#{demande.id}. "
-                "Montant à compléter si nécessaire."
+            details = (
+                demande.details
+                or {}
             )
 
-        # Création manuelle plutôt que get_or_create
-        # pour exécuter full_clean().
+            heures_cet = details.get(
+                "heures_cet"
+            )
+
+            if heures_cet is None:
+                raise serializers.ValidationError({
+                    "details": {
+                        "heures_cet": (
+                            "Le nombre d'heures CET "
+                            "est obligatoire."
+                        )
+                    }
+                })
+
+            try:
+                heures_cet = Decimal(
+                    str(heures_cet)
+                )
+
+            except (
+                InvalidOperation,
+                TypeError,
+                ValueError,
+            ) as error:
+                raise serializers.ValidationError({
+                    "details": {
+                        "heures_cet": (
+                            "Le nombre d'heures CET "
+                            "est invalide."
+                        )
+                    }
+                }) from error
+
+            if (
+                heures_cet
+                <= Decimal("0.00")
+            ):
+                raise serializers.ValidationError({
+                    "details": {
+                        "heures_cet": (
+                            "Le nombre d'heures CET "
+                            "doit être supérieur à zéro."
+                        )
+                    }
+                })
+
+            # Verrouillage du CET pendant la transaction.
+            try:
+                compte_cet = (
+                    CompteCET.objects
+                    .select_for_update()
+                    .get(
+                        salarie=demande.salarie
+                    )
+                )
+
+            except CompteCET.DoesNotExist as error:
+                raise serializers.ValidationError({
+                    "cet": (
+                        "Aucun compte CET n'est "
+                        "configuré pour ce salarié."
+                    )
+                }) from error
+
+            if (
+                compte_cet.solde_heures
+                < heures_cet
+            ):
+                raise serializers.ValidationError({
+                    "cet": (
+                        f"Solde CET insuffisant. "
+                        f"Disponible : "
+                        f"{compte_cet.solde_heures} h."
+                    )
+                })
+
+            remuneration = (
+                Remuneration.objects
+                .filter(
+                    salarie=demande.salarie,
+                    actif=True,
+                )
+                .order_by(
+                    "-date_debut"
+                )
+                .first()
+            )
+
+            if not remuneration:
+                raise serializers.ValidationError({
+                    "remuneration": (
+                        "Aucune rémunération active "
+                        "n'est configurée pour ce salarié."
+                    )
+                })
+
+            # heures CET × taux horaire
+            montant = (
+                heures_cet
+                * remuneration.taux_horaire
+            ).quantize(
+                Decimal("0.01")
+            )
+
+            # Déduction du CET.
+            compte_cet.solde_heures = (
+                compte_cet.solde_heures
+                - heures_cet
+            )
+
+            compte_cet.full_clean()
+
+            compte_cet.save(
+                update_fields=[
+                    "solde_heures",
+                    "updated_at",
+                ]
+            )
+
+            commentaire = (
+                f"Paiement de "
+                f"{heures_cet} heure(s) CET "
+                f"à {remuneration.taux_horaire} €/h. "
+                f"Montant : {montant} €. "
+                f"Demande #{demande.id}."
+            )
+
+        # ====================================================
+        # CRÉATION DE LA PAIE
+        # ====================================================
+
         paiement = Paie(
             salarie=demande.salarie,
             demande=demande,
@@ -379,9 +563,179 @@ class DemandeViewSet(
         )
 
         paiement.full_clean()
+
         paiement.save()
 
         return paiement, True
+
+    # ========================================================
+    # ABSENCE → PLANNING
+    # ========================================================
+
+    def _creer_planning_absence(
+        self,
+        demande,
+    ):
+        """
+        Pour une demande ABSENCE approuvée,
+        crée ou met à jour le planning du salarié
+        pour chaque jour compris entre date_debut
+        et date_fin.
+        """
+
+        if (
+            demande.type_demande
+            != Demande.TypeDemande.ABSENCE
+        ):
+            return []
+
+        details = (
+            demande.details
+            or {}
+        )
+
+        date_debut_value = (
+            details.get("date_debut")
+        )
+
+        date_fin_value = (
+            details.get("date_fin")
+        )
+
+        motif = (
+            details.get("motif")
+            or ""
+        ).strip()
+
+        if not date_debut_value:
+            raise serializers.ValidationError({
+                "details": {
+                    "date_debut": (
+                        "La date de début "
+                        "est obligatoire."
+                    )
+                }
+            })
+
+        if not date_fin_value:
+            raise serializers.ValidationError({
+                "details": {
+                    "date_fin": (
+                        "La date de fin "
+                        "est obligatoire."
+                    )
+                }
+            })
+
+        try:
+            date_debut = date.fromisoformat(
+                str(date_debut_value)
+            )
+
+            date_fin = date.fromisoformat(
+                str(date_fin_value)
+            )
+
+        except ValueError as error:
+            raise serializers.ValidationError({
+                "details": (
+                    "Les dates de l'absence "
+                    "sont invalides."
+                )
+            }) from error
+
+        if date_fin < date_debut:
+            raise serializers.ValidationError({
+                "details": {
+                    "date_fin": (
+                        "La date de fin ne peut pas "
+                        "être antérieure à "
+                        "la date de début."
+                    )
+                }
+            })
+
+        plannings = []
+
+        date_courante = (
+            date_debut
+        )
+
+        while (
+            date_courante
+            <= date_fin
+        ):
+            planning, created = (
+                Planning.objects
+                .get_or_create(
+                    salarie=demande.salarie,
+                    date=date_courante,
+                    defaults={
+                        "type_journee": (
+                            Planning
+                            .TypeJournee
+                            .ABSENCE
+                        ),
+                        "heure_debut": None,
+                        "heure_fin": None,
+                        "commentaire": (
+                            motif
+                            or (
+                                "Absence validée "
+                                f"- Demande "
+                                f"#{demande.id}"
+                            )
+                        ),
+                    },
+                )
+            )
+
+            # Un planning existe déjà :
+            # il devient une absence.
+            if not created:
+                planning.type_journee = (
+                    Planning
+                    .TypeJournee
+                    .ABSENCE
+                )
+
+                planning.heure_debut = None
+                planning.heure_fin = None
+
+                planning.commentaire = (
+                    motif
+                    or (
+                        "Absence validée "
+                        f"- Demande "
+                        f"#{demande.id}"
+                    )
+                )
+
+                planning.full_clean()
+
+                planning.save(
+                    update_fields=[
+                        "type_journee",
+                        "heure_debut",
+                        "heure_fin",
+                        "commentaire",
+                        "updated_at",
+                    ]
+                )
+
+            plannings.append(
+                planning
+            )
+
+            date_courante += (
+                timedelta(days=1)
+            )
+
+        return plannings
+
+    # ========================================================
+    # APPROUVER
+    # ========================================================
 
     @action(
         detail=True,
@@ -416,10 +770,12 @@ class DemandeViewSet(
                         "été traitée."
                     )
                 },
-                status=(
-                    status.HTTP_400_BAD_REQUEST
-                ),
+                status=status.HTTP_400_BAD_REQUEST,
             )
+
+        # ================================================
+        # APPROBATION
+        # ================================================
 
         demande.statut = (
             Demande.Statut.APPROUVE
@@ -432,12 +788,29 @@ class DemandeViewSet(
             ]
         )
 
-        # Création éventuelle dans Paie.
+        # ================================================
+        # PAIE
+        # ================================================
+
         paiement, paiement_cree = (
             self._creer_paiement(
                 demande
             )
         )
+
+        # ================================================
+        # ABSENCE → PLANNING
+        # ================================================
+
+        plannings_crees = (
+            self._creer_planning_absence(
+                demande
+            )
+        )
+
+        # ================================================
+        # NOTIFICATION
+        # ================================================
 
         self._creer_notification(
             demande=demande,
@@ -454,8 +827,10 @@ class DemandeViewSet(
             ),
         )
 
-        serializer = self.get_serializer(
-            demande
+        serializer = (
+            self.get_serializer(
+                demande
+            )
         )
 
         return Response(
@@ -490,12 +865,22 @@ class DemandeViewSet(
                     else None
                 ),
 
+                "plannings_crees": [
+                    planning.id
+                    for planning
+                    in plannings_crees
+                ],
+
                 "demande": (
                     serializer.data
                 ),
             },
             status=status.HTTP_200_OK,
         )
+
+    # ========================================================
+    # REFUSER
+    # ========================================================
 
     @action(
         detail=True,
@@ -530,9 +915,7 @@ class DemandeViewSet(
                         "été traitée."
                     )
                 },
-                status=(
-                    status.HTTP_400_BAD_REQUEST
-                ),
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         demande.statut = (
@@ -561,8 +944,10 @@ class DemandeViewSet(
             ),
         )
 
-        serializer = self.get_serializer(
-            demande
+        serializer = (
+            self.get_serializer(
+                demande
+            )
         )
 
         return Response(
