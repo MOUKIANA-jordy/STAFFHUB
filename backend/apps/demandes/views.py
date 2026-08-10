@@ -18,6 +18,7 @@ from rest_framework import (
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from apps.paie.bulletin_pdf import generate_staffhub_bulletin
 
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet

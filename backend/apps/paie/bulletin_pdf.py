@@ -65,14 +65,17 @@ def get_bulletin_data(
     )
 
     pointages = (
-        Pointage.objects
-        .filter(
-            salarie=salarie,
-            date__year=annee,
-            date__month=mois,
-        )
-        .order_by("date")
+    Pointage.objects
+    .filter(
+        salarie=salarie,
+        mois_paie__year=annee,
+        mois_paie__month=mois,
     )
+    .order_by(
+        "date",
+        "heure_arrivee",
+    )
+)
 
     salaire_base = Decimal("0.00")
 
