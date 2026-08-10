@@ -1,7 +1,6 @@
 from calendar import monthrange
 from datetime import date, datetime, timedelta
 from decimal import Decimal, InvalidOperation
-from io import BytesIO
 
 from django.core.files.base import ContentFile
 from django.db import transaction
@@ -18,7 +17,7 @@ from rest_framework import (
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from apps.paie.bulletin_pdf import generate_staffhub_bulletin
+from io import BytesIO
 
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
@@ -31,6 +30,7 @@ from reportlab.platypus import (
 )
 
 from apps.notifications.models import Notification
+from apps.paie.bulletin_pdf import generate_staffhub_bulletin
 from apps.paie.models import Paie
 from apps.planning.models import Planning
 from apps.remunerations.models import Remuneration
@@ -74,7 +74,7 @@ def is_rh_or_admin(user):
 
 
 # ============================================================
-# DEMANDES
+# VIEWSET DEMANDES
 # ============================================================
 
 class DemandeViewSet(viewsets.ModelViewSet):
@@ -244,7 +244,8 @@ class DemandeViewSet(viewsets.ModelViewSet):
         )
 
     # ========================================================
-    # PAIE : ACOMPTE / AVANCE / CET / HEURES SUP
+    # PAIE
+    # ACOMPTE / AVANCE / CET / HEURES SUP
     # ========================================================
 
     def _creer_paiement(
@@ -274,6 +275,7 @@ class DemandeViewSet(viewsets.ModelViewSet):
         if not type_paiement:
             return None, False
 
+        # Protection contre double paiement.
         paiement_existant = (
             Paie.objects
             .filter(
@@ -532,7 +534,7 @@ class DemandeViewSet(viewsets.ModelViewSet):
             )
 
         # ====================================================
-        # CRÉATION PAIE
+        # CRÉATION DU PAIEMENT
         # ====================================================
 
         paiement = Paie(
@@ -631,9 +633,14 @@ class DemandeViewSet(viewsets.ModelViewSet):
 
         plannings = []
 
-        date_courante = date_debut
+        date_courante = (
+            date_debut
+        )
 
-        while date_courante <= date_fin:
+        while (
+            date_courante
+            <= date_fin
+        ):
             planning, created = (
                 Planning.objects
                 .get_or_create(
@@ -641,7 +648,9 @@ class DemandeViewSet(viewsets.ModelViewSet):
                     date=date_courante,
                     defaults={
                         "type_journee": (
-                            Planning.TypeJournee.ABSENCE
+                            Planning
+                            .TypeJournee
+                            .ABSENCE
                         ),
                         "heure_debut": None,
                         "heure_fin": None,
@@ -649,7 +658,8 @@ class DemandeViewSet(viewsets.ModelViewSet):
                             motif
                             or (
                                 "Absence validée "
-                                f"- Demande #{demande.id}"
+                                f"- Demande "
+                                f"#{demande.id}"
                             )
                         ),
                     },
@@ -658,7 +668,9 @@ class DemandeViewSet(viewsets.ModelViewSet):
 
             if not created:
                 planning.type_journee = (
-                    Planning.TypeJournee.ABSENCE
+                    Planning
+                    .TypeJournee
+                    .ABSENCE
                 )
 
                 planning.heure_debut = None
@@ -668,7 +680,8 @@ class DemandeViewSet(viewsets.ModelViewSet):
                     motif
                     or (
                         "Absence validée "
-                        f"- Demande #{demande.id}"
+                        f"- Demande "
+                        f"#{demande.id}"
                     )
                 )
 
@@ -695,23 +708,13 @@ class DemandeViewSet(viewsets.ModelViewSet):
         return plannings
 
     # ========================================================
-    # FICHE DE PAIE → PDF
+    # FICHE DE PAIE → BULLETIN STAFFHUB PDF
     # ========================================================
 
     def _creer_fiche_paie(
         self,
         demande,
     ):
-        """
-        Génère une fiche de paie PDF pour le mois
-        demandé dans details["mois"].
-
-        Exemple :
-        {
-            "mois": "2026-08"
-        }
-        """
-
         if (
             demande.type_demande
             != Demande.TypeDemande.FICHE
@@ -723,8 +726,8 @@ class DemandeViewSet(viewsets.ModelViewSet):
             or {}
         )
 
-        mois_value = (
-            details.get("mois")
+        mois_value = details.get(
+            "mois"
         )
 
         if not mois_value:
@@ -755,17 +758,26 @@ class DemandeViewSet(viewsets.ModelViewSet):
                 }
             }) from error
 
-        annee = mois_date.year
-        mois = mois_date.month
+        annee = (
+            mois_date.year
+        )
 
-        # Empêche de générer deux fiches
-        # pour la même demande.
+        mois = (
+            mois_date.month
+        )
+
+        # ====================================================
+        # VÉRIFIER SI LA FICHE EXISTE DÉJÀ
+        # ====================================================
+
         fiche_existante = (
             Paie.objects
             .filter(
                 demande=demande,
                 type_paiement=(
-                    Paie.TypePaiement.FICHE_PAIE
+                    Paie
+                    .TypePaiement
+                    .FICHE_PAIE
                 ),
             )
             .first()
@@ -790,7 +802,9 @@ class DemandeViewSet(viewsets.ModelViewSet):
             )
             .exclude(
                 type_paiement=(
-                    Paie.TypePaiement.FICHE_PAIE
+                    Paie
+                    .TypePaiement
+                    .FICHE_PAIE
                 )
             )
             .order_by(
@@ -803,9 +817,14 @@ class DemandeViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError({
                 "fiche": (
                     "Aucun élément de paie "
-                    f"n'a été trouvé pour {mois_value}."
+                    f"n'a été trouvé pour "
+                    f"{mois_value}."
                 )
             })
+
+        # ====================================================
+        # TOTAL DES ÉLÉMENTS DE PAIE
+        # ====================================================
 
         total = Decimal("0.00")
 
@@ -818,223 +837,27 @@ class DemandeViewSet(viewsets.ModelViewSet):
         )
 
         # ====================================================
-        # CONSTRUCTION DU PDF
+        # GÉNÉRATION DU BULLETIN STAFFHUB
         # ====================================================
-
-        buffer = BytesIO()
-
-        doc = SimpleDocTemplate(
-            buffer,
-        )
-
-        styles = (
-            getSampleStyleSheet()
-        )
-
-        elements = []
-
-        elements.append(
-            Paragraph(
-                "FICHE DE PAIE",
-                styles["Title"],
-            )
-        )
-
-        elements.append(
-            Spacer(1, 15)
-        )
-
-        elements.append(
-            Paragraph(
-                (
-                    f"Période : "
-                    f"{mois:02d}/{annee}"
-                ),
-                styles["Heading2"],
-            )
-        )
-
-        elements.append(
-            Spacer(1, 15)
-        )
-
-        elements.append(
-            Paragraph(
-                (
-                    f"Nom : "
-                    f"{demande.salarie.nom}"
-                ),
-                styles["Normal"],
-            )
-        )
-
-        elements.append(
-            Paragraph(
-                (
-                    f"Prénom : "
-                    f"{demande.salarie.prenom}"
-                ),
-                styles["Normal"],
-            )
-        )
-
-        elements.append(
-            Paragraph(
-                (
-                    f"Matricule : "
-                    f"{demande.salarie.matricule}"
-                ),
-                styles["Normal"],
-            )
-        )
-
-        elements.append(
-            Paragraph(
-                (
-                    f"Poste : "
-                    f"{demande.salarie.poste}"
-                ),
-                styles["Normal"],
-            )
-        )
-
-        elements.append(
-            Paragraph(
-                (
-                    f"Établissement : "
-                    f"{demande.salarie.etablissement}"
-                ),
-                styles["Normal"],
-            )
-        )
-
-        elements.append(
-            Spacer(1, 20)
-        )
-
-        # ====================================================
-        # TABLEAU DES ÉLÉMENTS
-        # ====================================================
-
-        data = [
-            [
-                "Désignation",
-                "Date",
-                "Montant (€)",
-            ]
-        ]
-
-        for paiement in paiements:
-            data.append([
-                (
-                    paiement
-                    .get_type_paiement_display()
-                ),
-                (
-                    paiement
-                    .date_paiement
-                    .strftime("%d/%m/%Y")
-                ),
-                (
-                    f"{paiement.montant:.2f}"
-                    if paiement.montant is not None
-                    else "-"
-                ),
-            ])
-
-        data.append([
-            "TOTAL",
-            "",
-            f"{total:.2f}",
-        ])
-
-        table = Table(
-            data,
-            colWidths=[
-                240,
-                100,
-                110,
-            ],
-        )
-
-        table.setStyle(
-            TableStyle([
-                (
-                    "BACKGROUND",
-                    (0, 0),
-                    (-1, 0),
-                    colors.grey,
-                ),
-                (
-                    "TEXTCOLOR",
-                    (0, 0),
-                    (-1, 0),
-                    colors.white,
-                ),
-                (
-                    "GRID",
-                    (0, 0),
-                    (-1, -1),
-                    1,
-                    colors.black,
-                ),
-                (
-                    "PADDING",
-                    (0, 0),
-                    (-1, -1),
-                    7,
-                ),
-                (
-                    "ALIGN",
-                    (-1, 1),
-                    (-1, -1),
-                    "RIGHT",
-                ),
-                (
-                    "FONTNAME",
-                    (0, -1),
-                    (-1, -1),
-                    "Helvetica-Bold",
-                ),
-            ])
-        )
-
-        elements.append(
-            table
-        )
-
-        elements.append(
-            Spacer(1, 20)
-        )
-
-        elements.append(
-            Paragraph(
-                (
-                    "Document généré automatiquement "
-                    "par StaffHub."
-                ),
-                styles["Normal"],
-            )
-        )
-
-        doc.build(
-            elements
-        )
 
         pdf_content = (
-            buffer.getvalue()
+            generate_staffhub_bulletin(
+                salarie=demande.salarie,
+                annee=annee,
+                mois=mois,
+            )
         )
-
-        buffer.close()
 
         # ====================================================
         # DATE DE LA FICHE
         # ====================================================
 
-        dernier_jour = monthrange(
-            annee,
-            mois,
-        )[1]
+        dernier_jour = (
+            monthrange(
+                annee,
+                mois,
+            )[1]
+        )
 
         date_fiche = date(
             annee,
@@ -1050,20 +873,23 @@ class DemandeViewSet(viewsets.ModelViewSet):
             salarie=demande.salarie,
             demande=demande,
             type_paiement=(
-                Paie.TypePaiement.FICHE_PAIE
+                Paie
+                .TypePaiement
+                .FICHE_PAIE
             ),
             montant=total,
             date_paiement=date_fiche,
             commentaire=(
-                f"Fiche de paie "
+                f"Bulletin de paie StaffHub "
                 f"{mois:02d}/{annee}."
             ),
         )
 
         filename = (
-            f"fiche_paie_"
+            f"bulletin_staffhub_"
             f"{demande.salarie.matricule}_"
-            f"{annee}_{mois:02d}.pdf"
+            f"{annee}_"
+            f"{mois:02d}.pdf"
         )
 
         fiche.preuve_pdf.save(
@@ -1116,7 +942,9 @@ class DemandeViewSet(viewsets.ModelViewSet):
                         "été traitée."
                     )
                 },
-                status=status.HTTP_400_BAD_REQUEST,
+                status=(
+                    status.HTTP_400_BAD_REQUEST
+                ),
             )
 
         # ====================================================
@@ -1175,12 +1003,14 @@ class DemandeViewSet(viewsets.ModelViewSet):
         )
 
         notification_lien = (
-            f"/home/demandes/{demande.id}"
+            f"/home/demandes/"
+            f"{demande.id}"
         )
 
         if fiche_paie:
             notification_message = (
-                "Votre fiche de paie est disponible."
+                "Votre bulletin de paie "
+                "StaffHub est disponible."
             )
 
             notification_lien = (
@@ -1311,7 +1141,9 @@ class DemandeViewSet(viewsets.ModelViewSet):
                         "été traitée."
                     )
                 },
-                status=status.HTTP_400_BAD_REQUEST,
+                status=(
+                    status.HTTP_400_BAD_REQUEST
+                ),
             )
 
         demande.statut = (

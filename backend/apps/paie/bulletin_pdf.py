@@ -3,9 +3,15 @@ from decimal import Decimal
 from io import BytesIO
 
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from reportlab.lib.enums import (
+    TA_CENTER,
+    TA_RIGHT,
+)
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.styles import (
+    ParagraphStyle,
+    getSampleStyleSheet,
+)
 from reportlab.lib.units import mm
 from reportlab.platypus import (
     Paragraph,
@@ -20,9 +26,13 @@ from apps.pointage.models import Pointage
 from apps.remunerations.models import Remuneration
 
 
+# ============================================================
+# FORMAT MONÉTAIRE
+# ============================================================
+
 def money(value):
     if value is None:
-        return "0,00"
+        value = Decimal("0.00")
 
     value = Decimal(str(value))
 
@@ -32,6 +42,10 @@ def money(value):
         .replace(".", ",")
     )
 
+
+# ============================================================
+# DONNÉES DU BULLETIN
+# ============================================================
 
 def get_bulletin_data(
     salarie,
@@ -56,7 +70,9 @@ def get_bulletin_data(
             date_paiement__month=mois,
         )
         .exclude(
-            type_paiement=Paie.TypePaiement.FICHE_PAIE
+            type_paiement=(
+                Paie.TypePaiement.FICHE_PAIE
+            )
         )
         .order_by(
             "date_paiement",
@@ -65,33 +81,30 @@ def get_bulletin_data(
     )
 
     pointages = (
-    Pointage.objects
-    .filter(
-        salarie=salarie,
-        mois_paie__year=annee,
-        mois_paie__month=mois,
+        Pointage.objects
+        .filter(
+            salarie=salarie,
+            mois_paie__year=annee,
+            mois_paie__month=mois,
+        )
+        .order_by(
+            "date",
+            "heure_arrivee",
+        )
     )
-    .order_by(
-        "date",
-        "heure_arrivee",
-    )
-)
 
     salaire_base = Decimal("0.00")
+    taux_horaire = Decimal("0.00")
+    majoration_heures_sup = Decimal("0.00")
 
-    if (
-        remuneration
-        and remuneration.salaire_mensuel_brut
-    ):
+    if remuneration:
         salaire_base = Decimal(
             str(
                 remuneration.salaire_mensuel_brut
+                or 0
             )
         )
 
-    taux_horaire = Decimal("0.00")
-
-    if remuneration:
         taux_horaire = Decimal(
             str(
                 remuneration.taux_horaire
@@ -99,11 +112,18 @@ def get_bulletin_data(
             )
         )
 
-    heures_normales = Decimal("0.00")
+        majoration_heures_sup = Decimal(
+            str(
+                remuneration.majoration_heures_sup
+                or 0
+            )
+        )
+
+    heures_travaillees = Decimal("0.00")
     heures_sup = Decimal("0.00")
 
     for pointage in pointages:
-        heures_normales += Decimal(
+        heures_travaillees += Decimal(
             str(
                 pointage.heures_travaillees
                 or 0
@@ -119,7 +139,7 @@ def get_bulletin_data(
 
     lignes_revenus = []
 
-    if salaire_base > 0:
+    if salaire_base > Decimal("0.00"):
         lignes_revenus.append({
             "designation": "Salaire de base",
             "base": "",
@@ -141,17 +161,20 @@ def get_bulletin_data(
             == Paie.TypePaiement.HEURES_SUP
         ):
             lignes_revenus.append({
-                "designation": (
-                    "Heures supplémentaires"
-                ),
-                "base": (
-                    f"{heures_sup:.2f} h"
-                ),
-                "taux": (
-                    f"{taux_horaire:.2f}"
-                ),
-                "montant": montant,
-                "sens": "PLUS",
+                "designation":
+                    "Heures supplémentaires",
+
+                "base":
+                    f"{heures_sup:.2f} h",
+
+                "taux":
+                    f"{taux_horaire:.2f}",
+
+                "montant":
+                    montant,
+
+                "sens":
+                    "PLUS",
             })
 
         elif (
@@ -194,9 +217,7 @@ def get_bulletin_data(
             paiement.type_paiement
             == Paie.TypePaiement.SALAIRE
         ):
-            # Évite de doubler le salaire si le brut
-            # mensuel est déjà renseigné dans Remuneration.
-            if salaire_base <= 0:
+            if salaire_base <= Decimal("0.00"):
                 lignes_revenus.append({
                     "designation": "Salaire",
                     "base": "",
@@ -214,7 +235,7 @@ def get_bulletin_data(
         Decimal("0.00"),
     )
 
-    total_moins = sum(
+    retenues = sum(
         (
             ligne["montant"]
             for ligne in lignes_revenus
@@ -223,22 +244,19 @@ def get_bulletin_data(
         Decimal("0.00"),
     )
 
-    # StaffHub ne gère pas encore les vraies
-    # cotisations sociales.
     cotisations_salariales = Decimal("0.00")
     cotisations_employeur = Decimal("0.00")
 
     brut = total_plus
 
-    net_avant_impot = (
-        brut
-        - cotisations_salariales
-        - total_moins
-    )
-
     net_social = (
         brut
         - cotisations_salariales
+    )
+
+    net_avant_impot = (
+        net_social
+        - retenues
     )
 
     return {
@@ -248,19 +266,30 @@ def get_bulletin_data(
         "lignes_revenus": lignes_revenus,
         "salaire_base": salaire_base,
         "taux_horaire": taux_horaire,
-        "heures_normales": heures_normales,
-        "heures_sup": heures_sup,
-        "brut": brut,
-        "retenues": total_moins,
+        "majoration_heures_sup":
+            majoration_heures_sup,
+        "heures_travaillees":
+            heures_travaillees,
+        "heures_sup":
+            heures_sup,
+        "brut":
+            brut,
+        "retenues":
+            retenues,
         "cotisations_salariales":
             cotisations_salariales,
         "cotisations_employeur":
             cotisations_employeur,
-        "net_social": net_social,
+        "net_social":
+            net_social,
         "net_avant_impot":
             net_avant_impot,
     }
 
+
+# ============================================================
+# GÉNÉRATION PDF
+# ============================================================
 
 def generate_staffhub_bulletin(
     salarie,
@@ -268,9 +297,9 @@ def generate_staffhub_bulletin(
     mois,
 ):
     data = get_bulletin_data(
-        salarie,
-        annee,
-        mois,
+        salarie=salarie,
+        annee=annee,
+        mois=mois,
     )
 
     buffer = BytesIO()
@@ -278,46 +307,116 @@ def generate_staffhub_bulletin(
     doc = SimpleDocTemplate(
         buffer,
         pagesize=A4,
-        rightMargin=12 * mm,
-        leftMargin=12 * mm,
-        topMargin=10 * mm,
-        bottomMargin=10 * mm,
+        leftMargin=8 * mm,
+        rightMargin=8 * mm,
+        topMargin=6 * mm,
+        bottomMargin=6 * mm,
     )
 
     styles = getSampleStyleSheet()
 
-    small = ParagraphStyle(
-        "small",
+    # ========================================================
+    # COULEURS
+    # ========================================================
+
+    green = colors.HexColor("#166534")
+    green_light = colors.HexColor("#DCFCE7")
+    green_very_light = colors.HexColor("#F0FDF4")
+
+    dark = colors.HexColor("#111827")
+    grey = colors.HexColor("#6B7280")
+    grey_light = colors.HexColor("#E5E7EB")
+    grey_very_light = colors.HexColor("#F9FAFB")
+    border = colors.HexColor("#9CA3AF")
+
+    # ========================================================
+    # STYLES
+    # ========================================================
+
+    normal = ParagraphStyle(
+        "normal_staffhub",
         parent=styles["Normal"],
-        fontSize=7.5,
-        leading=9,
+        fontName="Helvetica",
+        fontSize=6.7,
+        leading=8,
+        textColor=dark,
     )
 
-    small_bold = ParagraphStyle(
-        "small_bold",
-        parent=small,
+    bold = ParagraphStyle(
+        "bold_staffhub",
+        parent=normal,
         fontName="Helvetica-Bold",
     )
 
-    title = ParagraphStyle(
-        "title_staffhub",
+    small = ParagraphStyle(
+        "small_staffhub",
+        parent=normal,
+        fontSize=5.9,
+        leading=7,
+    )
+
+    center = ParagraphStyle(
+        "center_staffhub",
+        parent=normal,
+        alignment=TA_CENTER,
+    )
+
+    right = ParagraphStyle(
+        "right_staffhub",
+        parent=normal,
+        alignment=TA_RIGHT,
+    )
+
+    company = ParagraphStyle(
+        "company_staffhub",
         parent=styles["Heading1"],
-        fontSize=17,
-        leading=19,
-        alignment=TA_RIGHT,
-        spaceAfter=2,
+        fontName="Helvetica-Bold",
+        fontSize=19,
+        leading=20,
+        textColor=green,
     )
 
-    right_small = ParagraphStyle(
-        "right_small",
-        parent=small,
+    bulletin_title = ParagraphStyle(
+        "bulletin_title",
+        parent=styles["Heading1"],
+        fontName="Helvetica-Bold",
+        fontSize=16,
+        leading=17,
         alignment=TA_RIGHT,
+        textColor=dark,
     )
 
-    center_small = ParagraphStyle(
-        "center_small",
+    employee_name = ParagraphStyle(
+        "employee_name",
+        parent=normal,
+        fontName="Helvetica-Bold",
+        fontSize=9,
+        leading=10,
+    )
+
+    net_label = ParagraphStyle(
+        "net_label",
+        parent=normal,
+        fontName="Helvetica-Bold",
+        fontSize=8,
+        leading=9,
+    )
+
+    net_amount = ParagraphStyle(
+        "net_amount",
+        parent=normal,
+        fontName="Helvetica-Bold",
+        fontSize=12,
+        leading=13,
+        alignment=TA_RIGHT,
+        textColor=green,
+    )
+
+    footer_style = ParagraphStyle(
+        "footer",
         parent=small,
         alignment=TA_CENTER,
+        textColor=grey,
     )
 
     elements = []
@@ -333,18 +432,18 @@ def generate_staffhub_bulletin(
         f"{dernier_jour:02d}/{mois:02d}/{annee}"
     )
 
-    # ======================================================
+    # ========================================================
     # EN-TÊTE
-    # ======================================================
+    # ========================================================
 
-    entreprise = [
+    header_left = [
         Paragraph(
-            "<b>STAFFHUB</b>",
-            styles["Heading2"],
+            "STAFFHUB",
+            company,
         ),
         Paragraph(
-            "Plateforme de gestion RH",
-            small,
+            "<b>Plateforme de gestion RH</b>",
+            normal,
         ),
         Paragraph(
             "Document de démonstration",
@@ -352,34 +451,37 @@ def generate_staffhub_bulletin(
         ),
     ]
 
-    bulletin_header = [
+    header_right = [
         Paragraph(
-            "<b>BULLETIN DE PAIE</b>",
-            title,
-        ),
-        Paragraph(
-            f"Période de paie : {periode}",
-            right_small,
+            "BULLETIN DE PAIE",
+            bulletin_title,
         ),
         Paragraph(
             (
-                f"Bulletin du "
+                "<b>Période :</b> "
+                f"{periode}"
+            ),
+            right,
+        ),
+        Paragraph(
+            (
+                "<b>Bulletin :</b> "
                 f"{mois:02d}/{annee}"
             ),
-            right_small,
+            right,
         ),
     ]
 
     header = Table(
         [
             [
-                entreprise,
-                bulletin_header,
+                header_left,
+                header_right,
             ]
         ],
         colWidths=[
-            90 * mm,
-            90 * mm,
+            95 * mm,
+            98 * mm,
         ],
     )
 
@@ -396,86 +498,112 @@ def generate_staffhub_bulletin(
 
     elements.append(header)
 
-    elements.append(
-        Spacer(1, 7 * mm)
+    ligne = Table(
+        [[""]],
+        colWidths=[
+            193 * mm,
+        ],
+        rowHeights=[
+            1.4 * mm,
+        ],
     )
 
-    # ======================================================
-    # IDENTITÉ SALARIÉ
-    # ======================================================
+    ligne.setStyle(
+        TableStyle([
+            (
+                "BACKGROUND",
+                (0, 0),
+                (-1, -1),
+                green,
+            )
+        ])
+    )
 
-    infos_gauche = [
+    elements.append(ligne)
+
+    elements.append(
+        Spacer(
+            1,
+            2.5 * mm,
+        )
+    )
+
+    # ========================================================
+    # IDENTITÉ SALARIÉ
+    # ========================================================
+
+    infos_contrat = [
         Paragraph(
             (
-                f"<b>Matricule :</b> "
+                "<b>Matricule :</b> "
                 f"{salarie.matricule}"
             ),
-            small,
+            normal,
         ),
         Paragraph(
             (
-                f"<b>Type contrat :</b> "
+                "<b>Contrat :</b> "
                 f"{salarie.get_type_contrat_display()}"
             ),
-            small,
+            normal,
         ),
         Paragraph(
             (
-                f"<b>Poste :</b> "
+                "<b>Poste :</b> "
                 f"{salarie.poste}"
             ),
-            small,
+            normal,
         ),
         Paragraph(
             (
-                f"<b>Établissement :</b> "
+                "<b>Établissement :</b> "
                 f"{salarie.etablissement}"
             ),
-            small,
+            normal,
         ),
         Paragraph(
             (
-                f"<b>Date début contrat :</b> "
+                "<b>Date d'entrée :</b> "
                 f"{salarie.date_debut_contrat.strftime('%d/%m/%Y')}"
             ),
-            small,
+            normal,
         ),
     ]
 
-    infos_droite = [
+    infos_salarie = [
         Paragraph(
             (
-                f"<b>{salarie.prenom} "
-                f"{salarie.nom.upper()}</b>"
+                f"{salarie.prenom} "
+                f"{salarie.nom.upper()}"
             ),
-            small_bold,
+            employee_name,
         ),
         Paragraph(
             (
-                f"Email : "
+                f"<b>Email :</b> "
                 f"{salarie.email_personnel}"
             ),
-            small,
+            normal,
         ),
         Paragraph(
             (
-                f"Téléphone : "
+                f"<b>Téléphone :</b> "
                 f"{salarie.telephone or '-'}"
             ),
-            small,
+            normal,
         ),
     ]
 
     identity = Table(
         [
             [
-                infos_gauche,
-                infos_droite,
+                infos_contrat,
+                infos_salarie,
             ]
         ],
         colWidths=[
-            90 * mm,
-            90 * mm,
+            96 * mm,
+            97 * mm,
         ],
     )
 
@@ -487,46 +615,94 @@ def generate_staffhub_bulletin(
                 (-1, -1),
                 "TOP",
             ),
+            (
+                "BOX",
+                (0, 0),
+                (-1, -1),
+                0.6,
+                border,
+            ),
+            (
+                "LINEBEFORE",
+                (1, 0),
+                (1, 0),
+                0.6,
+                border,
+            ),
+            (
+                "BACKGROUND",
+                (0, 0),
+                (-1, -1),
+                grey_very_light,
+            ),
+            (
+                "LEFTPADDING",
+                (0, 0),
+                (-1, -1),
+                6,
+            ),
+            (
+                "RIGHTPADDING",
+                (0, 0),
+                (-1, -1),
+                6,
+            ),
+            (
+                "TOPPADDING",
+                (0, 0),
+                (-1, -1),
+                5,
+            ),
+            (
+                "BOTTOMPADDING",
+                (0, 0),
+                (-1, -1),
+                5,
+            ),
         ])
     )
 
     elements.append(identity)
 
     elements.append(
-        Spacer(1, 6 * mm)
+        Spacer(
+            1,
+            2.5 * mm,
+        )
     )
 
-    # ======================================================
+    # ========================================================
     # TABLEAU PRINCIPAL
-    # ======================================================
+    # ========================================================
 
-    main_rows = [
+    rows = [
         [
             Paragraph(
                 "<b>Désignation</b>",
-                center_small,
+                center,
             ),
             Paragraph(
                 "<b>Base</b>",
-                center_small,
+                center,
             ),
             Paragraph(
                 "<b>Taux</b>",
-                center_small,
+                center,
             ),
             Paragraph(
-                "<b>Part salarié</b>",
-                center_small,
+                "<b>Salarié</b>",
+                center,
             ),
             Paragraph(
-                "<b>Part employeur</b>",
-                center_small,
+                "<b>Employeur</b>",
+                center,
             ),
         ],
+
         [
             Paragraph(
-                "<b>Éléments de revenu</b>",
-                small_bold,
+                "<b>ÉLÉMENTS DE RÉMUNÉRATION</b>",
+                bold,
             ),
             "",
             "",
@@ -535,442 +711,626 @@ def generate_staffhub_bulletin(
         ],
     ]
 
-    for ligne in data["lignes_revenus"]:
-        montant = ligne["montant"]
+    for ligne_revenu in data[
+        "lignes_revenus"
+    ]:
+        montant = money(
+            ligne_revenu["montant"]
+        )
 
-        if ligne["sens"] == "MOINS":
-            montant_texte = (
-                f"-{money(montant)}"
-            )
-        else:
-            montant_texte = (
-                money(montant)
+        if (
+            ligne_revenu["sens"]
+            == "MOINS"
+        ):
+            montant = (
+                f"-{montant}"
             )
 
-        main_rows.append([
+        rows.append([
             Paragraph(
-                ligne["designation"],
-                small,
+                ligne_revenu["designation"],
+                normal,
             ),
             Paragraph(
-                str(ligne["base"]),
-                right_small,
+                str(
+                    ligne_revenu["base"]
+                ),
+                right,
             ),
             Paragraph(
-                str(ligne["taux"]),
-                right_small,
+                str(
+                    ligne_revenu["taux"]
+                ),
+                right,
             ),
             Paragraph(
-                montant_texte,
-                right_small,
+                montant,
+                right,
             ),
             "",
         ])
 
-    main_rows.append([
+    rows.append([
         Paragraph(
             "<b>TOTAL BRUT</b>",
-            small_bold,
+            bold,
         ),
         "",
         "",
-        Paragraph(
-            f"<b>{money(data['brut'])}</b>",
-            right_small,
-        ),
-        "",
-    ])
-
-    main_rows.append([
-        Paragraph(
-            "<b>Cotisations et contributions sociales</b>",
-            small_bold,
-        ),
-        "",
-        "",
-        "",
-        "",
-    ])
-
-    main_rows.append([
         Paragraph(
             (
-                "Cotisations non calculées "
-                "dans cette version de démonstration."
+                "<b>"
+                f"{money(data['brut'])}"
+                "</b>"
             ),
-            small,
+            right,
+        ),
+        "",
+    ])
+
+    index_cotisations = len(rows)
+
+    rows.append([
+        Paragraph(
+            (
+                "<b>COTISATIONS ET "
+                "CONTRIBUTIONS SOCIALES</b>"
+            ),
+            bold,
+        ),
+        "",
+        "",
+        "",
+        "",
+    ])
+
+    cotisations = [
+        "Assurance santé",
+        "Accidents du travail",
+        "Assurance retraite",
+        "Retraite complémentaire",
+        "Assurance chômage",
+        "CSG / CRDS",
+    ]
+
+    for libelle in cotisations:
+        rows.append([
+            Paragraph(
+                libelle,
+                normal,
+            ),
+            Paragraph(
+                money(
+                    data["brut"]
+                ),
+                right,
+            ),
+            "",
+            Paragraph(
+                "—",
+                center,
+            ),
+            Paragraph(
+                "—",
+                center,
+            ),
+        ])
+
+    rows.append([
+        Paragraph(
+            "<b>TOTAL COTISATIONS</b>",
+            bold,
         ),
         "",
         "",
         Paragraph(
             money(
-                data["cotisations_salariales"]
+                data[
+                    "cotisations_salariales"
+                ]
             ),
-            right_small,
+            right,
         ),
         Paragraph(
             money(
-                data["cotisations_employeur"]
+                data[
+                    "cotisations_employeur"
+                ]
             ),
-            right_small,
+            right,
         ),
     ])
 
-    main_table = Table(
-        main_rows,
+    table_paie = Table(
+        rows,
         colWidths=[
             78 * mm,
-            25 * mm,
-            25 * mm,
             28 * mm,
-            28 * mm,
+            26 * mm,
+            31 * mm,
+            30 * mm,
         ],
-        repeatRows=1,
     )
 
-    main_table.setStyle(
+    table_paie.setStyle(
         TableStyle([
             (
                 "GRID",
                 (0, 0),
                 (-1, -1),
-                0.5,
-                colors.black,
+                0.35,
+                border,
             ),
+
             (
                 "BACKGROUND",
                 (0, 0),
                 (-1, 0),
-                colors.lightgrey,
+                grey_light,
             ),
+
             (
                 "BACKGROUND",
                 (0, 1),
                 (-1, 1),
-                colors.whitesmoke,
+                grey_very_light,
             ),
+
             (
                 "SPAN",
                 (0, 1),
                 (-1, 1),
             ),
+
+            (
+                "BACKGROUND",
+                (0, index_cotisations),
+                (-1, index_cotisations),
+                grey_very_light,
+            ),
+
             (
                 "SPAN",
-                (0, -2),
-                (-1, -2),
+                (0, index_cotisations),
+                (-1, index_cotisations),
             ),
+
             (
                 "VALIGN",
                 (0, 0),
                 (-1, -1),
                 "MIDDLE",
             ),
+
             (
                 "LEFTPADDING",
                 (0, 0),
                 (-1, -1),
                 3,
             ),
+
             (
                 "RIGHTPADDING",
                 (0, 0),
                 (-1, -1),
                 3,
             ),
+
             (
                 "TOPPADDING",
                 (0, 0),
                 (-1, -1),
-                3,
+                2.2,
             ),
+
             (
                 "BOTTOMPADDING",
                 (0, 0),
                 (-1, -1),
-                3,
+                2.2,
             ),
         ])
     )
 
-    elements.append(main_table)
+    elements.append(table_paie)
 
     elements.append(
-        Spacer(1, 4 * mm)
-    )
-
-    # ======================================================
-    # CALENDRIER
-    # ======================================================
-
-    pointages_par_jour = {
-        p.date.day: p
-        for p in data["pointages"]
-    }
-
-    calendrier = [
-        [
-            Paragraph(
-                "<b>Jour</b>",
-                center_small,
-            ),
-            Paragraph(
-                "<b>Heures</b>",
-                center_small,
-            ),
-        ]
-    ]
-
-    for jour in range(
-        1,
-        dernier_jour + 1,
-    ):
-        pointage = (
-            pointages_par_jour.get(
-                jour
-            )
+        Spacer(
+            1,
+            2.2 * mm,
         )
-
-        heures = ""
-
-        if pointage:
-            heures = (
-                f"{pointage.heures_travaillees:.2f}"
-                if pointage.heures_travaillees
-                is not None
-                else ""
-            )
-
-        calendrier.append([
-            f"{jour:02d}/{mois:02d}",
-            heures,
-        ])
-
-    calendrier_table = Table(
-        calendrier,
-        colWidths=[
-            22 * mm,
-            22 * mm,
-        ],
     )
 
-    calendrier_table.setStyle(
-        TableStyle([
-            (
-                "GRID",
-                (0, 0),
-                (-1, -1),
-                0.4,
-                colors.grey,
-            ),
-            (
-                "BACKGROUND",
-                (0, 0),
-                (-1, 0),
-                colors.lightgrey,
-            ),
-            (
-                "FONTSIZE",
-                (0, 0),
-                (-1, -1),
-                6.5,
-            ),
-            (
-                "ALIGN",
-                (0, 0),
-                (-1, -1),
-                "CENTER",
-            ),
-            (
-                "TOPPADDING",
-                (0, 0),
-                (-1, -1),
-                1,
-            ),
-            (
-                "BOTTOMPADDING",
-                (0, 0),
-                (-1, -1),
-                1,
-            ),
-        ])
-    )
+    # ========================================================
+    # NET SOCIAL / NET À PAYER
+    # ========================================================
 
-    # ======================================================
-    # NET
-    # ======================================================
-
-    resume = [
+    net_rows = [
         [
             Paragraph(
-                "<b>MONTANT NET SOCIAL</b>",
-                small_bold,
+                "MONTANT NET SOCIAL",
+                net_label,
             ),
             Paragraph(
                 (
-                    f"<b>"
                     f"{money(data['net_social'])} €"
-                    f"</b>"
                 ),
-                right_small,
+                net_amount,
             ),
         ],
+
         [
             Paragraph(
                 (
-                    "<b>NET À PAYER "
-                    "AVANT IMPÔT SUR LE REVENU</b>"
+                    "NET À PAYER AVANT "
+                    "IMPÔT SUR LE REVENU"
                 ),
-                small_bold,
+                net_label,
             ),
             Paragraph(
                 (
-                    f"<b>"
                     f"{money(data['net_avant_impot'])} €"
-                    f"</b>"
                 ),
-                right_small,
+                net_amount,
             ),
         ],
+
         [
             Paragraph(
                 "Prélèvement à la source",
-                small,
+                normal,
             ),
             Paragraph(
                 "Non calculé",
-                right_small,
+                right,
             ),
         ],
+
         [
             Paragraph(
-                "<b>NET À PAYER</b>",
-                small_bold,
+                "NET À PAYER",
+                net_label,
             ),
             Paragraph(
                 (
-                    f"<b>"
                     f"{money(data['net_avant_impot'])} €"
-                    f"</b>"
                 ),
-                right_small,
+                net_amount,
             ),
         ],
     ]
 
-    resume_table = Table(
-        resume,
+    net_table = Table(
+        net_rows,
         colWidths=[
-            105 * mm,
-            31 * mm,
+            145 * mm,
+            48 * mm,
         ],
     )
 
-    resume_table.setStyle(
+    net_table.setStyle(
         TableStyle([
             (
                 "GRID",
                 (0, 0),
                 (-1, -1),
-                0.6,
-                colors.black,
+                0.5,
+                grey,
             ),
+
             (
                 "BACKGROUND",
                 (0, 0),
                 (-1, 0),
-                colors.whitesmoke,
+                green_very_light,
             ),
+
             (
                 "BACKGROUND",
                 (0, 1),
                 (-1, 1),
-                colors.lightgrey,
+                grey_light,
             ),
+
             (
                 "BACKGROUND",
                 (0, 3),
                 (-1, 3),
-                colors.lightgrey,
+                green_light,
             ),
-            (
-                "VALIGN",
-                (0, 0),
-                (-1, -1),
-                "MIDDLE",
-            ),
+
             (
                 "TOPPADDING",
                 (0, 0),
                 (-1, -1),
                 4,
             ),
+
             (
                 "BOTTOMPADDING",
                 (0, 0),
                 (-1, -1),
                 4,
             ),
-        ])
-    )
 
-    bottom = Table(
-        [
-            [
-                resume_table,
-                calendrier_table,
-            ]
-        ],
-        colWidths=[
-            138 * mm,
-            44 * mm,
-        ],
-    )
-
-    bottom.setStyle(
-        TableStyle([
             (
-                "VALIGN",
+                "LEFTPADDING",
                 (0, 0),
                 (-1, -1),
-                "TOP",
+                5,
+            ),
+
+            (
+                "RIGHTPADDING",
+                (0, 0),
+                (-1, -1),
+                5,
             ),
         ])
     )
 
-    elements.append(bottom)
+    elements.append(net_table)
 
     elements.append(
-        Spacer(1, 4 * mm)
+        Spacer(
+            1,
+            2.2 * mm,
+        )
     )
 
-    # ======================================================
+    # ========================================================
+    # CALENDRIER COMPACT
+    # ========================================================
+
+    pointages_par_jour = {}
+
+    for pointage in data[
+        "pointages"
+    ]:
+        jour = pointage.date.day
+
+        if jour not in pointages_par_jour:
+            pointages_par_jour[
+                jour
+            ] = Decimal("0.00")
+
+        pointages_par_jour[
+            jour
+        ] += Decimal(
+            str(
+                pointage.heures_travaillees
+                or 0
+            )
+        )
+
+    jours_1 = list(
+        range(
+            1,
+            min(
+                16,
+                dernier_jour + 1,
+            ),
+        )
+    )
+
+    jours_2 = list(
+        range(
+            16,
+            dernier_jour + 1,
+        )
+    )
+
+    def calendrier_bloc(jours):
+        header_row = [
+            Paragraph(
+                "<b>Jour</b>",
+                small,
+            )
+        ]
+
+        heures_row = [
+            Paragraph(
+                "<b>H.</b>",
+                small,
+            )
+        ]
+
+        for jour in jours:
+            header_row.append(
+                Paragraph(
+                    str(jour),
+                    center,
+                )
+            )
+
+            heures = (
+                pointages_par_jour.get(
+                    jour,
+                    Decimal("0.00"),
+                )
+            )
+
+            heures_row.append(
+                Paragraph(
+                    (
+                        f"{heures:.2f}"
+                        if heures > 0
+                        else ""
+                    ),
+                    center,
+                )
+            )
+
+        # Première colonne plus large
+        # pour éviter le "Heure / s".
+        nombre_jours = len(jours)
+
+        largeur_restante = (
+            193 * mm
+            - 13 * mm
+        )
+
+        largeur_jour = (
+            largeur_restante
+            / nombre_jours
+        )
+
+        table = Table(
+            [
+                header_row,
+                heures_row,
+            ],
+            colWidths=[
+                13 * mm,
+                *[
+                    largeur_jour
+                    for _ in jours
+                ],
+            ],
+        )
+
+        table.setStyle(
+            TableStyle([
+                (
+                    "GRID",
+                    (0, 0),
+                    (-1, -1),
+                    0.3,
+                    border,
+                ),
+
+                (
+                    "BACKGROUND",
+                    (0, 0),
+                    (-1, 0),
+                    grey_light,
+                ),
+
+                (
+                    "BACKGROUND",
+                    (0, 0),
+                    (0, -1),
+                    grey_very_light,
+                ),
+
+                (
+                    "ALIGN",
+                    (0, 0),
+                    (-1, -1),
+                    "CENTER",
+                ),
+
+                (
+                    "VALIGN",
+                    (0, 0),
+                    (-1, -1),
+                    "MIDDLE",
+                ),
+
+                (
+                    "TOPPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    2,
+                ),
+
+                (
+                    "BOTTOMPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    2,
+                ),
+            ])
+        )
+
+        return table
+
+    elements.append(
+        Paragraph(
+            "<b>CALENDRIER DES HEURES</b>",
+            bold,
+        )
+    )
+
+    elements.append(
+        calendrier_bloc(
+            jours_1
+        )
+    )
+
+    if jours_2:
+        elements.append(
+            calendrier_bloc(
+                jours_2
+            )
+        )
+
+    elements.append(
+        Spacer(
+            1,
+            2.2 * mm,
+        )
+    )
+
+    # ========================================================
     # RÉCAPITULATIF
-    # ======================================================
+    # ========================================================
 
     recap = Table(
         [
             [
-                "Brut",
-                "Retenues",
-                "Heures payées",
-                "Net à payer",
-            ],
-            [
-                money(data["brut"]),
-                money(data["retenues"]),
-                (
-                    f"{data['heures_normales']:.2f}"
+                Paragraph(
+                    "<b>Brut</b>",
+                    center,
                 ),
+                Paragraph(
+                    "<b>Retenues</b>",
+                    center,
+                ),
+                Paragraph(
+                    "<b>Heures</b>",
+                    center,
+                ),
+                Paragraph(
+                    "<b>H. sup.</b>",
+                    center,
+                ),
+                Paragraph(
+                    "<b>Net à payer</b>",
+                    center,
+                ),
+            ],
+
+            [
                 money(
-                    data["net_avant_impot"]
+                    data["brut"]
+                ),
+
+                money(
+                    data["retenues"]
+                ),
+
+                (
+                    f"{data['heures_travaillees']:.2f}"
+                ),
+
+                (
+                    f"{data['heures_sup']:.2f}"
+                ),
+
+                money(
+                    data[
+                        "net_avant_impot"
+                    ]
                 ),
             ],
         ],
         colWidths=[
-            45 * mm,
-            45 * mm,
-            45 * mm,
-            45 * mm,
+            38.6 * mm,
+            38.6 * mm,
+            38.6 * mm,
+            38.6 * mm,
+            38.6 * mm,
         ],
     )
 
@@ -980,26 +1340,43 @@ def generate_staffhub_bulletin(
                 "GRID",
                 (0, 0),
                 (-1, -1),
-                0.5,
-                colors.black,
+                0.4,
+                border,
             ),
+
             (
                 "BACKGROUND",
                 (0, 0),
                 (-1, 0),
-                colors.lightgrey,
+                grey_light,
             ),
+
             (
                 "ALIGN",
                 (0, 0),
                 (-1, -1),
                 "CENTER",
             ),
+
             (
                 "FONTSIZE",
                 (0, 0),
                 (-1, -1),
-                7,
+                6.4,
+            ),
+
+            (
+                "TOPPADDING",
+                (0, 0),
+                (-1, -1),
+                3,
+            ),
+
+            (
+                "BOTTOMPADDING",
+                (0, 0),
+                (-1, -1),
+                3,
             ),
         ])
     )
@@ -1007,30 +1384,34 @@ def generate_staffhub_bulletin(
     elements.append(recap)
 
     elements.append(
-        Spacer(1, 4 * mm)
+        Spacer(
+            1,
+            2 * mm,
+        )
     )
 
-    # ======================================================
+    # ========================================================
     # PIED DE PAGE
-    # ======================================================
+    # ========================================================
 
-    footer = Paragraph(
-        (
-            "<b>Document de démonstration StaffHub.</b><br/>"
-            "Ce document est généré à partir des données "
-            "présentes dans l'application et ne constitue "
-            "pas un bulletin de paie officiel."
-        ),
-        ParagraphStyle(
-            "footer",
-            parent=small,
-            alignment=TA_CENTER,
-            fontSize=6.5,
-            leading=8,
-        ),
+    elements.append(
+        Paragraph(
+            (
+                "<b>Document de démonstration StaffHub</b>"
+                "<br/>"
+                "Les cotisations sociales et le "
+                "prélèvement à la source ne sont "
+                "pas encore calculés automatiquement. "
+                "Ce document ne constitue pas un "
+                "bulletin de paie officiel."
+            ),
+            footer_style,
+        )
     )
 
-    elements.append(footer)
+    # ========================================================
+    # BUILD
+    # ========================================================
 
     doc.build(
         elements
