@@ -5,13 +5,21 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.mail import send_mail
 from django.utils.http import urlsafe_base64_decode
 
-from rest_framework import permissions, status, viewsets
+from django_filters.rest_framework import DjangoFilterBackend
+
+from rest_framework import filters, status, viewsets
+from rest_framework import serializers as drf_serializers
 from rest_framework.decorators import (
     api_view,
     permission_classes,
 )
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+
+from drf_spectacular.utils import (
+    extend_schema,
+    inline_serializer,
+)
 
 from apps.demandes.models import Demande
 from apps.paie.models import Paie
@@ -36,7 +44,51 @@ User = get_user_model()
 class SalarieViewSet(viewsets.ModelViewSet):
     serializer_class = SalarieSerializer
 
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
+
+    filterset_fields = [
+        "role",
+        "type_contrat",
+        "etablissement",
+        "poste",
+    ]
+
+    search_fields = [
+        "nom",
+        "prenom",
+        "matricule",
+        "email_personnel",
+        "telephone",
+        "poste",
+        "etablissement",
+        "user__username",
+        "user__email",
+    ]
+
+    ordering_fields = [
+        "nom",
+        "prenom",
+        "matricule",
+        "created_at",
+        "updated_at",
+        "date_debut_contrat",
+        "date_fin_contrat",
+    ]
+
+    ordering = [
+        "nom",
+        "prenom",
+    ]
+
     def get_queryset(self):
+        # Important pour Swagger / drf-spectacular
+        if getattr(self, "swagger_fake_view", False):
+            return Salarie.objects.none()
+
         user = self.request.user
 
         queryset = (
@@ -53,7 +105,12 @@ class SalarieViewSet(viewsets.ModelViewSet):
         ]:
             return queryset
 
-        return queryset.filter(user=user)
+        if not salarie:
+            return queryset.none()
+
+        return queryset.filter(
+            user=user,
+        )
 
     def get_permissions(self):
         if self.action in [
@@ -61,7 +118,9 @@ class SalarieViewSet(viewsets.ModelViewSet):
             "create",
             "destroy",
         ]:
-            permission_classes = [IsRHOrAdmin]
+            permission_classes = [
+                IsRHOrAdmin,
+            ]
 
         elif self.action in [
             "retrieve",
@@ -74,7 +133,9 @@ class SalarieViewSet(viewsets.ModelViewSet):
             ]
 
         else:
-            permission_classes = [IsAuthenticated]
+            permission_classes = [
+                IsAuthenticated,
+            ]
 
         return [
             permission()
@@ -86,7 +147,10 @@ class SalarieViewSet(viewsets.ModelViewSet):
             data=request.data,
         )
 
-        serializer.is_valid(raise_exception=True)
+        serializer.is_valid(
+            raise_exception=True,
+        )
+
         salarie = serializer.save()
 
         temp_password = getattr(
@@ -126,10 +190,11 @@ class SalarieViewSet(viewsets.ModelViewSet):
                 email_sent = True
 
             except Exception:
-                # À remplacer plus tard par un vrai logger.
                 email_sent = False
 
-        response_serializer = self.get_serializer(salarie)
+        response_serializer = self.get_serializer(
+            salarie,
+        )
 
         return Response(
             {
@@ -143,10 +208,29 @@ class SalarieViewSet(viewsets.ModelViewSet):
         )
 
 
+@extend_schema(
+    methods=["GET"],
+    responses=CurrentUserSerializer,
+)
+@extend_schema(
+    methods=["PATCH"],
+    request=CurrentUserSerializer,
+    responses=inline_serializer(
+        name="CurrentUserUpdateResponse",
+        fields={
+            "message": drf_serializers.CharField(),
+            "data": CurrentUserSerializer(),
+        },
+    ),
+)
 @api_view(["GET", "PATCH"])
 @permission_classes([IsAuthenticated])
 def current_user(request):
-    salarie = getattr(request.user, "salarie", None)
+    salarie = getattr(
+        request.user,
+        "salarie",
+        None,
+    )
 
     if not salarie:
         return Response(
@@ -160,8 +244,13 @@ def current_user(request):
         )
 
     if request.method == "GET":
-        serializer = CurrentUserSerializer(salarie)
-        return Response(serializer.data)
+        serializer = CurrentUserSerializer(
+            salarie,
+        )
+
+        return Response(
+            serializer.data,
+        )
 
     serializer = CurrentUserSerializer(
         salarie,
@@ -169,42 +258,105 @@ def current_user(request):
         partial=True,
     )
 
-    serializer.is_valid(raise_exception=True)
+    serializer.is_valid(
+        raise_exception=True,
+    )
+
     serializer.save()
 
-    return Response({
-        "message": "Le profil a été mis à jour.",
-        "data": serializer.data,
-    })
+    return Response(
+        {
+            "message": (
+                "Le profil a été mis à jour."
+            ),
+            "data": serializer.data,
+        },
+        status=status.HTTP_200_OK,
+    )
 
 
+@extend_schema(
+    responses=inline_serializer(
+        name="AdminStatsResponse",
+        fields={
+            "salaries": drf_serializers.IntegerField(),
+            "demandes": drf_serializers.IntegerField(),
+            "demandes_en_attente": drf_serializers.IntegerField(),
+            "demandes_approuvees": drf_serializers.IntegerField(),
+            "demandes_refusees": drf_serializers.IntegerField(),
+            "pointages": drf_serializers.IntegerField(),
+            "fiches": drf_serializers.IntegerField(),
+            "plannings": drf_serializers.IntegerField(),
+        },
+    ),
+)
 @api_view(["GET"])
-@permission_classes([IsAuthenticated, IsAdminOrRH])
+@permission_classes([
+    IsAuthenticated,
+    IsAdminOrRH,
+])
 def admin_stats(request):
-    return Response({
-        "salaries": Salarie.objects.count(),
-        "demandes": Demande.objects.count(),
-        "demandes_en_attente": Demande.objects.filter(
-            statut=Demande.Statut.EN_ATTENTE,
-        ).count(),
-        "demandes_approuvees": Demande.objects.filter(
-            statut=Demande.Statut.APPROUVE,
-        ).count(),
-        "demandes_refusees": Demande.objects.filter(
-            statut=Demande.Statut.REFUSE,
-        ).count(),
-        "pointages": Pointage.objects.count(),
-        "fiches": Paie.objects.count(),
-        "plannings": Planning.objects.count(),
-    })
+    return Response(
+        {
+            "salaries": Salarie.objects.count(),
+
+            "demandes": Demande.objects.count(),
+
+            "demandes_en_attente": (
+                Demande.objects.filter(
+                    statut=Demande.Statut.EN_ATTENTE,
+                ).count()
+            ),
+
+            "demandes_approuvees": (
+                Demande.objects.filter(
+                    statut=Demande.Statut.APPROUVE,
+                ).count()
+            ),
+
+            "demandes_refusees": (
+                Demande.objects.filter(
+                    statut=Demande.Statut.REFUSE,
+                ).count()
+            ),
+
+            "pointages": Pointage.objects.count(),
+
+            "fiches": Paie.objects.count(),
+
+            "plannings": Planning.objects.count(),
+        }
+    )
 
 
+@extend_schema(
+    request=inline_serializer(
+        name="SetPasswordRequest",
+        fields={
+            "uid": drf_serializers.CharField(),
+            "token": drf_serializers.CharField(),
+            "password": drf_serializers.CharField(
+                write_only=True,
+            ),
+            "password_confirmation": drf_serializers.CharField(
+                write_only=True,
+            ),
+        },
+    ),
+    responses=inline_serializer(
+        name="SetPasswordResponse",
+        fields={
+            "message": drf_serializers.CharField(),
+        },
+    ),
+)
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def set_password(request):
     uid = request.data.get("uid")
     token = request.data.get("token")
     password = request.data.get("password")
+
     password_confirmation = request.data.get(
         "password_confirmation"
     )
@@ -212,13 +364,19 @@ def set_password(request):
     errors = {}
 
     if not uid:
-        errors["uid"] = "L’identifiant utilisateur est obligatoire."
+        errors["uid"] = (
+            "L’identifiant utilisateur est obligatoire."
+        )
 
     if not token:
-        errors["token"] = "Le token est obligatoire."
+        errors["token"] = (
+            "Le token est obligatoire."
+        )
 
     if not password:
-        errors["password"] = "Le mot de passe est obligatoire."
+        errors["password"] = (
+            "Le mot de passe est obligatoire."
+        )
 
     if password != password_confirmation:
         errors["password_confirmation"] = (
@@ -232,8 +390,13 @@ def set_password(request):
         )
 
     try:
-        user_id = urlsafe_base64_decode(uid).decode()
-        user = User.objects.get(pk=user_id)
+        user_id = urlsafe_base64_decode(
+            uid
+        ).decode()
+
+        user = User.objects.get(
+            pk=user_id,
+        )
 
     except (
         UnicodeDecodeError,
@@ -242,32 +405,60 @@ def set_password(request):
         User.DoesNotExist,
     ):
         return Response(
-            {"detail": "Utilisateur invalide."},
+            {
+                "detail": (
+                    "Utilisateur invalide."
+                )
+            },
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    if not default_token_generator.check_token(user, token):
+    if not default_token_generator.check_token(
+        user,
+        token,
+    ):
         return Response(
-            {"detail": "Le lien est invalide ou expiré."},
+            {
+                "detail": (
+                    "Le lien est invalide ou expiré."
+                )
+            },
             status=status.HTTP_400_BAD_REQUEST,
         )
 
     try:
-        validate_password(password, user=user)
+        validate_password(
+            password,
+            user=user,
+        )
 
     except DjangoValidationError as error:
         return Response(
-            {"password": list(error.messages)},
+            {
+                "password": list(
+                    error.messages
+                )
+            },
             status=status.HTTP_400_BAD_REQUEST,
         )
 
     user.set_password(password)
-    user.save(update_fields=["password"])
 
-    salarie = getattr(user, "salarie", None)
+    user.save(
+        update_fields=[
+            "password",
+        ]
+    )
+
+    salarie = getattr(
+        user,
+        "salarie",
+        None,
+    )
 
     if salarie:
         salarie.must_change_password = False
+
         salarie.save(
             update_fields=[
                 "must_change_password",
@@ -275,6 +466,11 @@ def set_password(request):
             ]
         )
 
-    return Response({
-        "message": "Le mot de passe a été enregistré."
-    })
+    return Response(
+        {
+            "message": (
+                "Le mot de passe a été enregistré."
+            )
+        },
+        status=status.HTTP_200_OK,
+    )

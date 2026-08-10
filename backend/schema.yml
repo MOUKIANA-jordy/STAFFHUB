@@ -1,0 +1,5428 @@
+openapi: 3.0.3
+info:
+  title: API Gestion RH
+  version: 1.0.0
+  description: Backend RH - Salariés, Paie, Pointage, Documents
+paths:
+  /api/admin/stats/:
+    get:
+      operationId: admin_stats_retrieve
+      tags:
+      - admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminStatsResponse'
+          description: ''
+  /api/adresses/:
+    get:
+      operationId: adresses_list
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - adresses
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAdresseList'
+          description: ''
+    post:
+      operationId: adresses_create
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      tags:
+      - adresses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Adresse'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Adresse'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Adresse'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Adresse'
+          description: ''
+  /api/adresses/{id}/:
+    get:
+      operationId: adresses_retrieve
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this adresse.
+        required: true
+      tags:
+      - adresses
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Adresse'
+          description: ''
+    put:
+      operationId: adresses_update
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this adresse.
+        required: true
+      tags:
+      - adresses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Adresse'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Adresse'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Adresse'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Adresse'
+          description: ''
+    patch:
+      operationId: adresses_partial_update
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this adresse.
+        required: true
+      tags:
+      - adresses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAdresse'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAdresse'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAdresse'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Adresse'
+          description: ''
+    delete:
+      operationId: adresses_destroy
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this adresse.
+        required: true
+      tags:
+      - adresses
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/conversations/:
+    get:
+      operationId: conversations_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - conversations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedConversationListList'
+          description: ''
+    post:
+      operationId: conversations_create
+      tags:
+      - conversations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConversationCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ConversationCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ConversationCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationCreate'
+          description: ''
+  /api/conversations/{id}/:
+    get:
+      operationId: conversations_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this conversation.
+        required: true
+      tags:
+      - conversations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationDetail'
+          description: ''
+    put:
+      operationId: conversations_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this conversation.
+        required: true
+      tags:
+      - conversations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConversationList'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ConversationList'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ConversationList'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationList'
+          description: ''
+    patch:
+      operationId: conversations_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this conversation.
+        required: true
+      tags:
+      - conversations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedConversationList'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedConversationList'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedConversationList'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationList'
+          description: ''
+    delete:
+      operationId: conversations_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this conversation.
+        required: true
+      tags:
+      - conversations
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/conversations/{id}/marquer-lue/:
+    post:
+      operationId: conversations_marquer_lue_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this conversation.
+        required: true
+      tags:
+      - conversations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConversationList'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ConversationList'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ConversationList'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationList'
+          description: ''
+  /api/conversations/{id}/messages/:
+    get:
+      operationId: conversations_messages_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this conversation.
+        required: true
+      tags:
+      - conversations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationList'
+          description: ''
+  /api/conversations/{id}/quitter/:
+    post:
+      operationId: conversations_quitter_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this conversation.
+        required: true
+      tags:
+      - conversations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConversationList'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ConversationList'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ConversationList'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationList'
+          description: ''
+  /api/demandes/:
+    get:
+      operationId: demandes_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: salarie
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: statut
+        schema:
+          type: string
+          enum:
+          - APPROUVE
+          - EN_ATTENTE
+          - REFUSE
+        description: |-
+          * `EN_ATTENTE` - En attente
+          * `APPROUVE` - Approuvé
+          * `REFUSE` - Refusé
+      - in: query
+        name: type_demande
+        schema:
+          type: string
+          enum:
+          - ABSENCE
+          - ACOMPTE
+          - AVANCE
+          - CALENDRIER
+          - CET
+          - FICHE
+          - HEURES_SUP
+        description: |-
+          * `ACOMPTE` - Acompte
+          * `AVANCE` - Avance
+          * `CALENDRIER` - Modification du calendrier
+          * `FICHE` - Demande de fiche
+          * `CET` - Paiement CET
+          * `HEURES_SUP` - Paiement heures supplémentaires
+          * `ABSENCE` - Absence
+      tags:
+      - demandes
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDemandeList'
+          description: ''
+    post:
+      operationId: demandes_create
+      tags:
+      - demandes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Demande'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Demande'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Demande'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Demande'
+          description: ''
+  /api/demandes/{id}/:
+    get:
+      operationId: demandes_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this demande.
+        required: true
+      tags:
+      - demandes
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Demande'
+          description: ''
+    put:
+      operationId: demandes_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this demande.
+        required: true
+      tags:
+      - demandes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Demande'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Demande'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Demande'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Demande'
+          description: ''
+    patch:
+      operationId: demandes_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this demande.
+        required: true
+      tags:
+      - demandes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDemande'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDemande'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDemande'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Demande'
+          description: ''
+    delete:
+      operationId: demandes_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this demande.
+        required: true
+      tags:
+      - demandes
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/demandes/{id}/approuver/:
+    post:
+      operationId: demandes_approuver_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this demande.
+        required: true
+      tags:
+      - demandes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Demande'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Demande'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Demande'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Demande'
+          description: ''
+  /api/demandes/{id}/refuser/:
+    post:
+      operationId: demandes_refuser_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this demande.
+        required: true
+      tags:
+      - demandes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Demande'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Demande'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Demande'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Demande'
+          description: ''
+  /api/documents/:
+    get:
+      operationId: documents_list
+      parameters:
+      - in: query
+        name: archive
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: salarie
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: type_document
+        schema:
+          type: string
+          enum:
+          - AUTRE
+          - CERTIFICAT_MEDICAL
+          - CNI
+          - CONTRAT
+          - DIPLOME
+          - JUSTIFICATIF_DOMICILE
+          - PASSEPORT
+          - PERMIS
+          - RIB
+        description: |-
+          * `CNI` - Carte nationale d’identité
+          * `PASSEPORT` - Passeport
+          * `CONTRAT` - Contrat
+          * `DIPLOME` - Diplôme
+          * `PERMIS` - Permis
+          * `RIB` - RIB
+          * `JUSTIFICATIF_DOMICILE` - Justificatif de domicile
+          * `CERTIFICAT_MEDICAL` - Certificat médical
+          * `AUTRE` - Autre
+      tags:
+      - documents
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDocumentList'
+          description: ''
+    post:
+      operationId: documents_create
+      tags:
+      - documents
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Document'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Document'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Document'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+          description: ''
+  /api/documents/{id}/:
+    get:
+      operationId: documents_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this document.
+        required: true
+      tags:
+      - documents
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+          description: ''
+    put:
+      operationId: documents_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this document.
+        required: true
+      tags:
+      - documents
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Document'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Document'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Document'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+          description: ''
+    patch:
+      operationId: documents_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this document.
+        required: true
+      tags:
+      - documents
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDocument'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDocument'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDocument'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+          description: ''
+    delete:
+      operationId: documents_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this document.
+        required: true
+      tags:
+      - documents
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/dossiers/:
+    get:
+      operationId: dossiers_list
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - dossiers
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDossierList'
+          description: ''
+    post:
+      operationId: dossiers_create
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      tags:
+      - dossiers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Dossier'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Dossier'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Dossier'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dossier'
+          description: ''
+  /api/dossiers/{id}/:
+    get:
+      operationId: dossiers_retrieve
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this dossier.
+        required: true
+      tags:
+      - dossiers
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dossier'
+          description: ''
+    put:
+      operationId: dossiers_update
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this dossier.
+        required: true
+      tags:
+      - dossiers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Dossier'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Dossier'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Dossier'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dossier'
+          description: ''
+    patch:
+      operationId: dossiers_partial_update
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this dossier.
+        required: true
+      tags:
+      - dossiers
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDossier'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDossier'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDossier'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dossier'
+          description: ''
+    delete:
+      operationId: dossiers_destroy
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this dossier.
+        required: true
+      tags:
+      - dossiers
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/etatcivil/:
+    get:
+      operationId: etatcivil_list
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - etatcivil
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEtatCivilList'
+          description: ''
+    post:
+      operationId: etatcivil_create
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      tags:
+      - etatcivil
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EtatCivil'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EtatCivil'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EtatCivil'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EtatCivil'
+          description: ''
+  /api/etatcivil/{id}/:
+    get:
+      operationId: etatcivil_retrieve
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this etat civil.
+        required: true
+      tags:
+      - etatcivil
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EtatCivil'
+          description: ''
+    put:
+      operationId: etatcivil_update
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this etat civil.
+        required: true
+      tags:
+      - etatcivil
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EtatCivil'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EtatCivil'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EtatCivil'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EtatCivil'
+          description: ''
+    patch:
+      operationId: etatcivil_partial_update
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this etat civil.
+        required: true
+      tags:
+      - etatcivil
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedEtatCivil'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedEtatCivil'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedEtatCivil'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EtatCivil'
+          description: ''
+    delete:
+      operationId: etatcivil_destroy
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this etat civil.
+        required: true
+      tags:
+      - etatcivil
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/famille/:
+    get:
+      operationId: famille_list
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - famille
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFamilleList'
+          description: ''
+    post:
+      operationId: famille_create
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      tags:
+      - famille
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Famille'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Famille'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Famille'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Famille'
+          description: ''
+  /api/famille/{id}/:
+    get:
+      operationId: famille_retrieve
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this famille.
+        required: true
+      tags:
+      - famille
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Famille'
+          description: ''
+    put:
+      operationId: famille_update
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this famille.
+        required: true
+      tags:
+      - famille
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Famille'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Famille'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Famille'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Famille'
+          description: ''
+    patch:
+      operationId: famille_partial_update
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this famille.
+        required: true
+      tags:
+      - famille
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedFamille'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedFamille'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedFamille'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Famille'
+          description: ''
+    delete:
+      operationId: famille_destroy
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this famille.
+        required: true
+      tags:
+      - famille
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/iban/:
+    get:
+      operationId: iban_list
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - iban
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedIbanList'
+          description: ''
+    post:
+      operationId: iban_create
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      tags:
+      - iban
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Iban'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Iban'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Iban'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Iban'
+          description: ''
+  /api/iban/{id}/:
+    get:
+      operationId: iban_retrieve
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this iban.
+        required: true
+      tags:
+      - iban
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Iban'
+          description: ''
+    put:
+      operationId: iban_update
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this iban.
+        required: true
+      tags:
+      - iban
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Iban'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Iban'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Iban'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Iban'
+          description: ''
+    patch:
+      operationId: iban_partial_update
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this iban.
+        required: true
+      tags:
+      - iban
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedIban'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedIban'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedIban'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Iban'
+          description: ''
+    delete:
+      operationId: iban_destroy
+      description: ViewSet commun pour les objets appartenant à un salarié.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this iban.
+        required: true
+      tags:
+      - iban
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/me/:
+    get:
+      operationId: me_retrieve
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUser'
+          description: ''
+    patch:
+      operationId: me_partial_update
+      tags:
+      - me
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCurrentUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCurrentUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCurrentUser'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUserUpdateResponse'
+          description: ''
+  /api/messages/:
+    get:
+      operationId: messages_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - messages
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMessageList'
+          description: ''
+    post:
+      operationId: messages_create
+      tags:
+      - messages
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Message'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Message'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Message'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+          description: ''
+  /api/messages/{id}/:
+    get:
+      operationId: messages_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this message.
+        required: true
+      tags:
+      - messages
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+          description: ''
+    put:
+      operationId: messages_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this message.
+        required: true
+      tags:
+      - messages
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Message'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Message'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Message'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+          description: ''
+    patch:
+      operationId: messages_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this message.
+        required: true
+      tags:
+      - messages
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMessage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMessage'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMessage'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+          description: ''
+    delete:
+      operationId: messages_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this message.
+        required: true
+      tags:
+      - messages
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/notifications/:
+    get:
+      operationId: notifications_list
+      parameters:
+      - in: query
+        name: is_read
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: priorite
+        schema:
+          type: string
+          enum:
+          - BASSE
+          - HAUTE
+          - NORMALE
+          - URGENTE
+        description: |-
+          * `BASSE` - Basse
+          * `NORMALE` - Normale
+          * `HAUTE` - Haute
+          * `URGENTE` - Urgente
+      - in: query
+        name: salarie
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: type_notification
+        schema:
+          type: string
+          enum:
+          - ALERTE
+          - DEMANDE
+          - DOCUMENT
+          - INFO
+          - PAIE
+          - PLANNING
+          - POINTAGE
+          - REFUS
+          - VALIDATION
+        description: |-
+          * `INFO` - Information
+          * `ALERTE` - Alerte
+          * `VALIDATION` - Validation
+          * `REFUS` - Refus
+          * `PAIE` - Paie
+          * `DOCUMENT` - Document
+          * `DEMANDE` - Demande
+          * `PLANNING` - Planning
+          * `POINTAGE` - Pointage
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNotificationList'
+          description: ''
+    post:
+      operationId: notifications_create
+      tags:
+      - notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Notification'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/notifications/{id}/:
+    get:
+      operationId: notifications_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this notification.
+        required: true
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+    put:
+      operationId: notifications_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this notification.
+        required: true
+      tags:
+      - notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Notification'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+    patch:
+      operationId: notifications_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this notification.
+        required: true
+      tags:
+      - notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedNotification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedNotification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedNotification'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+    delete:
+      operationId: notifications_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this notification.
+        required: true
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/notifications/{id}/marquer-lue/:
+    post:
+      operationId: notifications_marquer_lue_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this notification.
+        required: true
+      tags:
+      - notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Notification'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/notifications/{id}/marquer-non-lue/:
+    post:
+      operationId: notifications_marquer_non_lue_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this notification.
+        required: true
+      tags:
+      - notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Notification'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/notifications/compteur/:
+    get:
+      operationId: notifications_compteur_retrieve
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/notifications/non-lues/:
+    get:
+      operationId: notifications_non_lues_retrieve
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/notifications/tout-marquer-lu/:
+    post:
+      operationId: notifications_tout_marquer_lu_create
+      tags:
+      - notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Notification'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/paie/:
+    get:
+      operationId: paie_list
+      parameters:
+      - in: query
+        name: date_paiement
+        schema:
+          type: string
+          format: date
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: salarie
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: type_paiement
+        schema:
+          type: string
+          enum:
+          - ACOMPTE
+          - AVANCE
+          - CALENDRIER_PAIE
+          - CET
+          - FICHE_PAIE
+          - HEURES_SUP
+          - SALAIRE
+        description: |-
+          * `SALAIRE` - Salaire
+          * `ACOMPTE` - Acompte
+          * `AVANCE` - Avance
+          * `CET` - Paiement CET
+          * `HEURES_SUP` - Heures supplémentaires
+          * `FICHE_PAIE` - Fiche de paie
+          * `CALENDRIER_PAIE` - Calendrier de paie
+      tags:
+      - paie
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPaieList'
+          description: ''
+    post:
+      operationId: paie_create
+      tags:
+      - paie
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Paie'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Paie'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Paie'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Paie'
+          description: ''
+  /api/paie/{id}/:
+    get:
+      operationId: paie_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this paie.
+        required: true
+      tags:
+      - paie
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Paie'
+          description: ''
+    put:
+      operationId: paie_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this paie.
+        required: true
+      tags:
+      - paie
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Paie'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Paie'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Paie'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Paie'
+          description: ''
+    patch:
+      operationId: paie_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this paie.
+        required: true
+      tags:
+      - paie
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPaie'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPaie'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPaie'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Paie'
+          description: ''
+    delete:
+      operationId: paie_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this paie.
+        required: true
+      tags:
+      - paie
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/paie/{id}/pdf/:
+    get:
+      operationId: paie_pdf_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - paie
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+          description: ''
+  /api/pieces-jointes/:
+    get:
+      operationId: pieces_jointes_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - pieces-jointes
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPieceJointeList'
+          description: ''
+    post:
+      operationId: pieces_jointes_create
+      tags:
+      - pieces-jointes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PieceJointe'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PieceJointe'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PieceJointe'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PieceJointe'
+          description: ''
+  /api/pieces-jointes/{id}/:
+    get:
+      operationId: pieces_jointes_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this piece jointe.
+        required: true
+      tags:
+      - pieces-jointes
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PieceJointe'
+          description: ''
+    put:
+      operationId: pieces_jointes_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this piece jointe.
+        required: true
+      tags:
+      - pieces-jointes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PieceJointe'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PieceJointe'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PieceJointe'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PieceJointe'
+          description: ''
+    patch:
+      operationId: pieces_jointes_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this piece jointe.
+        required: true
+      tags:
+      - pieces-jointes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPieceJointe'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPieceJointe'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPieceJointe'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PieceJointe'
+          description: ''
+    delete:
+      operationId: pieces_jointes_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this piece jointe.
+        required: true
+      tags:
+      - pieces-jointes
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/planning/:
+    get:
+      operationId: planning_list
+      parameters:
+      - in: query
+        name: date
+        schema:
+          type: string
+          format: date
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: salarie
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: type_journee
+        schema:
+          type: string
+          enum:
+          - ABSENCE
+          - BUREAU
+          - CONGE
+          - FORMATION
+          - TELETRAVAIL
+          - VACATION
+        description: |-
+          * `BUREAU` - Bureau
+          * `TELETRAVAIL` - Télétravail
+          * `CONGE` - Congé
+          * `ABSENCE` - Absence
+          * `VACATION` - Vacation
+          * `FORMATION` - Formation
+      tags:
+      - planning
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPlanningList'
+          description: ''
+    post:
+      operationId: planning_create
+      tags:
+      - planning
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Planning'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Planning'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Planning'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Planning'
+          description: ''
+  /api/planning/{id}/:
+    get:
+      operationId: planning_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this planning.
+        required: true
+      tags:
+      - planning
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Planning'
+          description: ''
+    put:
+      operationId: planning_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this planning.
+        required: true
+      tags:
+      - planning
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Planning'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Planning'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Planning'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Planning'
+          description: ''
+    patch:
+      operationId: planning_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this planning.
+        required: true
+      tags:
+      - planning
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPlanning'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPlanning'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPlanning'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Planning'
+          description: ''
+    delete:
+      operationId: planning_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this planning.
+        required: true
+      tags:
+      - planning
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/pointage/:
+    get:
+      operationId: pointage_list
+      parameters:
+      - in: query
+        name: date
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: mois_paie
+        schema:
+          type: string
+          format: date
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: salarie
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - pointage
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPointageList'
+          description: ''
+    post:
+      operationId: pointage_create
+      tags:
+      - pointage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pointage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Pointage'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Pointage'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pointage'
+          description: ''
+  /api/pointage/{id}/:
+    get:
+      operationId: pointage_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this pointage.
+        required: true
+      tags:
+      - pointage
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pointage'
+          description: ''
+    put:
+      operationId: pointage_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this pointage.
+        required: true
+      tags:
+      - pointage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pointage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Pointage'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Pointage'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pointage'
+          description: ''
+    patch:
+      operationId: pointage_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this pointage.
+        required: true
+      tags:
+      - pointage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPointage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPointage'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPointage'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pointage'
+          description: ''
+    delete:
+      operationId: pointage_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this pointage.
+        required: true
+      tags:
+      - pointage
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/salaries/:
+    get:
+      operationId: salaries_list
+      parameters:
+      - in: query
+        name: etablissement
+        schema:
+          type: string
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: poste
+        schema:
+          type: string
+      - in: query
+        name: role
+        schema:
+          type: string
+          enum:
+          - ADMIN
+          - RH
+          - SALARIE
+        description: |-
+          * `SALARIE` - Salarié
+          * `RH` - Ressources humaines
+          * `ADMIN` - Administrateur
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: type_contrat
+        schema:
+          type: string
+          enum:
+          - ALTERNANT
+          - CDD
+          - CDI
+          - STAGIAIRE
+          - VACATAIRE
+        description: |-
+          * `CDI` - CDI
+          * `CDD` - CDD
+          * `VACATAIRE` - Vacataire
+          * `STAGIAIRE` - Stagiaire
+          * `ALTERNANT` - Alternant
+      tags:
+      - salaries
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSalarieList'
+          description: ''
+    post:
+      operationId: salaries_create
+      tags:
+      - salaries
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Salarie'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Salarie'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Salarie'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Salarie'
+          description: ''
+  /api/salaries/{id}/:
+    get:
+      operationId: salaries_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this salarie.
+        required: true
+      tags:
+      - salaries
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Salarie'
+          description: ''
+    put:
+      operationId: salaries_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this salarie.
+        required: true
+      tags:
+      - salaries
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Salarie'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Salarie'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Salarie'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Salarie'
+          description: ''
+    patch:
+      operationId: salaries_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this salarie.
+        required: true
+      tags:
+      - salaries
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSalarie'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSalarie'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSalarie'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Salarie'
+          description: ''
+    delete:
+      operationId: salaries_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this salarie.
+        required: true
+      tags:
+      - salaries
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/token/:
+    post:
+      operationId: token_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /api/token/refresh/:
+    post:
+      operationId: token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+components:
+  schemas:
+    AdminStatsResponse:
+      type: object
+      properties:
+        salaries:
+          type: integer
+        demandes:
+          type: integer
+        demandes_en_attente:
+          type: integer
+        demandes_approuvees:
+          type: integer
+        demandes_refusees:
+          type: integer
+        pointages:
+          type: integer
+        fiches:
+          type: integer
+        plannings:
+          type: integer
+      required:
+      - demandes
+      - demandes_approuvees
+      - demandes_en_attente
+      - demandes_refusees
+      - fiches
+      - plannings
+      - pointages
+      - salaries
+    Adresse:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        salarie:
+          type: integer
+          readOnly: true
+        salarie_nom:
+          type: string
+          readOnly: true
+        numero:
+          type: string
+          maxLength: 10
+        voie:
+          type: string
+          maxLength: 255
+        complement:
+          type: string
+          maxLength: 255
+        code_postal:
+          type: string
+          maxLength: 10
+        commune:
+          type: string
+          maxLength: 100
+        pays:
+          type: string
+          maxLength: 100
+        telephone:
+          type: string
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - code_postal
+      - commune
+      - created_at
+      - id
+      - salarie
+      - salarie_nom
+      - updated_at
+      - voie
+    ConversationCreate:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        sujet:
+          type: string
+          maxLength: 255
+        type_conversation:
+          $ref: '#/components/schemas/TypeConversationEnum'
+        participants_ids:
+          type: array
+          items:
+            type: integer
+            writeOnly: true
+          writeOnly: true
+        active:
+          type: boolean
+          readOnly: true
+      required:
+      - active
+      - id
+      - participants_ids
+    ConversationDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        sujet:
+          type: string
+          maxLength: 255
+        type_conversation:
+          $ref: '#/components/schemas/TypeConversationEnum'
+        cree_par:
+          type: integer
+          readOnly: true
+          nullable: true
+        cree_par_nom:
+          type: string
+          readOnly: true
+        active:
+          type: boolean
+        participants:
+          type: array
+          items:
+            $ref: '#/components/schemas/Participant'
+          readOnly: true
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - cree_par
+      - cree_par_nom
+      - id
+      - messages
+      - participants
+      - updated_at
+    ConversationList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        sujet:
+          type: string
+          maxLength: 255
+        type_conversation:
+          $ref: '#/components/schemas/TypeConversationEnum'
+        cree_par:
+          type: integer
+          readOnly: true
+          nullable: true
+        cree_par_nom:
+          type: string
+          readOnly: true
+        active:
+          type: boolean
+        participants_count:
+          type: integer
+          readOnly: true
+        dernier_message:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - cree_par
+      - cree_par_nom
+      - dernier_message
+      - id
+      - participants_count
+      - updated_at
+    CurrentUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+        email_pro:
+          type: string
+          format: email
+          readOnly: true
+        nom:
+          type: string
+          maxLength: 100
+        prenom:
+          type: string
+          maxLength: 100
+        matricule:
+          type: string
+          readOnly: true
+        email_personnel:
+          type: string
+          format: email
+          maxLength: 254
+        telephone:
+          type: string
+          maxLength: 20
+        date_naissance:
+          type: string
+          format: date
+          nullable: true
+        type_contrat:
+          allOf:
+          - $ref: '#/components/schemas/TypeContratEnum'
+          readOnly: true
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+        date_debut_contrat:
+          type: string
+          format: date
+          readOnly: true
+        date_fin_contrat:
+          type: string
+          format: date
+          readOnly: true
+          nullable: true
+        poste:
+          type: string
+          readOnly: true
+        etablissement:
+          type: string
+          readOnly: true
+        must_change_password:
+          type: boolean
+          readOnly: true
+      required:
+      - date_debut_contrat
+      - date_fin_contrat
+      - email_personnel
+      - email_pro
+      - etablissement
+      - id
+      - matricule
+      - must_change_password
+      - nom
+      - poste
+      - prenom
+      - role
+      - type_contrat
+      - username
+    CurrentUserUpdateResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/CurrentUser'
+      required:
+      - data
+      - message
+    Demande:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        salarie:
+          type: integer
+          readOnly: true
+        salarie_nom:
+          type: string
+          readOnly: true
+        type_demande:
+          $ref: '#/components/schemas/TypeDemandeEnum'
+        type_demande_display:
+          type: string
+          readOnly: true
+        montant_souhaite:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        details: {}
+        document:
+          type: string
+          format: uri
+          nullable: true
+        statut:
+          allOf:
+          - $ref: '#/components/schemas/StatutEnum'
+          readOnly: true
+        statut_display:
+          type: string
+          readOnly: true
+        date_demande:
+          type: string
+          format: date-time
+          readOnly: true
+        processed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - date_demande
+      - id
+      - processed_at
+      - salarie
+      - salarie_nom
+      - statut
+      - statut_display
+      - type_demande
+      - type_demande_display
+    Document:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        salarie:
+          type: integer
+          readOnly: true
+        salarie_nom:
+          type: string
+          readOnly: true
+        type_document:
+          $ref: '#/components/schemas/TypeDocumentEnum'
+        type_document_display:
+          type: string
+          readOnly: true
+        titre:
+          type: string
+          maxLength: 150
+        fichier:
+          type: string
+          format: uri
+        nom_fichier:
+          type: string
+          readOnly: true
+        extension:
+          type: string
+          readOnly: true
+        taille:
+          type: integer
+          readOnly: true
+        numero:
+          type: string
+          maxLength: 100
+        date_emission:
+          type: string
+          format: date
+          nullable: true
+        date_expiration:
+          type: string
+          format: date
+          nullable: true
+        description:
+          type: string
+        archive:
+          type: boolean
+        est_expire:
+          type: boolean
+          readOnly: true
+        uploaded_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        uploaded_by_username:
+          type: string
+          readOnly: true
+          nullable: true
+        uploaded_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - est_expire
+      - extension
+      - fichier
+      - id
+      - nom_fichier
+      - salarie
+      - salarie_nom
+      - taille
+      - type_document
+      - type_document_display
+      - updated_at
+      - uploaded_at
+      - uploaded_by
+      - uploaded_by_username
+    Dossier:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        salarie:
+          type: integer
+          readOnly: true
+        salarie_nom:
+          type: string
+          readOnly: true
+        infos_complementaires: {}
+        adresse:
+          allOf:
+          - $ref: '#/components/schemas/Adresse'
+          readOnly: true
+        etat_civil:
+          allOf:
+          - $ref: '#/components/schemas/EtatCivil'
+          readOnly: true
+        coordonnees_bancaires:
+          allOf:
+          - $ref: '#/components/schemas/Iban'
+          readOnly: true
+        famille:
+          type: array
+          items:
+            $ref: '#/components/schemas/Famille'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - adresse
+      - coordonnees_bancaires
+      - created_at
+      - etat_civil
+      - famille
+      - id
+      - salarie
+      - salarie_nom
+      - updated_at
+    EtatCivil:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        salarie:
+          type: integer
+          readOnly: true
+        numero_secu:
+          type: string
+          writeOnly: true
+          nullable: true
+          maxLength: 20
+        numero_secu_masque:
+          type: string
+          readOnly: true
+        nom_naissance:
+          type: string
+          maxLength: 100
+        nom_usage:
+          type: string
+          maxLength: 100
+        prenom:
+          type: string
+          maxLength: 100
+        sexe:
+          $ref: '#/components/schemas/SexeEnum'
+        date_naissance:
+          type: string
+          format: date
+          nullable: true
+        lieu_naissance:
+          type: string
+          maxLength: 150
+        pays_naissance:
+          type: string
+          maxLength: 100
+        nationalite:
+          type: string
+          maxLength: 100
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - numero_secu_masque
+      - prenom
+      - salarie
+      - updated_at
+    Famille:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        salarie:
+          type: integer
+          readOnly: true
+        nom:
+          type: string
+          maxLength: 100
+        prenom:
+          type: string
+          maxLength: 100
+        lien:
+          $ref: '#/components/schemas/LienEnum'
+        lien_display:
+          type: string
+          readOnly: true
+        telephone:
+          type: string
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        contact_urgence:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - lien
+      - lien_display
+      - nom
+      - prenom
+      - salarie
+      - updated_at
+    Iban:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        salarie:
+          type: integer
+          readOnly: true
+        iban:
+          type: string
+          writeOnly: true
+          maxLength: 34
+        iban_masque:
+          type: string
+          readOnly: true
+        bic:
+          type: string
+          maxLength: 11
+        titulaire:
+          type: string
+          maxLength: 150
+        nom_banque:
+          type: string
+          maxLength: 150
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - iban
+      - iban_masque
+      - id
+      - salarie
+      - titulaire
+      - updated_at
+    LienEnum:
+      enum:
+      - CONJOINT
+      - ENFANT
+      - PARENT
+      - FRERE_SOEUR
+      - AUTRE
+      type: string
+      description: |-
+        * `CONJOINT` - Conjoint(e)
+        * `ENFANT` - Enfant
+        * `PARENT` - Parent
+        * `FRERE_SOEUR` - Frère ou sœur
+        * `AUTRE` - Autre
+    Message:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        conversation:
+          type: integer
+        auteur:
+          type: integer
+          readOnly: true
+        auteur_nom:
+          type: string
+          readOnly: true
+        auteur_matricule:
+          type: string
+          readOnly: true
+        contenu:
+          type: string
+        is_edited:
+          type: boolean
+          readOnly: true
+        pieces_jointes:
+          type: array
+          items:
+            $ref: '#/components/schemas/PieceJointe'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - auteur
+      - auteur_matricule
+      - auteur_nom
+      - contenu
+      - conversation
+      - created_at
+      - id
+      - is_edited
+      - pieces_jointes
+      - updated_at
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        salarie:
+          type: integer
+        salarie_nom:
+          type: string
+          readOnly: true
+        titre:
+          type: string
+          maxLength: 255
+        message:
+          type: string
+        type_notification:
+          $ref: '#/components/schemas/TypeNotificationEnum'
+        type_notification_display:
+          type: string
+          readOnly: true
+        priorite:
+          $ref: '#/components/schemas/PrioriteEnum'
+        priorite_display:
+          type: string
+          readOnly: true
+        lien:
+          type: string
+          maxLength: 255
+        is_read:
+          type: boolean
+          readOnly: true
+        read_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        created_by_username:
+          type: string
+          readOnly: true
+          nullable: true
+        date_envoi:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_by
+      - created_by_username
+      - date_envoi
+      - id
+      - is_read
+      - message
+      - priorite_display
+      - read_at
+      - salarie
+      - salarie_nom
+      - titre
+      - type_notification_display
+      - updated_at
+    PaginatedAdresseList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Adresse'
+    PaginatedConversationListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConversationList'
+    PaginatedDemandeList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Demande'
+    PaginatedDocumentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Document'
+    PaginatedDossierList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Dossier'
+    PaginatedEtatCivilList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/EtatCivil'
+    PaginatedFamilleList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Famille'
+    PaginatedIbanList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Iban'
+    PaginatedMessageList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+    PaginatedNotificationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+    PaginatedPaieList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Paie'
+    PaginatedPieceJointeList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PieceJointe'
+    PaginatedPlanningList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Planning'
+    PaginatedPointageList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Pointage'
+    PaginatedSalarieList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Salarie'
+    Paie:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        salarie:
+          type: integer
+        salarie_nom:
+          type: string
+          readOnly: true
+        demande:
+          type: integer
+          nullable: true
+        demande_type:
+          type: string
+          readOnly: true
+          nullable: true
+        type_paiement:
+          $ref: '#/components/schemas/TypePaiementEnum'
+        type_paiement_display:
+          type: string
+          readOnly: true
+        montant:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        date_paiement:
+          type: string
+          format: date
+        preuve_pdf:
+          type: string
+          format: uri
+          nullable: true
+        commentaire:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - date_paiement
+      - demande_type
+      - id
+      - salarie
+      - salarie_nom
+      - type_paiement
+      - type_paiement_display
+      - updated_at
+    Participant:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        salarie:
+          type: integer
+        salarie_nom:
+          type: string
+          readOnly: true
+        matricule:
+          type: string
+          readOnly: true
+        role:
+          type: string
+          readOnly: true
+        is_admin:
+          type: boolean
+        last_read_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        joined_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - id
+      - joined_at
+      - last_read_at
+      - matricule
+      - role
+      - salarie
+      - salarie_nom
+    PatchedAdresse:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        salarie:
+          type: integer
+          readOnly: true
+        salarie_nom:
+          type: string
+          readOnly: true
+        numero:
+          type: string
+          maxLength: 10
+        voie:
+          type: string
+          maxLength: 255
+        complement:
+          type: string
+          maxLength: 255
+        code_postal:
+          type: string
+          maxLength: 10
+        commune:
+          type: string
+          maxLength: 100
+        pays:
+          type: string
+          maxLength: 100
+        telephone:
+          type: string
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedConversationList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        sujet:
+          type: string
+          maxLength: 255
+        type_conversation:
+          $ref: '#/components/schemas/TypeConversationEnum'
+        cree_par:
+          type: integer
+          readOnly: true
+          nullable: true
+        cree_par_nom:
+          type: string
+          readOnly: true
+        active:
+          type: boolean
+        participants_count:
+          type: integer
+          readOnly: true
+        dernier_message:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedCurrentUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+        email_pro:
+          type: string
+          format: email
+          readOnly: true
+        nom:
+          type: string
+          maxLength: 100
+        prenom:
+          type: string
+          maxLength: 100
+        matricule:
+          type: string
+          readOnly: true
+        email_personnel:
+          type: string
+          format: email
+          maxLength: 254
+        telephone:
+          type: string
+          maxLength: 20
+        date_naissance:
+          type: string
+          format: date
+          nullable: true
+        type_contrat:
+          allOf:
+          - $ref: '#/components/schemas/TypeContratEnum'
+          readOnly: true
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          readOnly: true
+        date_debut_contrat:
+          type: string
+          format: date
+          readOnly: true
+        date_fin_contrat:
+          type: string
+          format: date
+          readOnly: true
+          nullable: true
+        poste:
+          type: string
+          readOnly: true
+        etablissement:
+          type: string
+          readOnly: true
+        must_change_password:
+          type: boolean
+          readOnly: true
+    PatchedDemande:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        salarie:
+          type: integer
+          readOnly: true
+        salarie_nom:
+          type: string
+          readOnly: true
+        type_demande:
+          $ref: '#/components/schemas/TypeDemandeEnum'
+        type_demande_display:
+          type: string
+          readOnly: true
+        montant_souhaite:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        details: {}
+        document:
+          type: string
+          format: uri
+          nullable: true
+        statut:
+          allOf:
+          - $ref: '#/components/schemas/StatutEnum'
+          readOnly: true
+        statut_display:
+          type: string
+          readOnly: true
+        date_demande:
+          type: string
+          format: date-time
+          readOnly: true
+        processed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+    PatchedDocument:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        salarie:
+          type: integer
+          readOnly: true
+        salarie_nom:
+          type: string
+          readOnly: true
+        type_document:
+          $ref: '#/components/schemas/TypeDocumentEnum'
+        type_document_display:
+          type: string
+          readOnly: true
+        titre:
+          type: string
+          maxLength: 150
+        fichier:
+          type: string
+          format: uri
+        nom_fichier:
+          type: string
+          readOnly: true
+        extension:
+          type: string
+          readOnly: true
+        taille:
+          type: integer
+          readOnly: true
+        numero:
+          type: string
+          maxLength: 100
+        date_emission:
+          type: string
+          format: date
+          nullable: true
+        date_expiration:
+          type: string
+          format: date
+          nullable: true
+        description:
+          type: string
+        archive:
+          type: boolean
+        est_expire:
+          type: boolean
+          readOnly: true
+        uploaded_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        uploaded_by_username:
+          type: string
+          readOnly: true
+          nullable: true
+        uploaded_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedDossier:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        salarie:
+          type: integer
+          readOnly: true
+        salarie_nom:
+          type: string
+          readOnly: true
+        infos_complementaires: {}
+        adresse:
+          allOf:
+          - $ref: '#/components/schemas/Adresse'
+          readOnly: true
+        etat_civil:
+          allOf:
+          - $ref: '#/components/schemas/EtatCivil'
+          readOnly: true
+        coordonnees_bancaires:
+          allOf:
+          - $ref: '#/components/schemas/Iban'
+          readOnly: true
+        famille:
+          type: array
+          items:
+            $ref: '#/components/schemas/Famille'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedEtatCivil:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        salarie:
+          type: integer
+          readOnly: true
+        numero_secu:
+          type: string
+          writeOnly: true
+          nullable: true
+          maxLength: 20
+        numero_secu_masque:
+          type: string
+          readOnly: true
+        nom_naissance:
+          type: string
+          maxLength: 100
+        nom_usage:
+          type: string
+          maxLength: 100
+        prenom:
+          type: string
+          maxLength: 100
+        sexe:
+          $ref: '#/components/schemas/SexeEnum'
+        date_naissance:
+          type: string
+          format: date
+          nullable: true
+        lieu_naissance:
+          type: string
+          maxLength: 150
+        pays_naissance:
+          type: string
+          maxLength: 100
+        nationalite:
+          type: string
+          maxLength: 100
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedFamille:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        salarie:
+          type: integer
+          readOnly: true
+        nom:
+          type: string
+          maxLength: 100
+        prenom:
+          type: string
+          maxLength: 100
+        lien:
+          $ref: '#/components/schemas/LienEnum'
+        lien_display:
+          type: string
+          readOnly: true
+        telephone:
+          type: string
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        contact_urgence:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedIban:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        salarie:
+          type: integer
+          readOnly: true
+        iban:
+          type: string
+          writeOnly: true
+          maxLength: 34
+        iban_masque:
+          type: string
+          readOnly: true
+        bic:
+          type: string
+          maxLength: 11
+        titulaire:
+          type: string
+          maxLength: 150
+        nom_banque:
+          type: string
+          maxLength: 150
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        conversation:
+          type: integer
+        auteur:
+          type: integer
+          readOnly: true
+        auteur_nom:
+          type: string
+          readOnly: true
+        auteur_matricule:
+          type: string
+          readOnly: true
+        contenu:
+          type: string
+        is_edited:
+          type: boolean
+          readOnly: true
+        pieces_jointes:
+          type: array
+          items:
+            $ref: '#/components/schemas/PieceJointe'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedNotification:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        salarie:
+          type: integer
+        salarie_nom:
+          type: string
+          readOnly: true
+        titre:
+          type: string
+          maxLength: 255
+        message:
+          type: string
+        type_notification:
+          $ref: '#/components/schemas/TypeNotificationEnum'
+        type_notification_display:
+          type: string
+          readOnly: true
+        priorite:
+          $ref: '#/components/schemas/PrioriteEnum'
+        priorite_display:
+          type: string
+          readOnly: true
+        lien:
+          type: string
+          maxLength: 255
+        is_read:
+          type: boolean
+          readOnly: true
+        read_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        created_by_username:
+          type: string
+          readOnly: true
+          nullable: true
+        date_envoi:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedPaie:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        salarie:
+          type: integer
+        salarie_nom:
+          type: string
+          readOnly: true
+        demande:
+          type: integer
+          nullable: true
+        demande_type:
+          type: string
+          readOnly: true
+          nullable: true
+        type_paiement:
+          $ref: '#/components/schemas/TypePaiementEnum'
+        type_paiement_display:
+          type: string
+          readOnly: true
+        montant:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        date_paiement:
+          type: string
+          format: date
+        preuve_pdf:
+          type: string
+          format: uri
+          nullable: true
+        commentaire:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedPieceJointe:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        message:
+          type: integer
+          readOnly: true
+        fichier:
+          type: string
+          format: uri
+        nom_fichier:
+          type: string
+          readOnly: true
+        extension:
+          type: string
+          readOnly: true
+        taille:
+          type: integer
+          readOnly: true
+        uploaded_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedPlanning:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        salarie:
+          type: integer
+        salarie_nom:
+          type: string
+          readOnly: true
+        date:
+          type: string
+          format: date
+        heure_debut:
+          type: string
+          format: time
+          nullable: true
+        heure_fin:
+          type: string
+          format: time
+          nullable: true
+        type_journee:
+          $ref: '#/components/schemas/TypeJourneeEnum'
+        type_journee_display:
+          type: string
+          readOnly: true
+        commentaire:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedPointage:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        salarie:
+          type: integer
+        salarie_nom:
+          type: string
+          readOnly: true
+        date:
+          type: string
+          format: date
+        heure_arrivee:
+          type: string
+          format: time
+        heure_depart:
+          type: string
+          format: time
+        heures_travaillees:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          readOnly: true
+          nullable: true
+        heures_sup:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          readOnly: true
+          nullable: true
+        mois_paie:
+          type: string
+          format: date
+          readOnly: true
+          nullable: true
+        commentaire:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedSalarie:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: integer
+          readOnly: true
+          nullable: true
+        username:
+          type: string
+          writeOnly: true
+        username_compte:
+          type: string
+          readOnly: true
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+        nom:
+          type: string
+          maxLength: 100
+        prenom:
+          type: string
+          maxLength: 100
+        nom_complet:
+          type: string
+          readOnly: true
+        matricule:
+          type: string
+          readOnly: true
+        email_pro:
+          type: string
+          format: email
+          readOnly: true
+        email_personnel:
+          type: string
+          format: email
+          maxLength: 254
+        telephone:
+          type: string
+          maxLength: 20
+        date_naissance:
+          type: string
+          format: date
+          nullable: true
+        type_contrat:
+          $ref: '#/components/schemas/TypeContratEnum'
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        date_debut_contrat:
+          type: string
+          format: date
+        date_fin_contrat:
+          type: string
+          format: date
+          nullable: true
+        poste:
+          type: string
+          maxLength: 100
+        etablissement:
+          type: string
+          maxLength: 150
+        must_change_password:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PieceJointe:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        message:
+          type: integer
+          readOnly: true
+        fichier:
+          type: string
+          format: uri
+        nom_fichier:
+          type: string
+          readOnly: true
+        extension:
+          type: string
+          readOnly: true
+        taille:
+          type: integer
+          readOnly: true
+        uploaded_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - extension
+      - fichier
+      - id
+      - message
+      - nom_fichier
+      - taille
+      - uploaded_at
+    Planning:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        salarie:
+          type: integer
+        salarie_nom:
+          type: string
+          readOnly: true
+        date:
+          type: string
+          format: date
+        heure_debut:
+          type: string
+          format: time
+          nullable: true
+        heure_fin:
+          type: string
+          format: time
+          nullable: true
+        type_journee:
+          $ref: '#/components/schemas/TypeJourneeEnum'
+        type_journee_display:
+          type: string
+          readOnly: true
+        commentaire:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - date
+      - id
+      - salarie
+      - salarie_nom
+      - type_journee_display
+      - updated_at
+    Pointage:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        salarie:
+          type: integer
+        salarie_nom:
+          type: string
+          readOnly: true
+        date:
+          type: string
+          format: date
+        heure_arrivee:
+          type: string
+          format: time
+        heure_depart:
+          type: string
+          format: time
+        heures_travaillees:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          readOnly: true
+          nullable: true
+        heures_sup:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          readOnly: true
+          nullable: true
+        mois_paie:
+          type: string
+          format: date
+          readOnly: true
+          nullable: true
+        commentaire:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - date
+      - heure_arrivee
+      - heure_depart
+      - heures_sup
+      - heures_travaillees
+      - id
+      - mois_paie
+      - salarie
+      - salarie_nom
+      - updated_at
+    PrioriteEnum:
+      enum:
+      - BASSE
+      - NORMALE
+      - HAUTE
+      - URGENTE
+      type: string
+      description: |-
+        * `BASSE` - Basse
+        * `NORMALE` - Normale
+        * `HAUTE` - Haute
+        * `URGENTE` - Urgente
+    RoleEnum:
+      enum:
+      - SALARIE
+      - RH
+      - ADMIN
+      type: string
+      description: |-
+        * `SALARIE` - Salarié
+        * `RH` - Ressources humaines
+        * `ADMIN` - Administrateur
+    Salarie:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: integer
+          readOnly: true
+          nullable: true
+        username:
+          type: string
+          writeOnly: true
+        username_compte:
+          type: string
+          readOnly: true
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+        nom:
+          type: string
+          maxLength: 100
+        prenom:
+          type: string
+          maxLength: 100
+        nom_complet:
+          type: string
+          readOnly: true
+        matricule:
+          type: string
+          readOnly: true
+        email_pro:
+          type: string
+          format: email
+          readOnly: true
+        email_personnel:
+          type: string
+          format: email
+          maxLength: 254
+        telephone:
+          type: string
+          maxLength: 20
+        date_naissance:
+          type: string
+          format: date
+          nullable: true
+        type_contrat:
+          $ref: '#/components/schemas/TypeContratEnum'
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        date_debut_contrat:
+          type: string
+          format: date
+        date_fin_contrat:
+          type: string
+          format: date
+          nullable: true
+        poste:
+          type: string
+          maxLength: 100
+        etablissement:
+          type: string
+          maxLength: 150
+        must_change_password:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - date_debut_contrat
+      - email_personnel
+      - email_pro
+      - etablissement
+      - id
+      - matricule
+      - must_change_password
+      - nom
+      - nom_complet
+      - poste
+      - prenom
+      - updated_at
+      - user
+      - username_compte
+    SexeEnum:
+      enum:
+      - F
+      - M
+      - AUTRE
+      - NR
+      type: string
+      description: |-
+        * `F` - Femme
+        * `M` - Homme
+        * `AUTRE` - Autre
+        * `NR` - Non renseigné
+    StatutEnum:
+      enum:
+      - EN_ATTENTE
+      - APPROUVE
+      - REFUSE
+      type: string
+      description: |-
+        * `EN_ATTENTE` - En attente
+        * `APPROUVE` - Approuvé
+        * `REFUSE` - Refusé
+    TokenObtainPair:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - password
+      - refresh
+      - username
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    TypeContratEnum:
+      enum:
+      - CDI
+      - CDD
+      - VACATAIRE
+      - STAGIAIRE
+      - ALTERNANT
+      type: string
+      description: |-
+        * `CDI` - CDI
+        * `CDD` - CDD
+        * `VACATAIRE` - Vacataire
+        * `STAGIAIRE` - Stagiaire
+        * `ALTERNANT` - Alternant
+    TypeConversationEnum:
+      enum:
+      - PRIVE
+      - GROUPE
+      - RH
+      type: string
+      description: |-
+        * `PRIVE` - Privée
+        * `GROUPE` - Groupe
+        * `RH` - RH
+    TypeDemandeEnum:
+      enum:
+      - ACOMPTE
+      - AVANCE
+      - CALENDRIER
+      - FICHE
+      - CET
+      - HEURES_SUP
+      - ABSENCE
+      type: string
+      description: |-
+        * `ACOMPTE` - Acompte
+        * `AVANCE` - Avance
+        * `CALENDRIER` - Modification du calendrier
+        * `FICHE` - Demande de fiche
+        * `CET` - Paiement CET
+        * `HEURES_SUP` - Paiement heures supplémentaires
+        * `ABSENCE` - Absence
+    TypeDocumentEnum:
+      enum:
+      - CNI
+      - PASSEPORT
+      - CONTRAT
+      - DIPLOME
+      - PERMIS
+      - RIB
+      - JUSTIFICATIF_DOMICILE
+      - CERTIFICAT_MEDICAL
+      - AUTRE
+      type: string
+      description: |-
+        * `CNI` - Carte nationale d’identité
+        * `PASSEPORT` - Passeport
+        * `CONTRAT` - Contrat
+        * `DIPLOME` - Diplôme
+        * `PERMIS` - Permis
+        * `RIB` - RIB
+        * `JUSTIFICATIF_DOMICILE` - Justificatif de domicile
+        * `CERTIFICAT_MEDICAL` - Certificat médical
+        * `AUTRE` - Autre
+    TypeJourneeEnum:
+      enum:
+      - BUREAU
+      - TELETRAVAIL
+      - CONGE
+      - ABSENCE
+      - VACATION
+      - FORMATION
+      type: string
+      description: |-
+        * `BUREAU` - Bureau
+        * `TELETRAVAIL` - Télétravail
+        * `CONGE` - Congé
+        * `ABSENCE` - Absence
+        * `VACATION` - Vacation
+        * `FORMATION` - Formation
+    TypeNotificationEnum:
+      enum:
+      - INFO
+      - ALERTE
+      - VALIDATION
+      - REFUS
+      - PAIE
+      - DOCUMENT
+      - DEMANDE
+      - PLANNING
+      - POINTAGE
+      type: string
+      description: |-
+        * `INFO` - Information
+        * `ALERTE` - Alerte
+        * `VALIDATION` - Validation
+        * `REFUS` - Refus
+        * `PAIE` - Paie
+        * `DOCUMENT` - Document
+        * `DEMANDE` - Demande
+        * `PLANNING` - Planning
+        * `POINTAGE` - Pointage
+    TypePaiementEnum:
+      enum:
+      - SALAIRE
+      - ACOMPTE
+      - AVANCE
+      - CET
+      - HEURES_SUP
+      - FICHE_PAIE
+      - CALENDRIER_PAIE
+      type: string
+      description: |-
+        * `SALAIRE` - Salaire
+        * `ACOMPTE` - Acompte
+        * `AVANCE` - Avance
+        * `CET` - Paiement CET
+        * `HEURES_SUP` - Heures supplémentaires
+        * `FICHE_PAIE` - Fiche de paie
+        * `CALENDRIER_PAIE` - Calendrier de paie
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

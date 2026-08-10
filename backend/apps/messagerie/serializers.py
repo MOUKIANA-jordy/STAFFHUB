@@ -236,7 +236,6 @@ class ConversationListSerializer(serializers.ModelSerializer):
             "active",
             "participants_count",
             "dernier_message",
-            "messages_non_lus",
             "created_at",
             "updated_at",
         ]
