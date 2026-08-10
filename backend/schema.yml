@@ -2855,6 +2855,178 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/remunerations/:
+    get:
+      operationId: remunerations_list
+      parameters:
+      - in: query
+        name: actif
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: salarie
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - remunerations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRemunerationList'
+          description: ''
+    post:
+      operationId: remunerations_create
+      tags:
+      - remunerations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Remuneration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Remuneration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Remuneration'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Remuneration'
+          description: ''
+  /api/remunerations/{id}/:
+    get:
+      operationId: remunerations_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this remuneration.
+        required: true
+      tags:
+      - remunerations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Remuneration'
+          description: ''
+    put:
+      operationId: remunerations_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this remuneration.
+        required: true
+      tags:
+      - remunerations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Remuneration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Remuneration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Remuneration'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Remuneration'
+          description: ''
+    patch:
+      operationId: remunerations_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this remuneration.
+        required: true
+      tags:
+      - remunerations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRemuneration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRemuneration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRemuneration'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Remuneration'
+          description: ''
+    delete:
+      operationId: remunerations_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this remuneration.
+        required: true
+      tags:
+      - remunerations
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/salaries/:
     get:
       operationId: salaries_list
@@ -3411,6 +3583,14 @@ components:
           format: decimal
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
           nullable: true
+        pointages:
+          type: array
+          items:
+            type: integer
+        total_heures_sup:
+          type: number
+          format: double
+          readOnly: true
         details: {}
         document:
           type: string
@@ -3440,6 +3620,7 @@ components:
       - salarie_nom
       - statut
       - statut_display
+      - total_heures_sup
       - type_demande
       - type_demande_display
     Document:
@@ -4163,6 +4344,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Pointage'
+    PaginatedRemunerationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Remuneration'
     PaginatedSalarieList:
       type: object
       required:
@@ -4437,6 +4641,14 @@ components:
           format: decimal
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
           nullable: true
+        pointages:
+          type: array
+          items:
+            type: integer
+        total_heures_sup:
+          type: number
+          format: double
+          readOnly: true
         details: {}
         document:
           type: string
@@ -4923,6 +5135,59 @@ components:
           type: string
           format: date-time
           readOnly: true
+    PatchedRemuneration:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        salarie:
+          type: integer
+        salarie_nom:
+          type: string
+          readOnly: true
+        salaire_mensuel_brut:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        taux_horaire:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+        majoration_heures_sup:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        majoration_nuit:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        majoration_dimanche:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        majoration_ferie:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        actif:
+          type: boolean
+        date_debut:
+          type: string
+          format: date
+        date_fin:
+          type: string
+          format: date
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
     PatchedSalarie:
       type: object
       properties:
@@ -5147,6 +5412,67 @@ components:
         * `NORMALE` - Normale
         * `HAUTE` - Haute
         * `URGENTE` - Urgente
+    Remuneration:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        salarie:
+          type: integer
+        salarie_nom:
+          type: string
+          readOnly: true
+        salaire_mensuel_brut:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        taux_horaire:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+        majoration_heures_sup:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        majoration_nuit:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        majoration_dimanche:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        majoration_ferie:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        actif:
+          type: boolean
+        date_debut:
+          type: string
+          format: date
+        date_fin:
+          type: string
+          format: date
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - date_debut
+      - id
+      - salarie
+      - salarie_nom
+      - taux_horaire
+      - updated_at
     RoleEnum:
       enum:
       - SALARIE

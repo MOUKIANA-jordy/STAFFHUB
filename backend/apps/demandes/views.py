@@ -1,11 +1,24 @@
-from django_filters.rest_framework import DjangoFilterBackend
+from django.db import transaction
+from django.utils import timezone
 
-from rest_framework import filters, serializers, status, viewsets
+from django_filters.rest_framework import (
+    DjangoFilterBackend,
+)
+
+from rest_framework import (
+    filters,
+    serializers,
+    status,
+    viewsets,
+)
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import (
+    IsAuthenticated,
+)
 from rest_framework.response import Response
 
 from apps.notifications.models import Notification
+from apps.paie.models import Paie
 from apps.users.models import Salarie
 
 from .models import Demande
@@ -14,13 +27,20 @@ from .serializers import DemandeSerializer
 
 
 def is_rh_or_admin(user):
-    if not user or not user.is_authenticated:
+    if (
+        not user
+        or not user.is_authenticated
+    ):
         return False
 
     if user.is_superuser:
         return True
 
-    salarie = getattr(user, "salarie", None)
+    salarie = getattr(
+        user,
+        "salarie",
+        None,
+    )
 
     return bool(
         salarie
@@ -31,7 +51,9 @@ def is_rh_or_admin(user):
     )
 
 
-class DemandeViewSet(viewsets.ModelViewSet):
+class DemandeViewSet(
+    viewsets.ModelViewSet
+):
     serializer_class = DemandeSerializer
 
     permission_classes = [
@@ -81,7 +103,12 @@ class DemandeViewSet(viewsets.ModelViewSet):
                 "salarie",
                 "salarie__user",
             )
-            .order_by("-date_demande")
+            .prefetch_related(
+                "pointages",
+            )
+            .order_by(
+                "-date_demande"
+            )
         )
 
         if is_rh_or_admin(user):
@@ -100,7 +127,10 @@ class DemandeViewSet(viewsets.ModelViewSet):
             salarie=salarie,
         )
 
-    def perform_create(self, serializer):
+    def perform_create(
+        self,
+        serializer,
+    ):
         salarie = getattr(
             self.request.user,
             "salarie",
@@ -110,8 +140,8 @@ class DemandeViewSet(viewsets.ModelViewSet):
         if not salarie:
             raise serializers.ValidationError({
                 "salarie": (
-                    "Aucun profil salarié n’est associé "
-                    "à ce compte."
+                    "Aucun profil salarié "
+                    "n’est associé à ce compte."
                 )
             })
 
@@ -120,16 +150,24 @@ class DemandeViewSet(viewsets.ModelViewSet):
             statut=Demande.Statut.EN_ATTENTE,
         )
 
-    def _verifier_admin(self, request):
-        if not is_rh_or_admin(request.user):
+    def _verifier_admin(
+        self,
+        request,
+    ):
+        if not is_rh_or_admin(
+            request.user
+        ):
             return Response(
                 {
                     "detail": (
-                        "Seuls les RH ou administrateurs "
-                        "peuvent traiter une demande."
+                        "Seuls les RH ou "
+                        "administrateurs peuvent "
+                        "traiter une demande."
                     )
                 },
-                status=status.HTTP_403_FORBIDDEN,
+                status=(
+                    status.HTTP_403_FORBIDDEN
+                ),
             )
 
         return None
@@ -141,46 +179,159 @@ class DemandeViewSet(viewsets.ModelViewSet):
         message,
         type_notification,
     ):
-        Notification.objects.create(
+        return Notification.objects.create(
             salarie=demande.salarie,
             titre=titre,
             message=message,
             type_notification=type_notification,
-            priorite=Notification.Priorite.NORMALE,
-            lien=f"/home/demandes/{demande.id}",
-            created_by=self.request.user,
+            priorite=(
+                Notification.Priorite.NORMALE
+            ),
+            lien=(
+                f"/home/demandes/"
+                f"{demande.id}"
+            ),
+            created_by=(
+                self.request.user
+            ),
         )
+
+    def _creer_paiement(
+        self,
+        demande,
+    ):
+        """
+        Crée automatiquement une ligne Paie
+        uniquement pour les demandes ayant
+        une conséquence financière.
+        """
+
+        mapping = {
+            Demande.TypeDemande.ACOMPTE:
+                Paie.TypePaiement.ACOMPTE,
+
+            Demande.TypeDemande.AVANCE:
+                Paie.TypePaiement.AVANCE,
+
+            Demande.TypeDemande.CET:
+                Paie.TypePaiement.CET,
+
+            Demande.TypeDemande.HEURES_SUP:
+                Paie.TypePaiement.HEURES_SUP,
+        }
+
+        type_paiement = mapping.get(
+            demande.type_demande
+        )
+
+        if not type_paiement:
+            return None, False
+
+        # Acompte et avance ont déjà
+        # un montant demandé.
+        montant = None
+
+        if demande.type_demande in [
+            Demande.TypeDemande.ACOMPTE,
+            Demande.TypeDemande.AVANCE,
+        ]:
+            montant = (
+                demande.montant_souhaite
+            )
+
+        commentaire = (
+            f"Paiement généré automatiquement "
+            f"après approbation de la demande "
+            f"#{demande.id}."
+        )
+
+        if (
+            demande.type_demande
+            == Demande.TypeDemande.HEURES_SUP
+        ):
+            commentaire = (
+                f"Paiement à calculer pour "
+                f"{demande.total_heures_sup} "
+                "heure(s) supplémentaire(s). "
+                f"Demande #{demande.id}."
+            )
+
+        paiement, created = (
+            Paie.objects.get_or_create(
+                demande=demande,
+                defaults={
+                    "salarie": (
+                        demande.salarie
+                    ),
+                    "type_paiement": (
+                        type_paiement
+                    ),
+                    "montant": montant,
+                    "date_paiement": (
+                        timezone.localdate()
+                    ),
+                    "commentaire": (
+                        commentaire
+                    ),
+                },
+            )
+        )
+
+        return paiement, created
 
     @action(
         detail=True,
         methods=["post"],
         url_path="approuver",
     )
-    def approuver(self, request, pk=None):
-        permission_error = self._verifier_admin(request)
+    @transaction.atomic
+    def approuver(
+        self,
+        request,
+        pk=None,
+    ):
+        permission_error = (
+            self._verifier_admin(
+                request
+            )
+        )
 
         if permission_error:
             return permission_error
 
         demande = self.get_object()
 
-        if demande.statut != Demande.Statut.EN_ATTENTE:
+        if (
+            demande.statut
+            != Demande.Statut.EN_ATTENTE
+        ):
             return Response(
                 {
                     "detail": (
-                        "Cette demande a déjà été traitée."
+                        "Cette demande a déjà "
+                        "été traitée."
                     )
                 },
-                status=status.HTTP_400_BAD_REQUEST,
+                status=(
+                    status.HTTP_400_BAD_REQUEST
+                ),
             )
 
-        demande.statut = Demande.Statut.APPROUVE
+        demande.statut = (
+            Demande.Statut.APPROUVE
+        )
 
         demande.save(
             update_fields=[
                 "statut",
                 "processed_at",
             ]
+        )
+
+        paiement, paiement_cree = (
+            self._creer_paiement(
+                demande
+            )
         )
 
         self._creer_notification(
@@ -192,12 +343,14 @@ class DemandeViewSet(viewsets.ModelViewSet):
                 "a été approuvée."
             ),
             type_notification=(
-                Notification.TypeNotification.VALIDATION
+                Notification
+                .TypeNotification
+                .VALIDATION
             ),
         )
 
         serializer = self.get_serializer(
-            demande,
+            demande
         )
 
         return Response(
@@ -205,7 +358,17 @@ class DemandeViewSet(viewsets.ModelViewSet):
                 "message": (
                     "La demande a été approuvée."
                 ),
-                "demande": serializer.data,
+                "paiement_cree": (
+                    paiement_cree
+                ),
+                "paiement_id": (
+                    paiement.id
+                    if paiement
+                    else None
+                ),
+                "demande": (
+                    serializer.data
+                ),
             },
             status=status.HTTP_200_OK,
         )
@@ -215,25 +378,42 @@ class DemandeViewSet(viewsets.ModelViewSet):
         methods=["post"],
         url_path="refuser",
     )
-    def refuser(self, request, pk=None):
-        permission_error = self._verifier_admin(request)
+    @transaction.atomic
+    def refuser(
+        self,
+        request,
+        pk=None,
+    ):
+        permission_error = (
+            self._verifier_admin(
+                request
+            )
+        )
 
         if permission_error:
             return permission_error
 
         demande = self.get_object()
 
-        if demande.statut != Demande.Statut.EN_ATTENTE:
+        if (
+            demande.statut
+            != Demande.Statut.EN_ATTENTE
+        ):
             return Response(
                 {
                     "detail": (
-                        "Cette demande a déjà été traitée."
+                        "Cette demande a déjà "
+                        "été traitée."
                     )
                 },
-                status=status.HTTP_400_BAD_REQUEST,
+                status=(
+                    status.HTTP_400_BAD_REQUEST
+                ),
             )
 
-        demande.statut = Demande.Statut.REFUSE
+        demande.statut = (
+            Demande.Statut.REFUSE
+        )
 
         demande.save(
             update_fields=[
@@ -251,12 +431,14 @@ class DemandeViewSet(viewsets.ModelViewSet):
                 "a été refusée."
             ),
             type_notification=(
-                Notification.TypeNotification.REFUS
+                Notification
+                .TypeNotification
+                .REFUS
             ),
         )
 
         serializer = self.get_serializer(
-            demande,
+            demande
         )
 
         return Response(
@@ -264,7 +446,9 @@ class DemandeViewSet(viewsets.ModelViewSet):
                 "message": (
                     "La demande a été refusée."
                 ),
-                "demande": serializer.data,
+                "demande": (
+                    serializer.data
+                ),
             },
             status=status.HTTP_200_OK,
         )

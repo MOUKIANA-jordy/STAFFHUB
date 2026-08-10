@@ -31,12 +31,20 @@ class Demande(models.Model):
     type_demande = models.CharField(
         max_length=50,
         choices=TypeDemande.choices,
+        db_index=True,
     )
 
     montant_souhaite = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         null=True,
+        blank=True,
+    )
+
+    # Pointages concernés par une demande d'heures supplémentaires.
+    pointages = models.ManyToManyField(
+        "pointage.Pointage",
+        related_name="demandes_heures_sup",
         blank=True,
     )
 
@@ -70,23 +78,49 @@ class Demande(models.Model):
 
     class Meta:
         ordering = ["-date_demande"]
+
         indexes = [
-            models.Index(fields=["salarie", "statut"]),
-            models.Index(fields=["type_demande", "statut"]),
+            models.Index(
+                fields=["salarie", "statut"],
+            ),
+            models.Index(
+                fields=["type_demande", "statut"],
+            ),
         ]
+
+    @property
+    def total_heures_sup(self):
+        if self.type_demande != self.TypeDemande.HEURES_SUP:
+            return Decimal("0.00")
+
+        total = sum(
+            (
+                pointage.heures_sup or Decimal("0.00")
+                for pointage in self.pointages.all()
+            ),
+            Decimal("0.00"),
+        )
+
+        return total.quantize(
+            Decimal("0.01")
+        )
 
     def clean(self):
         errors = {}
 
         if not self.salarie_id:
-            errors["salarie"] = "Le salarié est obligatoire."
+            errors["salarie"] = (
+                "Le salarié est obligatoire."
+            )
 
         elif (
-            self.type_demande == self.TypeDemande.AVANCE
+            self.type_demande
+            == self.TypeDemande.AVANCE
             and self.salarie.type_contrat != "CDI"
         ):
             errors["type_demande"] = (
-                "Les avances sont réservées aux salariés en CDI."
+                "Les avances sont réservées "
+                "aux salariés en CDI."
             )
 
         if self.type_demande in [
@@ -95,19 +129,27 @@ class Demande(models.Model):
         ]:
             if self.montant_souhaite is None:
                 errors["montant_souhaite"] = (
-                    "Le montant est obligatoire pour cette demande."
+                    "Le montant est obligatoire "
+                    "pour cette demande."
                 )
-            elif self.montant_souhaite <= Decimal("0"):
+
+            elif (
+                self.montant_souhaite
+                <= Decimal("0")
+            ):
                 errors["montant_souhaite"] = (
-                    "Le montant doit être supérieur à zéro."
+                    "Le montant doit être "
+                    "supérieur à zéro."
                 )
 
         if (
-            self.type_demande == self.TypeDemande.ABSENCE
+            self.type_demande
+            == self.TypeDemande.ABSENCE
             and self.montant_souhaite is not None
         ):
             errors["montant_souhaite"] = (
-                "Une demande d’absence ne doit pas contenir de montant."
+                "Une demande d’absence ne doit "
+                "pas contenir de montant."
             )
 
         if errors:
@@ -120,10 +162,14 @@ class Demande(models.Model):
         ]:
             if self.processed_at is None:
                 self.processed_at = timezone.now()
+
         else:
             self.processed_at = None
 
-        super().save(*args, **kwargs)
+        super().save(
+            *args,
+            **kwargs,
+        )
 
     def __str__(self):
         return (

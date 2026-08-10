@@ -16,6 +16,7 @@ from apps.planning.views import PlanningViewSet
 from apps.pointage.views import PointageViewSet
 from apps.paie.views import PaieViewSet, generate_fiche_paie
 from apps.notifications.views import NotificationViewSet
+from apps.remunerations.views import RemunerationViewSet
 from apps.messagerie.views import (
     ConversationViewSet,
     MessageViewSet,
@@ -47,6 +48,7 @@ router.register(r'notifications', NotificationViewSet, basename="notification")
 router.register(r'conversations', ConversationViewSet, basename="conversation")
 router.register(r'messages', MessageViewSet, basename="message")
 router.register(r'pieces-jointes', PieceJointeViewSet, basename="piece-jointe")
+router.register(r'remunerations', RemunerationViewSet, basename="remuneration")
 
 # ===== URLS =====
 urlpatterns = [

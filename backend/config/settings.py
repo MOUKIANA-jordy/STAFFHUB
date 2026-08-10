@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'apps.users',
     'apps.notifications',
     'apps.documents',
+    'apps.remunerations',
     'apps.pointage',
     'apps.planning',
     'apps.dossiers',
