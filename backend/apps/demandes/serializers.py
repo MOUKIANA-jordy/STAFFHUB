@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from decimal import Decimal, InvalidOperation
 
 from rest_framework import serializers
@@ -184,9 +185,9 @@ class DemandeSerializer(serializers.ModelSerializer):
             else current_salarie
         )
 
-        # =====================================
+        # =========================================
         # DEMANDE DÉJÀ TRAITÉE
-        # =====================================
+        # =========================================
 
         if (
             instance
@@ -198,9 +199,9 @@ class DemandeSerializer(serializers.ModelSerializer):
                 "ne peut plus être modifiée."
             )
 
-        # =====================================
+        # =========================================
         # ACOMPTE / AVANCE
-        # =====================================
+        # =========================================
 
         if type_demande in [
             Demande.TypeDemande.ACOMPTE,
@@ -221,9 +222,9 @@ class DemandeSerializer(serializers.ModelSerializer):
                     )
                 })
 
-        # =====================================
+        # =========================================
         # AVANCE : CDI UNIQUEMENT
-        # =====================================
+        # =========================================
 
         if (
             type_demande
@@ -238,25 +239,83 @@ class DemandeSerializer(serializers.ModelSerializer):
                 )
             })
 
-        # =====================================
+        # =========================================
         # ABSENCE
-        # =====================================
+        # =========================================
 
         if (
             type_demande
             == Demande.TypeDemande.ABSENCE
-            and montant is not None
         ):
-            raise serializers.ValidationError({
-                "montant_souhaite": (
-                    "Une absence ne doit pas "
-                    "avoir de montant."
-                )
-            })
+            if montant is not None:
+                raise serializers.ValidationError({
+                    "montant_souhaite": (
+                        "Une absence ne doit pas "
+                        "avoir de montant."
+                    )
+                })
 
-        # =====================================
+            date_debut = details.get(
+                "date_debut"
+            )
+
+            date_fin = details.get(
+                "date_fin"
+            )
+
+            if not date_debut:
+                raise serializers.ValidationError({
+                    "details": {
+                        "date_debut": (
+                            "La date de début "
+                            "est obligatoire."
+                        )
+                    }
+                })
+
+            if not date_fin:
+                raise serializers.ValidationError({
+                    "details": {
+                        "date_fin": (
+                            "La date de fin "
+                            "est obligatoire."
+                        )
+                    }
+                })
+
+            try:
+                debut = datetime.strptime(
+                    str(date_debut),
+                    "%Y-%m-%d",
+                ).date()
+
+                fin = datetime.strptime(
+                    str(date_fin),
+                    "%Y-%m-%d",
+                ).date()
+
+            except ValueError as error:
+                raise serializers.ValidationError({
+                    "details": (
+                        "Les dates doivent être "
+                        "au format AAAA-MM-JJ."
+                    )
+                }) from error
+
+            if fin < debut:
+                raise serializers.ValidationError({
+                    "details": {
+                        "date_fin": (
+                            "La date de fin ne peut pas "
+                            "être antérieure à la date "
+                            "de début."
+                        )
+                    }
+                })
+
+        # =========================================
         # CET
-        # =====================================
+        # =========================================
 
         if (
             type_demande
@@ -293,15 +352,15 @@ class DemandeSerializer(serializers.ModelSerializer):
                 InvalidOperation,
                 TypeError,
                 ValueError,
-            ):
+            ) as error:
                 raise serializers.ValidationError({
                     "details": {
                         "heures_cet": (
                             "Le nombre d'heures CET "
-                            "doit être valide."
+                            "est invalide."
                         )
                     }
-                })
+                }) from error
 
             if heures_cet <= Decimal("0.00"):
                 raise serializers.ValidationError({
@@ -329,7 +388,10 @@ class DemandeSerializer(serializers.ModelSerializer):
                     )
                 })
 
-            if heures_cet > compte_cet.solde_heures:
+            if (
+                heures_cet
+                > compte_cet.solde_heures
+            ):
                 raise serializers.ValidationError({
                     "details": {
                         "heures_cet": (
@@ -340,7 +402,6 @@ class DemandeSerializer(serializers.ModelSerializer):
                     }
                 })
 
-            # Le montant sera calculé par le backend.
             if montant is not None:
                 raise serializers.ValidationError({
                     "montant_souhaite": (
@@ -348,57 +409,56 @@ class DemandeSerializer(serializers.ModelSerializer):
                         "est calculé automatiquement."
                     )
                 })
-       
-# =====================================
-# FICHE DE PAIE
-# =====================================
 
-if (
-    type_demande
-    == Demande.TypeDemande.FICHE
-):
-    mois = details.get("mois")
+        # =========================================
+        # FICHE DE PAIE
+        # =========================================
 
-    if not mois:
-        raise serializers.ValidationError({
-            "details": {
-                "mois": (
-                    "Le mois de la fiche de paie "
-                    "est obligatoire."
-                )
-            }
-        })
-
-    try:
-        from datetime import datetime
-
-        datetime.strptime(
-            str(mois),
-            "%Y-%m",
-        )
-
-    except ValueError as error:
-        raise serializers.ValidationError({
-            "details": {
-                "mois": (
-                    "Le mois doit être au format "
-                    "AAAA-MM, par exemple 2026-08."
-                )
-            }
-        }) from error
-
-    if montant is not None:
-        raise serializers.ValidationError({
-            "montant_souhaite": (
-                "Une demande de fiche de paie "
-                "ne doit pas avoir de montant."
+        if (
+            type_demande
+            == Demande.TypeDemande.FICHE
+        ):
+            mois = details.get(
+                "mois"
             )
-        })
 
+            if not mois:
+                raise serializers.ValidationError({
+                    "details": {
+                        "mois": (
+                            "Le mois de la fiche de paie "
+                            "est obligatoire."
+                        )
+                    }
+                })
 
-        # =====================================
+            try:
+                datetime.strptime(
+                    str(mois),
+                    "%Y-%m",
+                )
+
+            except ValueError as error:
+                raise serializers.ValidationError({
+                    "details": {
+                        "mois": (
+                            "Le mois doit être au format "
+                            "AAAA-MM, par exemple 2026-08."
+                        )
+                    }
+                }) from error
+
+            if montant is not None:
+                raise serializers.ValidationError({
+                    "montant_souhaite": (
+                        "Une demande de fiche de paie "
+                        "ne doit pas avoir de montant."
+                    )
+                })
+
+        # =========================================
         # HEURES SUPPLÉMENTAIRES
-        # =====================================
+        # =========================================
 
         if (
             type_demande
@@ -509,6 +569,10 @@ if (
                             "de paie."
                         )
                     })
+
+        # =========================================
+        # POINTAGES RÉSERVÉS AUX HEURES SUP
+        # =========================================
 
         elif pointages:
             raise serializers.ValidationError({

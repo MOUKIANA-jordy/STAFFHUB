@@ -1,8 +1,16 @@
-from django.http import Http404, HttpResponse
+from django.http import (
+    FileResponse,
+    Http404,
+    HttpResponse,
+)
 
 from django_filters.rest_framework import DjangoFilterBackend
 
-from rest_framework import filters, serializers, viewsets
+from rest_framework import (
+    filters,
+    serializers,
+    viewsets,
+)
 from rest_framework.decorators import (
     api_view,
     permission_classes,
@@ -217,6 +225,28 @@ def generate_fiche_paie(request, pk):
     except Paie.DoesNotExist:
         raise Http404
 
+    # ==========================================
+    # PDF DÉJÀ GÉNÉRÉ
+    # ==========================================
+
+    if (
+        fiche.type_paiement
+        == Paie.TypePaiement.FICHE_PAIE
+        and fiche.preuve_pdf
+    ):
+        return FileResponse(
+            fiche.preuve_pdf.open("rb"),
+            content_type="application/pdf",
+            as_attachment=False,
+            filename=(
+                fiche.preuve_pdf.name.split("/")[-1]
+            ),
+        )
+
+    # ==========================================
+    # GÉNÉRATION PDF À LA VOLÉE
+    # ==========================================
+
     response = HttpResponse(
         content_type="application/pdf",
     )
@@ -260,7 +290,10 @@ def generate_fiche_paie(request, pk):
 
     elements.append(
         Paragraph(
-            f"Matricule : {fiche.salarie.matricule}",
+            (
+                f"Matricule : "
+                f"{fiche.salarie.matricule}"
+            ),
             styles["Normal"],
         )
     )
@@ -346,7 +379,9 @@ def generate_fiche_paie(request, pk):
         ])
     )
 
-    elements.append(table)
+    elements.append(
+        table
+    )
 
     if fiche.commentaire:
         elements.append(
@@ -355,11 +390,16 @@ def generate_fiche_paie(request, pk):
 
         elements.append(
             Paragraph(
-                f"Commentaire : {fiche.commentaire}",
+                (
+                    f"Commentaire : "
+                    f"{fiche.commentaire}"
+                ),
                 styles["Normal"],
             )
         )
 
-    doc.build(elements)
+    doc.build(
+        elements
+    )
 
     return response
