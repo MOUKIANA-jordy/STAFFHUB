@@ -1,56 +1,93 @@
 from django.contrib import admin
-from .models import Salarie
+
+from .models import Salarie, CompteCET
 
 
 @admin.register(Salarie)
 class SalarieAdmin(admin.ModelAdmin):
-
     list_display = (
         "id",
+        "matricule",
         "prenom",
         "nom",
-        "matricule",
-        "email_personnel_affichage",
-        "email_pro_affichage",
+        "email_personnel",
+        "email_pro",
         "poste",
         "etablissement",
-        "contrat_affichage",
-        "role_affichage",
+        "type_contrat",
+        "role",
         "date_debut_contrat",
         "date_fin_contrat",
     )
 
     list_filter = (
-        "type_contrat",
         "role",
+        "type_contrat",
         "etablissement",
     )
 
     search_fields = (
+        "matricule",
         "prenom",
         "nom",
-        "matricule",
-        "user__email",
         "email_personnel",
+        "user__email",
+        "user__username",
         "poste",
+        "etablissement",
     )
 
-    ordering = ("nom", "prenom")
+    ordering = (
+        "nom",
+        "prenom",
+    )
 
-    # ----------- AFFICHAGES -----------
+    list_select_related = (
+        "user",
+    )
 
-    def role_affichage(self, obj):
-        return obj.get_role_display()
-    role_affichage.short_description = "Rôle"
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+    )
 
-    def contrat_affichage(self, obj):
-        return obj.get_type_contrat_display()
-    contrat_affichage.short_description = "Type de contrat"
+    @admin.display(
+        description="Email professionnel",
+        ordering="user__email",
+    )
+    def email_pro(self, obj):
+        if not obj.user:
+            return "-"
 
-    def email_pro_affichage(self, obj):
-        return obj.user.email if obj.user else "-"
-    email_pro_affichage.short_description = "Email pro"
+        return obj.user.email or "-"
 
-    def email_personnel_affichage(self, obj):
-        return obj.email_personnel
-    email_personnel_affichage.short_description = "Email perso"
+
+@admin.register(CompteCET)
+class CompteCETAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "salarie",
+        "solde_heures",
+        "created_at",
+        "updated_at",
+    )
+
+    search_fields = (
+        "salarie__nom",
+        "salarie__prenom",
+        "salarie__matricule",
+    )
+
+    ordering = (
+        "salarie__nom",
+        "salarie__prenom",
+    )
+
+    list_select_related = (
+        "salarie",
+    )
+
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+    )

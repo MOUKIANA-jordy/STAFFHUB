@@ -19,6 +19,7 @@ from rest_framework.response import Response
 
 from apps.notifications.models import Notification
 from apps.paie.models import Paie
+from apps.remunerations.models import Remuneration
 from apps.users.models import Salarie
 
 from .models import Demande
@@ -201,9 +202,8 @@ class DemandeViewSet(
         demande,
     ):
         """
-        Crée automatiquement une ligne Paie
-        uniquement pour les demandes ayant
-        une conséquence financière.
+        Transforme automatiquement certaines demandes
+        approuvées en élément de paie.
         """
 
         mapping = {
@@ -224,20 +224,32 @@ class DemandeViewSet(
             demande.type_demande
         )
 
+        # ABSENCE / FICHE / CALENDRIER :
+        # pas de ligne de paiement automatique.
         if not type_paiement:
             return None, False
 
-        # Acompte et avance ont déjà
-        # un montant demandé.
-        montant = None
-
-        if demande.type_demande in [
-            Demande.TypeDemande.ACOMPTE,
-            Demande.TypeDemande.AVANCE,
-        ]:
-            montant = (
-                demande.montant_souhaite
+        # Protection supplémentaire contre
+        # la création d'un deuxième paiement.
+        paiement_existant = (
+            Paie.objects
+            .filter(
+                demande=demande,
             )
+            .first()
+        )
+
+        if paiement_existant:
+            return (
+                paiement_existant,
+                False,
+            )
+
+        montant = demande.montant_souhaite
+
+        # Pour acompte / avance, la date actuelle
+        # est utilisée pour l'instant.
+        date_paiement = timezone.localdate()
 
         commentaire = (
             f"Paiement généré automatiquement "
@@ -245,39 +257,131 @@ class DemandeViewSet(
             f"#{demande.id}."
         )
 
+        # ======================================
+        # HEURES SUPPLÉMENTAIRES
+        # ======================================
+
         if (
             demande.type_demande
             == Demande.TypeDemande.HEURES_SUP
         ):
+            total_heures = (
+                demande.total_heures_sup
+            )
+
+            if total_heures <= 0:
+                raise serializers.ValidationError({
+                    "pointages": (
+                        "Aucune heure supplémentaire "
+                        "n'est associée à cette demande."
+                    )
+                })
+
+            # Rémunération active du salarié.
+            remuneration = (
+                Remuneration.objects
+                .filter(
+                    salarie=demande.salarie,
+                    actif=True,
+                )
+                .first()
+            )
+
+            if not remuneration:
+                raise serializers.ValidationError({
+                    "remuneration": (
+                        "Aucune rémunération active "
+                        "n'est configurée pour ce salarié."
+                    )
+                })
+
+            # Calcul :
+            # heures × taux horaire × majoration.
+            montant = (
+                remuneration
+                .calculer_heures_sup(
+                    total_heures
+                )
+            )
+
+            pointages = list(
+                demande.pointages.all()
+            )
+
+            if not pointages:
+                raise serializers.ValidationError({
+                    "pointages": (
+                        "Aucun pointage n'est associé "
+                        "à cette demande."
+                    )
+                })
+
+            periodes_paie = {
+                pointage.mois_paie
+                for pointage in pointages
+                if pointage.mois_paie
+            }
+
+            if not periodes_paie:
+                raise serializers.ValidationError({
+                    "pointages": (
+                        "Aucune période de paie "
+                        "n'a été trouvée."
+                    )
+                })
+
+            if len(periodes_paie) > 1:
+                raise serializers.ValidationError({
+                    "pointages": (
+                        "Les pointages ne correspondent "
+                        "pas à la même période de paie."
+                    )
+                })
+
+            # La date de paiement vient du pointage.
+            date_paiement = next(
+                iter(periodes_paie)
+            )
+
             commentaire = (
-                f"Paiement à calculer pour "
-                f"{demande.total_heures_sup} "
-                "heure(s) supplémentaire(s). "
+                f"{total_heures} heure(s) "
+                f"supplémentaire(s) à "
+                f"{remuneration.taux_horaire} €/h, "
+                f"majorées de "
+                f"{remuneration.majoration_heures_sup} %. "
                 f"Demande #{demande.id}."
             )
 
-        paiement, created = (
-            Paie.objects.get_or_create(
-                demande=demande,
-                defaults={
-                    "salarie": (
-                        demande.salarie
-                    ),
-                    "type_paiement": (
-                        type_paiement
-                    ),
-                    "montant": montant,
-                    "date_paiement": (
-                        timezone.localdate()
-                    ),
-                    "commentaire": (
-                        commentaire
-                    ),
-                },
+        # ======================================
+        # CET
+        # ======================================
+
+        elif (
+            demande.type_demande
+            == Demande.TypeDemande.CET
+        ):
+            commentaire = (
+                f"Paiement CET généré après "
+                f"approbation de la demande "
+                f"#{demande.id}. "
+                "Montant à compléter si nécessaire."
             )
+
+        # Création manuelle plutôt que get_or_create
+        # pour exécuter full_clean().
+        paiement = Paie(
+            salarie=demande.salarie,
+            demande=demande,
+            type_paiement=type_paiement,
+            montant=montant,
+            date_paiement=date_paiement,
+            commentaire=commentaire,
         )
 
-        return paiement, created
+        paiement.full_clean()
+        paiement.save()
+
+        return paiement, True
 
     @action(
         detail=True,
@@ -328,6 +432,7 @@ class DemandeViewSet(
             ]
         )
 
+        # Création éventuelle dans Paie.
         paiement, paiement_cree = (
             self._creer_paiement(
                 demande
@@ -358,14 +463,33 @@ class DemandeViewSet(
                 "message": (
                     "La demande a été approuvée."
                 ),
+
                 "paiement_cree": (
                     paiement_cree
                 ),
+
                 "paiement_id": (
                     paiement.id
                     if paiement
                     else None
                 ),
+
+                "montant_paiement": (
+                    str(paiement.montant)
+                    if (
+                        paiement
+                        and paiement.montant
+                        is not None
+                    )
+                    else None
+                ),
+
+                "date_paiement": (
+                    paiement.date_paiement
+                    if paiement
+                    else None
+                ),
+
                 "demande": (
                     serializer.data
                 ),

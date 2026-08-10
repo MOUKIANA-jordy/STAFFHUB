@@ -1,8 +1,9 @@
+from decimal import Decimal
+import uuid
+
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.contrib.auth import get_user_model
-
-import uuid
 
 
 User = get_user_model()
@@ -33,8 +34,13 @@ class Salarie(models.Model):
         blank=True,
     )
 
-    nom = models.CharField(max_length=100)
-    prenom = models.CharField(max_length=100)
+    nom = models.CharField(
+        max_length=100,
+    )
+
+    prenom = models.CharField(
+        max_length=100,
+    )
 
     matricule = models.CharField(
         max_length=50,
@@ -44,6 +50,7 @@ class Salarie(models.Model):
     )
 
     email_personnel = models.EmailField()
+
     telephone = models.CharField(
         max_length=20,
         blank=True,
@@ -76,19 +83,45 @@ class Salarie(models.Model):
         blank=True,
     )
 
-    poste = models.CharField(max_length=100)
-    etablissement = models.CharField(max_length=150)
+    poste = models.CharField(
+        max_length=100,
+    )
 
-    must_change_password = models.BooleanField(default=True)
+    etablissement = models.CharField(
+        max_length=150,
+    )
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    must_change_password = models.BooleanField(
+        default=True,
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
 
     class Meta:
-        ordering = ["nom", "prenom"]
+        ordering = [
+            "nom",
+            "prenom",
+        ]
+
         indexes = [
-            models.Index(fields=["role", "etablissement"]),
-            models.Index(fields=["type_contrat", "etablissement"]),
+            models.Index(
+                fields=[
+                    "role",
+                    "etablissement",
+                ],
+            ),
+            models.Index(
+                fields=[
+                    "type_contrat",
+                    "etablissement",
+                ],
+            ),
         ]
 
     def clean(self):
@@ -97,7 +130,8 @@ class Salarie(models.Model):
         if (
             self.date_fin_contrat
             and self.date_debut_contrat
-            and self.date_fin_contrat < self.date_debut_contrat
+            and self.date_fin_contrat
+            < self.date_debut_contrat
         ):
             errors["date_fin_contrat"] = (
                 "La date de fin du contrat ne peut pas être "
@@ -105,16 +139,62 @@ class Salarie(models.Model):
             )
 
         if (
-            self.type_contrat == self.TypeContrat.CDI
+            self.type_contrat
+            == self.TypeContrat.CDI
             and self.date_fin_contrat
         ):
             errors["date_fin_contrat"] = (
-                "Un contrat CDI ne doit normalement pas avoir "
-                "de date de fin."
+                "Un contrat CDI ne doit normalement pas "
+                "avoir de date de fin."
             )
 
         if errors:
             raise ValidationError(errors)
 
     def __str__(self):
-        return f"{self.prenom} {self.nom} ({self.matricule})"
+        return (
+            f"{self.prenom} {self.nom} "
+            f"({self.matricule})"
+        )
+
+
+class CompteCET(models.Model):
+    salarie = models.OneToOneField(
+        Salarie,
+        on_delete=models.CASCADE,
+        related_name="compte_cet",
+    )
+
+    solde_heures = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        default=Decimal("0.00"),
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        ordering = [
+            "salarie__nom",
+            "salarie__prenom",
+        ]
+
+    def clean(self):
+        if self.solde_heures < Decimal("0.00"):
+            raise ValidationError({
+                "solde_heures": (
+                    "Le solde CET ne peut pas être négatif."
+                )
+            })
+
+    def __str__(self):
+        return (
+            f"CET - {self.salarie} "
+            f"({self.solde_heures} h)"
+        )

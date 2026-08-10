@@ -63,10 +63,7 @@ class DemandeSerializer(serializers.ModelSerializer):
 
         full_name = user.get_full_name()
 
-        return (
-            full_name
-            or user.username
-        )
+        return full_name or user.username
 
     def get_total_heures_sup(self, obj) -> float:
         return float(
@@ -103,8 +100,7 @@ class DemandeSerializer(serializers.ModelSerializer):
 
         if document.size > max_size:
             raise serializers.ValidationError(
-                "Le fichier ne doit pas "
-                "dépasser 5 Mo."
+                "Le fichier ne doit pas dépasser 5 Mo."
             )
 
         allowed_types = [
@@ -155,9 +151,7 @@ class DemandeSerializer(serializers.ModelSerializer):
             None,
         )
 
-        request = self.context.get(
-            "request"
-        )
+        request = self.context.get("request")
 
         user = getattr(
             request,
@@ -165,36 +159,37 @@ class DemandeSerializer(serializers.ModelSerializer):
             None,
         )
 
-        salarie = getattr(
+        current_salarie = getattr(
             user,
             "salarie",
             None,
         ) if user else None
 
-        # =============================
+        # Sur une modification, la demande appartient
+        # toujours au salarié déjà enregistré.
+        demande_salarie = (
+            instance.salarie
+            if instance
+            else current_salarie
+        )
+
+        # ========================================
         # DEMANDE DÉJÀ TRAITÉE
-        # =============================
+        # ========================================
 
         if (
             instance
             and instance.statut
             != Demande.Statut.EN_ATTENTE
-            and not (
-                user
-                and (
-                    user.is_staff
-                    or user.is_superuser
-                )
-            )
         ):
             raise serializers.ValidationError(
                 "Une demande déjà traitée "
                 "ne peut plus être modifiée."
             )
 
-        # =============================
+        # ========================================
         # ACOMPTE / AVANCE
-        # =============================
+        # ========================================
 
         if type_demande in [
             Demande.TypeDemande.ACOMPTE,
@@ -215,9 +210,9 @@ class DemandeSerializer(serializers.ModelSerializer):
                     )
                 })
 
-        # =============================
+        # ========================================
         # ABSENCE
-        # =============================
+        # ========================================
 
         if (
             type_demande
@@ -231,70 +226,66 @@ class DemandeSerializer(serializers.ModelSerializer):
                 )
             })
 
-        # =============================
-        # AVANCE CDI
-        # =============================
+        # ========================================
+        # AVANCE : CDI UNIQUEMENT
+        # ========================================
 
         if (
             type_demande
             == Demande.TypeDemande.AVANCE
-            and salarie
-            and not (
-                user.is_staff
-                or user.is_superuser
-            )
+            and demande_salarie
+            and demande_salarie.type_contrat != "CDI"
         ):
-            if salarie.type_contrat != "CDI":
-                raise serializers.ValidationError({
-                    "type_demande": (
-                        "Les avances sont réservées "
-                        "aux salariés en CDI."
-                    )
-                })
+            raise serializers.ValidationError({
+                "type_demande": (
+                    "Les avances sont réservées "
+                    "aux salariés en CDI."
+                )
+            })
 
-        # =============================
-        # HEURES SUP
-        # =============================
+        # ========================================
+        # HEURES SUPPLÉMENTAIRES
+        # ========================================
 
         if (
             type_demande
             == Demande.TypeDemande.HEURES_SUP
         ):
-            if not salarie:
+            if not demande_salarie:
                 raise serializers.ValidationError({
                     "pointages": (
                         "Aucun profil salarié "
-                        "n’est associé à ce compte."
+                        "n’est associé à cette demande."
                     )
                 })
 
-            # Création : au moins un pointage obligatoire.
             if (
                 not instance
                 and not pointages
             ):
                 raise serializers.ValidationError({
                     "pointages": (
-                        "Sélectionnez au moins "
-                        "un pointage contenant "
-                        "des heures supplémentaires."
+                        "Sélectionnez au moins un pointage "
+                        "contenant des heures supplémentaires."
                     )
                 })
 
             if pointages is not None:
                 total = Decimal("0.00")
+                periodes_paie = set()
 
                 for pointage in pointages:
                     # Le pointage doit appartenir
-                    # au salarié connecté.
+                    # au salarié de la demande.
                     if (
                         pointage.salarie_id
-                        != salarie.id
+                        != demande_salarie.id
                     ):
                         raise serializers.ValidationError({
                             "pointages": (
-                                "Vous ne pouvez utiliser "
-                                "que vos propres pointages."
+                                "Tous les pointages doivent "
+                                "appartenir au salarié "
+                                "de la demande."
                             )
                         })
 
@@ -312,9 +303,20 @@ class DemandeSerializer(serializers.ModelSerializer):
                             )
                         })
 
-                    # Empêche qu'un pointage soit
-                    # réutilisé dans une autre demande
-                    # non refusée.
+                    if not pointage.mois_paie:
+                        raise serializers.ValidationError({
+                            "pointages": (
+                                f"Le pointage #{pointage.id} "
+                                "n'a aucune période de paie."
+                            )
+                        })
+
+                    periodes_paie.add(
+                        pointage.mois_paie
+                    )
+
+                    # Empêche un double paiement
+                    # du même pointage.
                     demandes_existantes = (
                         pointage
                         .demandes_heures_sup
@@ -349,8 +351,18 @@ class DemandeSerializer(serializers.ModelSerializer):
                         )
                     })
 
-        # Un autre type de demande ne doit pas
-        # utiliser de pointages.
+                # Une demande = une seule période de paie.
+                if len(periodes_paie) > 1:
+                    raise serializers.ValidationError({
+                        "pointages": (
+                            "Tous les pointages doivent "
+                            "appartenir à la même période "
+                            "de paie."
+                        )
+                    })
+
+        # Les pointages ne sont utilisables que
+        # pour HEURES_SUP.
         elif pointages:
             raise serializers.ValidationError({
                 "pointages": (
