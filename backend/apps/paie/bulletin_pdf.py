@@ -1487,19 +1487,21 @@ def generate_staffhub_bulletin(
     # ========================================================
 
     elements.append(
-        Paragraph(
-            (
-                "<b>Document de démonstration StaffHub</b>"
-                "<br/>"
-                "Les cotisations sociales et le "
-                "prélèvement à la source ne sont "
-                "pas encore calculés automatiquement. "
-                "Ce document ne constitue pas un "
-                "bulletin de paie officiel."
-            ),
-            footer_style,
-        )
+    Paragraph(
+        (
+            "<b>Document de démonstration StaffHub</b>"
+            "<br/>"
+            "Les cotisations sociales sont calculées "
+            "automatiquement à partir des paramètres "
+            "de cotisation configurés dans StaffHub. "
+            "Le prélèvement à la source n'est pas "
+            "encore calculé automatiquement. "
+            "Ce document ne constitue pas un "
+            "bulletin de paie officiel."
+        ),
+        footer_style,
     )
+)
 
     # ========================================================
     # BUILD
