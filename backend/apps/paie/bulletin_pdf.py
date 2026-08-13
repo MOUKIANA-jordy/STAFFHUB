@@ -7,6 +7,11 @@ from reportlab.lib.enums import (
     TA_CENTER,
     TA_RIGHT,
 )
+from datetime import date
+
+from apps.paie.services import (
+    calculer_cotisations,
+)
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import (
     ParagraphStyle,
@@ -244,26 +249,60 @@ def get_bulletin_data(
         Decimal("0.00"),
     )
 
-    cotisations_salariales = Decimal("0.00")
-    cotisations_employeur = Decimal("0.00")
-
     brut = total_plus
 
-    net_social = (
-        brut
-        - cotisations_salariales
-    )
+dernier_jour = monthrange(
+    annee,
+    mois,
+)[1]
 
-    net_avant_impot = (
-        net_social
-        - retenues
+date_reference = date(
+    annee,
+    mois,
+    dernier_jour,
+)
+
+resultat_cotisations = (
+    calculer_cotisations(
+        brut=brut,
+        date_reference=date_reference,
     )
+)
+
+cotisations = (
+    resultat_cotisations[
+        "lignes"
+    ]
+)
+
+cotisations_salariales = (
+    resultat_cotisations[
+        "total_salarial"
+    ]
+)
+
+cotisations_employeur = (
+    resultat_cotisations[
+        "total_employeur"
+    ]
+)
+
+net_social = (
+    brut
+    - cotisations_salariales
+)
+
+net_avant_impot = (
+    net_social
+    - retenues
+)
 
     return {
         "remuneration": remuneration,
         "paiements": paiements,
         "pointages": pointages,
         "lignes_revenus": lignes_revenus,
+        "cotisations": cotisations,
         "salaire_base": salaire_base,
         "taux_horaire": taux_horaire,
         "majoration_heures_sup":
@@ -784,16 +823,69 @@ def generate_staffhub_bulletin(
         "",
     ])
 
-    cotisations = [
-        "Assurance santé",
-        "Accidents du travail",
-        "Assurance retraite",
-        "Retraite complémentaire",
-        "Assurance chômage",
-        "CSG / CRDS",
-    ]
+    for cotisation in data[
+    "cotisations"
+]:
+    taux_salarial = (
+        cotisation[
+            "taux_salarial"
+        ]
+    )
 
-    for libelle in cotisations:
+    taux_employeur = (
+        cotisation[
+            "taux_employeur"
+        ]
+    )
+
+    part_salariale = (
+        cotisation[
+            "part_salariale"
+        ]
+    )
+
+    part_employeur = (
+        cotisation[
+            "part_employeur"
+        ]
+    )
+
+    rows.append([
+        Paragraph(
+            cotisation["libelle"],
+            normal,
+        ),
+
+        Paragraph(
+            money(
+                cotisation["base"]
+            ),
+            right,
+        ),
+
+        Paragraph(
+            (
+                f"{taux_salarial} %"
+                if taux_salarial
+                else ""
+            ),
+            right,
+        ),
+
+        Paragraph(
+            money(
+                part_salariale
+            ),
+            right,
+        ),
+
+        Paragraph(
+            money(
+                part_employeur
+            ),
+            right,
+        ),
+    ])
         rows.append([
             Paragraph(
                 libelle,
