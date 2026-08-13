@@ -1,4 +1,5 @@
 from calendar import monthrange
+from datetime import date
 from decimal import Decimal
 from io import BytesIO
 
@@ -6,11 +7,6 @@ from reportlab.lib import colors
 from reportlab.lib.enums import (
     TA_CENTER,
     TA_RIGHT,
-)
-from datetime import date
-
-from apps.paie.services import (
-    calculer_cotisations,
 )
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import (
@@ -27,6 +23,7 @@ from reportlab.platypus import (
 )
 
 from apps.paie.models import Paie
+from apps.paie.services import calculer_cotisations
 from apps.pointage.models import Pointage
 from apps.remunerations.models import Remuneration
 
@@ -251,76 +248,98 @@ def get_bulletin_data(
 
     brut = total_plus
 
-dernier_jour = monthrange(
-    annee,
-    mois,
-)[1]
+    dernier_jour = monthrange(
+        annee,
+        mois,
+    )[1]
 
-date_reference = date(
-    annee,
-    mois,
-    dernier_jour,
-)
-
-resultat_cotisations = (
-    calculer_cotisations(
-        brut=brut,
-        date_reference=date_reference,
+    date_reference = date(
+        annee,
+        mois,
+        dernier_jour,
     )
-)
 
-cotisations = (
-    resultat_cotisations[
-        "lignes"
-    ]
-)
+    resultat_cotisations = (
+        calculer_cotisations(
+            brut=brut,
+            date_reference=date_reference,
+        )
+    )
 
-cotisations_salariales = (
-    resultat_cotisations[
-        "total_salarial"
-    ]
-)
+    cotisations = (
+        resultat_cotisations[
+            "lignes"
+        ]
+    )
 
-cotisations_employeur = (
-    resultat_cotisations[
-        "total_employeur"
-    ]
-)
+    cotisations_salariales = (
+        resultat_cotisations[
+            "total_salarial"
+        ]
+    )
 
-net_social = (
-    brut
-    - cotisations_salariales
-)
+    cotisations_employeur = (
+        resultat_cotisations[
+            "total_employeur"
+        ]
+    )
 
-net_avant_impot = (
-    net_social
-    - retenues
-)
+    net_social = (
+        brut
+        - cotisations_salariales
+    )
+
+    net_avant_impot = (
+        net_social
+        - retenues
+    )
 
     return {
-        "remuneration": remuneration,
-        "paiements": paiements,
-        "pointages": pointages,
-        "lignes_revenus": lignes_revenus,
-        "cotisations": cotisations,
-        "salaire_base": salaire_base,
-        "taux_horaire": taux_horaire,
+        "remuneration":
+            remuneration,
+
+        "paiements":
+            paiements,
+
+        "pointages":
+            pointages,
+
+        "lignes_revenus":
+            lignes_revenus,
+
+        "cotisations":
+            cotisations,
+
+        "salaire_base":
+            salaire_base,
+
+        "taux_horaire":
+            taux_horaire,
+
         "majoration_heures_sup":
             majoration_heures_sup,
+
         "heures_travaillees":
             heures_travaillees,
+
         "heures_sup":
             heures_sup,
+
         "brut":
             brut,
+
         "retenues":
             retenues,
+
         "cotisations_salariales":
             cotisations_salariales,
+
         "cotisations_employeur":
             cotisations_employeur,
+
         "net_social":
             net_social,
+
         "net_avant_impot":
             net_avant_impot,
     }
@@ -823,88 +842,71 @@ def generate_staffhub_bulletin(
         "",
     ])
 
+    # ========================================================
+    # COTISATIONS DYNAMIQUES
+    # ========================================================
+
     for cotisation in data[
-    "cotisations"
-]:
-    taux_salarial = (
-        cotisation[
-            "taux_salarial"
-        ]
-    )
+        "cotisations"
+    ]:
+        taux_salarial = (
+            cotisation[
+                "taux_salarial"
+            ]
+        )
 
-    taux_employeur = (
-        cotisation[
-            "taux_employeur"
-        ]
-    )
+        taux_employeur = (
+            cotisation[
+                "taux_employeur"
+            ]
+        )
 
-    part_salariale = (
-        cotisation[
-            "part_salariale"
-        ]
-    )
+        part_salariale = (
+            cotisation[
+                "part_salariale"
+            ]
+        )
 
-    part_employeur = (
-        cotisation[
-            "part_employeur"
-        ]
-    )
+        part_employeur = (
+            cotisation[
+                "part_employeur"
+            ]
+        )
 
-    rows.append([
-        Paragraph(
-            cotisation["libelle"],
-            normal,
-        ),
-
-        Paragraph(
-            money(
-                cotisation["base"]
-            ),
-            right,
-        ),
-
-        Paragraph(
-            (
-                f"{taux_salarial} %"
-                if taux_salarial
-                else ""
-            ),
-            right,
-        ),
-
-        Paragraph(
-            money(
-                part_salariale
-            ),
-            right,
-        ),
-
-        Paragraph(
-            money(
-                part_employeur
-            ),
-            right,
-        ),
-    ])
         rows.append([
             Paragraph(
-                libelle,
+                cotisation["libelle"],
                 normal,
             ),
+
             Paragraph(
                 money(
-                    data["brut"]
+                    cotisation["base"]
                 ),
                 right,
             ),
-            "",
+
             Paragraph(
-                "—",
-                center,
+                (
+                    f"{taux_salarial} %"
+                    if taux_salarial
+                    else ""
+                ),
+                right,
             ),
+
             Paragraph(
-                "—",
-                center,
+                money(
+                    part_salariale
+                ),
+                right,
+            ),
+
+            Paragraph(
+                money(
+                    part_employeur
+                ),
+                right,
             ),
         ])
 
@@ -1253,8 +1255,6 @@ def generate_staffhub_bulletin(
                 )
             )
 
-        # Première colonne plus large
-        # pour éviter le "Heure / s".
         nombre_jours = len(jours)
 
         largeur_restante = (

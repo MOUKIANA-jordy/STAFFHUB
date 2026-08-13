@@ -5,6 +5,10 @@ from django.db.models import Q
 from .models import TauxCotisation
 
 
+# ============================================================
+# OUTILS
+# ============================================================
+
 def decimal_value(value):
     if value is None:
         return Decimal("0.00")
@@ -14,27 +18,137 @@ def decimal_value(value):
     )
 
 
-def calculer_cotisations(
-    brut,
-    date_reference,
-):
-    """
-    Calcule les cotisations applicables
-    à une période donnée.
-
-    V1 StaffHub :
-    seules les cotisations basées directement
-    sur le BRUT sont calculées.
-
-    Les bases plafonnées ou abattues seront
-    ajoutées dans une future version.
-    """
-
-    brut = decimal_value(
-        brut
+def arrondir(value):
+    return decimal_value(
+        value
     ).quantize(
         Decimal("0.01")
     )
+
+
+# ============================================================
+# BASES DE COTISATION
+# ============================================================
+
+def calculer_base_cotisation(
+    brut,
+    type_base,
+    plafond_ss=None,
+    coefficient_brut_abattu=Decimal("0.9825"),
+):
+    """
+    Détermine la base utilisée pour une cotisation.
+
+    BRUT :
+        utilise directement le salaire brut.
+
+    PLAFOND :
+        utilise le brut dans la limite du plafond
+        fourni à la fonction.
+
+    BRUT_ABATTU :
+        utilise une base réduite.
+
+    Pour notre jeu de test StaffHub,
+    le coefficient 0.9825 reproduit la base
+    CSG/CRDS observée sur le bulletin de référence.
+
+    Ce coefficient reste paramétrable.
+    """
+
+    brut = arrondir(
+        brut
+    )
+
+    # ========================================================
+    # BRUT
+    # ========================================================
+
+    if (
+        type_base
+        == TauxCotisation.TypeBase.BRUT
+    ):
+        return brut
+
+    # ========================================================
+    # BASE PLAFONNÉE
+    # ========================================================
+
+    if (
+        type_base
+        == TauxCotisation.TypeBase.PLAFOND
+    ):
+        if plafond_ss is None:
+            # Tant qu'aucun plafond n'est fourni,
+            # on utilise le brut.
+            return brut
+
+        plafond_ss = decimal_value(
+            plafond_ss
+        )
+
+        return arrondir(
+            min(
+                brut,
+                plafond_ss,
+            )
+        )
+
+    # ========================================================
+    # BRUT ABATTU
+    # ========================================================
+
+    if (
+        type_base
+        == TauxCotisation.TypeBase.BRUT_ABATTU
+    ):
+        coefficient = decimal_value(
+            coefficient_brut_abattu
+        )
+
+        base = (
+            brut
+            * coefficient
+        )
+
+        return arrondir(
+            base
+        )
+
+    return brut
+
+
+# ============================================================
+# MOTEUR DE COTISATIONS
+# ============================================================
+
+def calculer_cotisations(
+    brut,
+    date_reference,
+    plafond_ss=None,
+    coefficient_brut_abattu=Decimal("0.9825"),
+):
+    """
+    Calcule les cotisations actives applicables
+    à la date donnée.
+
+    Retour :
+    {
+        "brut": ...,
+        "lignes": [...],
+        "total_salarial": ...,
+        "total_employeur": ...,
+        "cout_employeur": ...
+    }
+    """
+
+    brut = arrondir(
+        brut
+    )
+
+    # ========================================================
+    # TAUX APPLICABLES À LA DATE
+    # ========================================================
 
     taux_queryset = (
         TauxCotisation.objects
@@ -44,7 +158,9 @@ def calculer_cotisations(
         )
         .filter(
             Q(date_fin__isnull=True)
-            | Q(date_fin__gte=date_reference)
+            | Q(
+                date_fin__gte=date_reference
+            )
         )
         .order_by(
             "ordre",
@@ -62,17 +178,19 @@ def calculer_cotisations(
         "0.00"
     )
 
-    for taux in taux_queryset:
-        # Pour cette première version,
-        # on ne calcule réellement que
-        # les cotisations basées sur le brut.
-        if (
-            taux.type_base
-            != TauxCotisation.TypeBase.BRUT
-        ):
-            continue
+    # ========================================================
+    # CALCUL DE CHAQUE COTISATION
+    # ========================================================
 
-        base = brut
+    for taux in taux_queryset:
+        base = calculer_base_cotisation(
+            brut=brut,
+            type_base=taux.type_base,
+            plafond_ss=plafond_ss,
+            coefficient_brut_abattu=(
+                coefficient_brut_abattu
+            ),
+        )
 
         part_salariale = (
             taux.calculer_part_salariale(
@@ -95,6 +213,9 @@ def calculer_cotisations(
         )
 
         lignes.append({
+            "id":
+                taux.id,
+
             "code":
                 taux.code,
 
@@ -103,6 +224,9 @@ def calculer_cotisations(
 
             "type_cotisation":
                 taux.type_cotisation,
+
+            "type_base":
+                taux.type_base,
 
             "base":
                 base,
@@ -120,16 +244,26 @@ def calculer_cotisations(
                 part_employeur,
         })
 
-    total_salarial = (
-        total_salarial.quantize(
-            Decimal("0.01")
-        )
+    # ========================================================
+    # TOTAUX
+    # ========================================================
+
+    total_salarial = arrondir(
+        total_salarial
     )
 
-    total_employeur = (
-        total_employeur.quantize(
-            Decimal("0.01")
-        )
+    total_employeur = arrondir(
+        total_employeur
+    )
+
+    cout_employeur = arrondir(
+        brut
+        + total_employeur
+    )
+
+    net_apres_cotisations = arrondir(
+        brut
+        - total_salarial
     )
 
     return {
@@ -144,4 +278,10 @@ def calculer_cotisations(
 
         "total_employeur":
             total_employeur,
+
+        "net_apres_cotisations":
+            net_apres_cotisations,
+
+        "cout_employeur":
+            cout_employeur,
     }
