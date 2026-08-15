@@ -1,6 +1,7 @@
 from calendar import monthrange
 from datetime import date, datetime, timedelta
 from decimal import Decimal, InvalidOperation
+from io import BytesIO
 
 from django.core.files.base import ContentFile
 from django.db import transaction
@@ -17,7 +18,6 @@ from rest_framework import (
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from io import BytesIO
 
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
@@ -708,6 +708,260 @@ class DemandeViewSet(viewsets.ModelViewSet):
         return plannings
 
     # ========================================================
+    # CALENDRIER → PLANNING
+    # ========================================================
+
+    def _creer_planning_calendrier(
+        self,
+        demande,
+    ):
+        if (
+            demande.type_demande
+            != Demande.TypeDemande.CALENDRIER
+        ):
+            return []
+
+        details = (
+            demande.details
+            or {}
+        )
+
+        date_value = (
+            details.get("date")
+        )
+
+        type_journee_value = (
+            details.get("type_journee")
+        )
+
+        heure_debut_value = (
+            details.get("heure_debut")
+        )
+
+        heure_fin_value = (
+            details.get("heure_fin")
+        )
+
+        motif = (
+            details.get("motif")
+            or ""
+        ).strip()
+
+        # ====================================================
+        # DATE
+        # ====================================================
+
+        if not date_value:
+            raise serializers.ValidationError({
+                "details": {
+                    "date": (
+                        "La date est obligatoire."
+                    )
+                }
+            })
+
+        try:
+            planning_date = (
+                date.fromisoformat(
+                    str(date_value)
+                )
+            )
+
+        except (
+            TypeError,
+            ValueError,
+        ) as error:
+            raise serializers.ValidationError({
+                "details": {
+                    "date": (
+                        "La date doit être au format "
+                        "AAAA-MM-JJ."
+                    )
+                }
+            }) from error
+
+        # ====================================================
+        # TYPE DE JOURNÉE
+        # ====================================================
+
+        if not type_journee_value:
+            raise serializers.ValidationError({
+                "details": {
+                    "type_journee": (
+                        "Le type de journée "
+                        "est obligatoire."
+                    )
+                }
+            })
+
+        types_valides = {
+            choix[0]
+            for choix
+            in Planning.TypeJournee.choices
+        }
+
+        if (
+            type_journee_value
+            not in types_valides
+        ):
+            raise serializers.ValidationError({
+                "details": {
+                    "type_journee": (
+                        "Le type de journée est invalide. "
+                        "Valeurs autorisées : "
+                        "BUREAU, TELETRAVAIL, CONGE, "
+                        "ABSENCE, VACATION, FORMATION."
+                    )
+                }
+            })
+
+        # ====================================================
+        # HORAIRES
+        # ====================================================
+
+        types_sans_horaires = {
+            Planning.TypeJournee.CONGE,
+            Planning.TypeJournee.ABSENCE,
+        }
+
+        heure_debut = None
+        heure_fin = None
+
+        if (
+            type_journee_value
+            not in types_sans_horaires
+        ):
+            if not heure_debut_value:
+                raise serializers.ValidationError({
+                    "details": {
+                        "heure_debut": (
+                            "L'heure de début "
+                            "est obligatoire."
+                        )
+                    }
+                })
+
+            if not heure_fin_value:
+                raise serializers.ValidationError({
+                    "details": {
+                        "heure_fin": (
+                            "L'heure de fin "
+                            "est obligatoire."
+                        )
+                    }
+                })
+
+            try:
+                heure_debut = (
+                    datetime.strptime(
+                        str(heure_debut_value),
+                        "%H:%M",
+                    ).time()
+                )
+
+                heure_fin = (
+                    datetime.strptime(
+                        str(heure_fin_value),
+                        "%H:%M",
+                    ).time()
+                )
+
+            except (
+                TypeError,
+                ValueError,
+            ) as error:
+                raise serializers.ValidationError({
+                    "details": (
+                        "Les horaires doivent être "
+                        "au format HH:MM."
+                    )
+                }) from error
+
+            if (
+                heure_fin
+                <= heure_debut
+            ):
+                raise serializers.ValidationError({
+                    "details": {
+                        "heure_fin": (
+                            "L'heure de fin doit être "
+                            "postérieure à l'heure "
+                            "de début."
+                        )
+                    }
+                })
+
+        # ====================================================
+        # CRÉATION OU MODIFICATION DU PLANNING
+        # ====================================================
+
+        commentaire = (
+            motif
+            or (
+                "Modification du calendrier "
+                f"validée - Demande #{demande.id}"
+            )
+        )
+
+        planning, created = (
+            Planning.objects
+            .get_or_create(
+                salarie=demande.salarie,
+                date=planning_date,
+                defaults={
+                    "type_journee": (
+                        type_journee_value
+                    ),
+                    "heure_debut": (
+                        heure_debut
+                    ),
+                    "heure_fin": (
+                        heure_fin
+                    ),
+                    "commentaire": (
+                        commentaire
+                    ),
+                },
+            )
+        )
+
+        if not created:
+            planning.type_journee = (
+                type_journee_value
+            )
+
+            planning.heure_debut = (
+                heure_debut
+            )
+
+            planning.heure_fin = (
+                heure_fin
+            )
+
+            planning.commentaire = (
+                commentaire
+            )
+
+            planning.full_clean()
+
+            planning.save(
+                update_fields=[
+                    "type_journee",
+                    "heure_debut",
+                    "heure_fin",
+                    "commentaire",
+                    "updated_at",
+                ]
+            )
+
+        else:
+            planning.full_clean()
+
+        return [
+            planning
+        ]
+
+    # ========================================================
     # FICHE DE PAIE → BULLETIN STAFFHUB PDF
     # ========================================================
 
@@ -983,6 +1237,20 @@ class DemandeViewSet(viewsets.ModelViewSet):
         )
 
         # ====================================================
+        # CALENDRIER → PLANNING
+        # ====================================================
+
+        plannings_calendrier = (
+            self._creer_planning_calendrier(
+                demande
+            )
+        )
+
+        plannings_crees.extend(
+            plannings_calendrier
+        )
+
+        # ====================================================
         # FICHE PDF
         # ====================================================
 
@@ -1016,6 +1284,27 @@ class DemandeViewSet(viewsets.ModelViewSet):
             notification_lien = (
                 f"/api/paie/"
                 f"{fiche_paie.id}/pdf/"
+            )
+
+        if (
+            demande.type_demande
+            == Demande.TypeDemande.CALENDRIER
+            and plannings_calendrier
+        ):
+            planning = (
+                plannings_calendrier[0]
+            )
+
+            notification_message = (
+                "Votre modification de calendrier "
+                "a été approuvée. "
+                f"Planning du "
+                f"{planning.date.strftime('%d/%m/%Y')} "
+                "mis à jour."
+            )
+
+            notification_lien = (
+                "/home/activites/planning"
             )
 
         self._creer_notification(

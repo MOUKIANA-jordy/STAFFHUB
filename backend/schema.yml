@@ -779,13 +779,10 @@ paths:
       - documents
       requestBody:
         content:
-          application/json:
+          multipart/form-data:
             schema:
               $ref: '#/components/schemas/Document'
           application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Document'
-          multipart/form-data:
             schema:
               $ref: '#/components/schemas/Document'
         required: true
@@ -832,13 +829,10 @@ paths:
       - documents
       requestBody:
         content:
-          application/json:
+          multipart/form-data:
             schema:
               $ref: '#/components/schemas/Document'
           application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Document'
-          multipart/form-data:
             schema:
               $ref: '#/components/schemas/Document'
         required: true
@@ -864,13 +858,10 @@ paths:
       - documents
       requestBody:
         content:
-          application/json:
+          multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedDocument'
           application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedDocument'
-          multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedDocument'
       security:
@@ -3646,6 +3637,9 @@ components:
         fichier:
           type: string
           format: uri
+        fichier_url:
+          type: string
+          readOnly: true
         nom_fichier:
           type: string
           readOnly: true
@@ -3693,6 +3687,7 @@ components:
       - est_expire
       - extension
       - fichier
+      - fichier_url
       - id
       - nom_fichier
       - salarie
@@ -4693,6 +4688,9 @@ components:
         fichier:
           type: string
           format: uri
+        fichier_url:
+          type: string
+          readOnly: true
         nom_fichier:
           type: string
           readOnly: true

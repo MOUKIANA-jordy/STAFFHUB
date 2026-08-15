@@ -1,15 +1,26 @@
 import os
 import uuid
 
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
 from apps.users.models import Salarie
 
 
-def document_upload_path(instance, filename):
-    extension = os.path.splitext(filename)[1].lower()
-    unique_name = f"{uuid.uuid4().hex}{extension}"
+def document_upload_path(
+    instance,
+    filename,
+):
+    extension = (
+        os.path.splitext(filename)[1]
+        .lower()
+    )
+
+    unique_name = (
+        f"{uuid.uuid4().hex}"
+        f"{extension}"
+    )
 
     return (
         f"documents/"
@@ -20,22 +31,54 @@ def document_upload_path(instance, filename):
 
 
 class Document(models.Model):
-    class TypeDocument(models.TextChoices):
-        CNI = "CNI", "Carte nationale d’identité"
-        PASSEPORT = "PASSEPORT", "Passeport"
-        CONTRAT = "CONTRAT", "Contrat"
-        DIPLOME = "DIPLOME", "Diplôme"
-        PERMIS = "PERMIS", "Permis"
-        RIB = "RIB", "RIB"
+
+    class TypeDocument(
+        models.TextChoices
+    ):
+        CNI = (
+            "CNI",
+            "Carte nationale d’identité",
+        )
+
+        PASSEPORT = (
+            "PASSEPORT",
+            "Passeport",
+        )
+
+        CONTRAT = (
+            "CONTRAT",
+            "Contrat",
+        )
+
+        DIPLOME = (
+            "DIPLOME",
+            "Diplôme",
+        )
+
+        PERMIS = (
+            "PERMIS",
+            "Permis",
+        )
+
+        RIB = (
+            "RIB",
+            "RIB",
+        )
+
         JUSTIFICATIF_DOMICILE = (
             "JUSTIFICATIF_DOMICILE",
             "Justificatif de domicile",
         )
+
         CERTIFICAT_MEDICAL = (
             "CERTIFICAT_MEDICAL",
             "Certificat médical",
         )
-        AUTRE = "AUTRE", "Autre"
+
+        AUTRE = (
+            "AUTRE",
+            "Autre",
+        )
 
     salarie = models.ForeignKey(
         Salarie,
@@ -87,7 +130,7 @@ class Document(models.Model):
     )
 
     uploaded_by = models.ForeignKey(
-        "auth.User",
+        settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -103,13 +146,22 @@ class Document(models.Model):
     )
 
     class Meta:
-        ordering = ["-uploaded_at"]
+        ordering = [
+            "-uploaded_at",
+        ]
+
         indexes = [
             models.Index(
-                fields=["salarie", "type_document"],
+                fields=[
+                    "salarie",
+                    "type_document",
+                ],
             ),
             models.Index(
-                fields=["salarie", "archive"],
+                fields=[
+                    "salarie",
+                    "archive",
+                ],
             ),
         ]
 
@@ -118,11 +170,18 @@ class Document(models.Model):
         if not self.fichier:
             return ""
 
-        return os.path.basename(self.fichier.name)
+        return os.path.basename(
+            self.fichier.name
+        )
 
     @property
     def extension(self):
-        return os.path.splitext(self.nom_fichier)[1].lower()
+        return (
+            os.path.splitext(
+                self.nom_fichier
+            )[1]
+            .lower()
+        )
 
     @property
     def taille(self):
@@ -131,14 +190,19 @@ class Document(models.Model):
 
         try:
             return self.fichier.size
-        except OSError:
+
+        except (
+            OSError,
+            ValueError,
+        ):
             return 0
 
     @property
     def est_expire(self):
         return bool(
             self.date_expiration
-            and self.date_expiration < timezone.localdate()
+            and self.date_expiration
+            < timezone.localdate()
         )
 
     def __str__(self):

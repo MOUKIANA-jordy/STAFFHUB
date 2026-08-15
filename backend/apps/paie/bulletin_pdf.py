@@ -165,16 +165,12 @@ def get_bulletin_data(
             lignes_revenus.append({
                 "designation":
                     "Heures supplémentaires",
-
                 "base":
                     f"{heures_sup:.2f} h",
-
                 "taux":
                     f"{taux_horaire:.2f}",
-
                 "montant":
                     montant,
-
                 "sens":
                     "PLUS",
             })
@@ -284,6 +280,12 @@ def get_bulletin_data(
         ]
     )
 
+    cout_employeur = (
+        resultat_cotisations[
+            "cout_employeur"
+        ]
+    )
+
     net_social = (
         brut
         - cotisations_salariales
@@ -337,6 +339,9 @@ def get_bulletin_data(
         "cotisations_employeur":
             cotisations_employeur,
 
+        "cout_employeur":
+            cout_employeur,
+
         "net_social":
             net_social,
 
@@ -365,8 +370,8 @@ def generate_staffhub_bulletin(
     doc = SimpleDocTemplate(
         buffer,
         pagesize=A4,
-        leftMargin=8 * mm,
-        rightMargin=8 * mm,
+        leftMargin=7 * mm,
+        rightMargin=7 * mm,
         topMargin=6 * mm,
         bottomMargin=6 * mm,
     )
@@ -395,8 +400,8 @@ def generate_staffhub_bulletin(
         "normal_staffhub",
         parent=styles["Normal"],
         fontName="Helvetica",
-        fontSize=6.7,
-        leading=8,
+        fontSize=6.2,
+        leading=7.3,
         textColor=dark,
     )
 
@@ -409,8 +414,8 @@ def generate_staffhub_bulletin(
     small = ParagraphStyle(
         "small_staffhub",
         parent=normal,
-        fontSize=5.9,
-        leading=7,
+        fontSize=5.6,
+        leading=6.6,
     )
 
     center = ParagraphStyle(
@@ -456,16 +461,16 @@ def generate_staffhub_bulletin(
         "net_label",
         parent=normal,
         fontName="Helvetica-Bold",
-        fontSize=8,
-        leading=9,
+        fontSize=7.7,
+        leading=8.5,
     )
 
     net_amount = ParagraphStyle(
         "net_amount",
         parent=normal,
         fontName="Helvetica-Bold",
-        fontSize=12,
-        leading=13,
+        fontSize=11,
+        leading=12,
         alignment=TA_RIGHT,
         textColor=green,
     )
@@ -538,8 +543,8 @@ def generate_staffhub_bulletin(
             ]
         ],
         colWidths=[
-            95 * mm,
-            98 * mm,
+            96 * mm,
+            100 * mm,
         ],
     )
 
@@ -559,7 +564,7 @@ def generate_staffhub_bulletin(
     ligne = Table(
         [[""]],
         colWidths=[
-            193 * mm,
+            196 * mm,
         ],
         rowHeights=[
             1.4 * mm,
@@ -582,7 +587,7 @@ def generate_staffhub_bulletin(
     elements.append(
         Spacer(
             1,
-            2.5 * mm,
+            2.2 * mm,
         )
     )
 
@@ -660,8 +665,8 @@ def generate_staffhub_bulletin(
             ]
         ],
         colWidths=[
-            96 * mm,
-            97 * mm,
+            98 * mm,
+            98 * mm,
         ],
     )
 
@@ -725,12 +730,12 @@ def generate_staffhub_bulletin(
     elements.append(
         Spacer(
             1,
-            2.5 * mm,
+            2.2 * mm,
         )
     )
 
     # ========================================================
-    # TABLEAU PRINCIPAL
+    # TABLEAU PRINCIPAL - 6 COLONNES
     # ========================================================
 
     rows = [
@@ -744,15 +749,19 @@ def generate_staffhub_bulletin(
                 center,
             ),
             Paragraph(
-                "<b>Taux</b>",
+                "<b>Taux salarié</b>",
                 center,
             ),
             Paragraph(
-                "<b>Salarié</b>",
+                "<b>Part salarié</b>",
                 center,
             ),
             Paragraph(
-                "<b>Employeur</b>",
+                "<b>Taux employeur</b>",
+                center,
+            ),
+            Paragraph(
+                "<b>Part employeur</b>",
                 center,
             ),
         ],
@@ -762,6 +771,7 @@ def generate_staffhub_bulletin(
                 "<b>ÉLÉMENTS DE RÉMUNÉRATION</b>",
                 bold,
             ),
+            "",
             "",
             "",
             "",
@@ -806,6 +816,7 @@ def generate_staffhub_bulletin(
                 right,
             ),
             "",
+            "",
         ])
 
     rows.append([
@@ -824,6 +835,7 @@ def generate_staffhub_bulletin(
             right,
         ),
         "",
+        "",
     ])
 
     index_cotisations = len(rows)
@@ -836,6 +848,7 @@ def generate_staffhub_bulletin(
             ),
             bold,
         ),
+        "",
         "",
         "",
         "",
@@ -903,6 +916,15 @@ def generate_staffhub_bulletin(
             ),
 
             Paragraph(
+                (
+                    f"{taux_employeur} %"
+                    if taux_employeur
+                    else ""
+                ),
+                right,
+            ),
+
+            Paragraph(
                 money(
                     part_employeur
                 ),
@@ -918,18 +940,19 @@ def generate_staffhub_bulletin(
         "",
         "",
         Paragraph(
-            money(
-                data[
-                    "cotisations_salariales"
-                ]
+            (
+                "<b>"
+                f"{money(data['cotisations_salariales'])}"
+                "</b>"
             ),
             right,
         ),
+        "",
         Paragraph(
-            money(
-                data[
-                    "cotisations_employeur"
-                ]
+            (
+                "<b>"
+                f"{money(data['cotisations_employeur'])}"
+                "</b>"
             ),
             right,
         ),
@@ -938,12 +961,14 @@ def generate_staffhub_bulletin(
     table_paie = Table(
         rows,
         colWidths=[
-            78 * mm,
-            28 * mm,
-            26 * mm,
-            31 * mm,
-            30 * mm,
+            61 * mm,
+            27 * mm,
+            27 * mm,
+            27 * mm,
+            27 * mm,
+            27 * mm,
         ],
+        repeatRows=1,
     )
 
     table_paie.setStyle(
@@ -1000,28 +1025,28 @@ def generate_staffhub_bulletin(
                 "LEFTPADDING",
                 (0, 0),
                 (-1, -1),
-                3,
+                2.5,
             ),
 
             (
                 "RIGHTPADDING",
                 (0, 0),
                 (-1, -1),
-                3,
+                2.5,
             ),
 
             (
                 "TOPPADDING",
                 (0, 0),
                 (-1, -1),
-                2.2,
+                2,
             ),
 
             (
                 "BOTTOMPADDING",
                 (0, 0),
                 (-1, -1),
-                2.2,
+                2,
             ),
         ])
     )
@@ -1031,12 +1056,12 @@ def generate_staffhub_bulletin(
     elements.append(
         Spacer(
             1,
-            2.2 * mm,
+            2 * mm,
         )
     )
 
     # ========================================================
-    # NET SOCIAL / NET À PAYER
+    # SYNTHÈSE DE PAIE
     # ========================================================
 
     net_rows = [
@@ -1092,12 +1117,25 @@ def generate_staffhub_bulletin(
                 net_amount,
             ),
         ],
+
+        [
+            Paragraph(
+                "COÛT TOTAL EMPLOYEUR",
+                net_label,
+            ),
+            Paragraph(
+                (
+                    f"{money(data['cout_employeur'])} €"
+                ),
+                net_amount,
+            ),
+        ],
     ]
 
     net_table = Table(
         net_rows,
         colWidths=[
-            145 * mm,
+            148 * mm,
             48 * mm,
         ],
     )
@@ -1134,17 +1172,24 @@ def generate_staffhub_bulletin(
             ),
 
             (
+                "BACKGROUND",
+                (0, 4),
+                (-1, 4),
+                grey_very_light,
+            ),
+
+            (
                 "TOPPADDING",
                 (0, 0),
                 (-1, -1),
-                4,
+                3.7,
             ),
 
             (
                 "BOTTOMPADDING",
                 (0, 0),
                 (-1, -1),
-                4,
+                3.7,
             ),
 
             (
@@ -1168,7 +1213,7 @@ def generate_staffhub_bulletin(
     elements.append(
         Spacer(
             1,
-            2.2 * mm,
+            2 * mm,
         )
     )
 
@@ -1258,7 +1303,7 @@ def generate_staffhub_bulletin(
         nombre_jours = len(jours)
 
         largeur_restante = (
-            193 * mm
+            196 * mm
             - 13 * mm
         )
 
@@ -1360,7 +1405,7 @@ def generate_staffhub_bulletin(
     elements.append(
         Spacer(
             1,
-            2.2 * mm,
+            2 * mm,
         )
     )
 
@@ -1373,6 +1418,10 @@ def generate_staffhub_bulletin(
             [
                 Paragraph(
                     "<b>Brut</b>",
+                    center,
+                ),
+                Paragraph(
+                    "<b>Cot. salarié</b>",
                     center,
                 ),
                 Paragraph(
@@ -1399,6 +1448,12 @@ def generate_staffhub_bulletin(
                 ),
 
                 money(
+                    data[
+                        "cotisations_salariales"
+                    ]
+                ),
+
+                money(
                     data["retenues"]
                 ),
 
@@ -1418,11 +1473,12 @@ def generate_staffhub_bulletin(
             ],
         ],
         colWidths=[
-            38.6 * mm,
-            38.6 * mm,
-            38.6 * mm,
-            38.6 * mm,
-            38.6 * mm,
+            32.66 * mm,
+            32.66 * mm,
+            32.66 * mm,
+            32.66 * mm,
+            32.66 * mm,
+            32.66 * mm,
         ],
     )
 
@@ -1454,7 +1510,7 @@ def generate_staffhub_bulletin(
                 "FONTSIZE",
                 (0, 0),
                 (-1, -1),
-                6.4,
+                6,
             ),
 
             (
@@ -1478,7 +1534,7 @@ def generate_staffhub_bulletin(
     elements.append(
         Spacer(
             1,
-            2 * mm,
+            1.8 * mm,
         )
     )
 
@@ -1487,21 +1543,21 @@ def generate_staffhub_bulletin(
     # ========================================================
 
     elements.append(
-    Paragraph(
-        (
-            "<b>Document de démonstration StaffHub</b>"
-            "<br/>"
-            "Les cotisations sociales sont calculées "
-            "automatiquement à partir des paramètres "
-            "de cotisation configurés dans StaffHub. "
-            "Le prélèvement à la source n'est pas "
-            "encore calculé automatiquement. "
-            "Ce document ne constitue pas un "
-            "bulletin de paie officiel."
-        ),
-        footer_style,
+        Paragraph(
+            (
+                "<b>Document de démonstration StaffHub</b>"
+                "<br/>"
+                "Les cotisations sociales sont calculées "
+                "automatiquement à partir des paramètres "
+                "de cotisation configurés dans StaffHub. "
+                "Le prélèvement à la source n'est pas "
+                "encore calculé automatiquement. "
+                "Ce document ne constitue pas un "
+                "bulletin de paie officiel."
+            ),
+            footer_style,
+        )
     )
-)
 
     # ========================================================
     # BUILD

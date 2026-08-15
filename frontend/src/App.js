@@ -15,7 +15,7 @@ import SetPassword from "./Pages/SetPassword";
 import Home from "./Pages/Home";
 import Notifications from "./Pages/Notifications";
 import Messagerie from "./Pages/Messagerie";
-import Profil from "./Pages/Profil";
+import Profile from "./Pages/Profile";
 import Account from "./Pages/Account";
 
 /* DOSSIERS */
@@ -76,7 +76,7 @@ function App() {
             <Route path="/home" element={<Home />} />
 	    <Route path="/home/notifications" element={<Notifications />} />
             <Route path="/home/messagerie" element={<Messagerie />} />
-            <Route path="/home/profil" element={<Profil />} />
+            <Route path="/home/profile" element={<Profile />} />
             <Route path="/home/dossiers" element={<Home />} />
             <Route path="/home/activites" element={<Home />} />
 
