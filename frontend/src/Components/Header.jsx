@@ -66,7 +66,6 @@ export default function Header({
     || user?.avatar
     || null;
 
-
   const initials =
     (
       `${firstName.charAt(0)}`
@@ -86,18 +85,20 @@ export default function Header({
   return (
     <header className="header">
 
-
       {/* ===================================================
           RECHERCHE
       =================================================== */}
 
       <div className="header-search">
 
-        <Search size={18} />
+        <Search
+          size={18}
+          strokeWidth={1.8}
+        />
 
         <input
           type="search"
-          placeholder="Rechercher..."
+          placeholder="Rechercher dans RH Manager..."
           aria-label="Rechercher"
         />
 
@@ -110,16 +111,22 @@ export default function Header({
 
       <div className="header-right">
 
-
         {/* NOTIFICATIONS */}
 
         <NavLink
           to="/home/notifications"
-          className="header-icon"
+          className={({ isActive }) =>
+            `header-icon ${
+              isActive ? "header-icon-active" : ""
+            }`
+          }
           aria-label="Notifications"
         >
 
-          <Bell size={22} />
+          <Bell
+            size={21}
+            strokeWidth={1.8}
+          />
 
         </NavLink>
 
@@ -128,11 +135,18 @@ export default function Header({
 
         <NavLink
           to="/home/messagerie"
-          className="header-icon"
+          className={({ isActive }) =>
+            `header-icon ${
+              isActive ? "header-icon-active" : ""
+            }`
+          }
           aria-label="Messagerie"
         >
 
-          <Mail size={22} />
+          <Mail
+            size={21}
+            strokeWidth={1.8}
+          />
 
         </NavLink>
 
@@ -141,7 +155,11 @@ export default function Header({
 
         <NavLink
           to="/home/profile"
-          className="header-profile"
+          className={({ isActive }) =>
+            `header-profile ${
+              isActive ? "header-profile-active" : ""
+            }`
+          }
           aria-label="Ouvrir mon profil"
         >
 
@@ -177,7 +195,11 @@ export default function Header({
           </div>
 
 
-          <ChevronDown size={18} />
+          <ChevronDown
+            size={17}
+            strokeWidth={1.8}
+            className="header-profile-chevron"
+          />
 
         </NavLink>
 
@@ -189,12 +211,15 @@ export default function Header({
           className="header-logout"
           onClick={onLogout}
           aria-label="Se déconnecter"
+          title="Déconnexion"
         >
 
-          <LogOut size={20} />
+          <LogOut
+            size={19}
+            strokeWidth={1.8}
+          />
 
         </button>
-
 
       </div>
 

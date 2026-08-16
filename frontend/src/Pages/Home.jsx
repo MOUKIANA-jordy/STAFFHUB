@@ -180,7 +180,6 @@ export default function Home() {
           notificationsResponse,
           compteurResponse,
           pointagesResponse,
-	  console.log("POINTAGES API :", pointagesResponse.data);
           planningResponse,
         ] = await Promise.all([
           API.get(
@@ -215,6 +214,22 @@ export default function Home() {
             "/api/planning/"
           ),
         ]);
+
+
+        // =====================================================
+        // TEMPORAIRE :
+        // AFFICHAGE COMPLET DU JSON DES POINTAGES
+        // =====================================================
+
+        console.log(
+          "POINTAGES API COMPLET :\n",
+          JSON.stringify(
+            pointagesResponse.data,
+            null,
+            2
+          )
+        );
+
 
         setDemandes(
           extractResults(
