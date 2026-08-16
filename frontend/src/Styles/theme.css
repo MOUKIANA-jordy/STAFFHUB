@@ -1,0 +1,219 @@
+/* =====================================================
+   RH MANAGER - THÈME GLOBAL
+   Identité visuelle basée sur le logo
+===================================================== */
+
+:root {
+  /* ===== COULEURS PRINCIPALES ===== */
+
+  --rh-navy: #031b3d;
+  --rh-navy-dark: #02142e;
+  --rh-navy-light: #082750;
+
+  --rh-blue: #087cf0;
+  --rh-blue-dark: #0754c9;
+  --rh-cyan: #08b7f2;
+
+  --rh-purple: #5437f5;
+
+  /* ===== FONDS ===== */
+
+  --rh-background: #f5f8fc;
+  --rh-surface: #ffffff;
+  --rh-surface-secondary: #f8fafc;
+
+  /* ===== TEXTES ===== */
+
+  --rh-text: #10233f;
+  --rh-text-secondary: #667892;
+  --rh-text-muted: #94a3b8;
+  --rh-text-white: #ffffff;
+
+  /* ===== BORDURES ===== */
+
+  --rh-border: #dce6f1;
+  --rh-border-light: #edf2f7;
+
+  /* ===== ÉTATS ===== */
+
+  --rh-success: #16a36a;
+  --rh-warning: #e9a23b;
+  --rh-danger: #dc4c64;
+
+  /* ===== DÉGRADÉS DU LOGO ===== */
+
+  --rh-gradient: linear-gradient(
+    135deg,
+    #5437f5 0%,
+    #087cf0 55%,
+    #08b7f2 100%
+  );
+
+  --rh-gradient-blue: linear-gradient(
+    135deg,
+    #0754c9 0%,
+    #087cf0 55%,
+    #08b7f2 100%
+  );
+
+  /* ===== OMBRES ===== */
+
+  --rh-shadow-sm:
+    0 2px 8px rgba(3, 27, 61, 0.06);
+
+  --rh-shadow:
+    0 8px 30px rgba(3, 27, 61, 0.08);
+
+  --rh-shadow-hover:
+    0 14px 35px rgba(3, 27, 61, 0.14);
+
+  /* ===== ARRONDIS ===== */
+
+  --rh-radius-sm: 8px;
+  --rh-radius: 14px;
+  --rh-radius-lg: 20px;
+}
+
+
+/* =====================================================
+   BASE APPLICATION
+===================================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+
+  background: var(--rh-background);
+
+  color: var(--rh-text);
+
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+
+  -webkit-font-smoothing: antialiased;
+}
+
+
+/* =====================================================
+   TITRES
+===================================================== */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--rh-text);
+}
+
+
+/* =====================================================
+   BOUTON PRINCIPAL
+===================================================== */
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  padding: 11px 18px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: var(--rh-gradient-blue);
+
+  color: #ffffff;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 6px 18px rgba(8, 124, 240, 0.22);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 9px 24px rgba(8, 124, 240, 0.3);
+}
+
+.btn-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+
+/* =====================================================
+   CARTES GLOBALES
+===================================================== */
+
+.rh-card {
+  background: var(--rh-surface);
+
+  border:
+    1px solid var(--rh-border-light);
+
+  border-radius: var(--rh-radius);
+
+  box-shadow: var(--rh-shadow);
+}
+
+
+/* =====================================================
+   INPUTS
+===================================================== */
+
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+
+  border-color: var(--rh-blue);
+
+  box-shadow:
+    0 0 0 3px rgba(8, 124, 240, 0.12);
+}
+
+
+/* =====================================================
+   LIENS
+===================================================== */
+
+a {
+  color: inherit;
+  text-decoration: none;
+}

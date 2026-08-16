@@ -1,69 +1,122 @@
 import React from "react";
+
 import RequestFormPage from "../../../Components/RequestFormPage";
 
+
 export default function Acompte() {
+
   return (
     <RequestFormPage
+
+      title="Demande d’acompte"
+
       endpoint="/api/demandes/"
+
       requestType="ACOMPTE"
-      description="Demandez le versement anticipé d’une partie de votre salaire."
+
+      description={
+        "Demandez le versement anticipé d’une partie de votre salaire."
+      }
+
       icon="€"
+
       accent="blue"
-      submitLabel="Envoyer la demande d’acompte"
+
+      submitLabel={
+        "Envoyer la demande d’acompte"
+      }
+
       fields={[
         {
-          name: "amount",
-          label: "Montant souhaité",
-          type: "number",
-          min: 1,
-          step: "0.01",
-          placeholder: "Exemple : 300",
-          required: true,
+          name:
+            "amount",
+
+          apiField:
+            "montant_souhaite",
+
+          label:
+            "Montant souhaité",
+
+          type:
+            "number",
+
+          min:
+            1,
+
+          step:
+            "0.01",
+
+          placeholder:
+            "Exemple : 300",
+
+          required:
+            true,
         },
+
         {
-          name: "paymentDate",
-          label: "Date de versement souhaitée",
-          type: "date",
-          required: true,
+          name:
+            "paymentDate",
+
+          detailKey:
+            "date_versement",
+
+          label:
+            "Date de versement souhaitée",
+
+          type:
+            "date",
+
+          required:
+            true,
         },
+
         {
-          name: "reason",
-          label: "Commentaire",
-          type: "textarea",
-          placeholder: "Précisez éventuellement votre demande...",
-          fullWidth: true,
+          name:
+            "reason",
+
+          detailKey:
+            "commentaire",
+
+          label:
+            "Commentaire",
+
+          type:
+            "textarea",
+
+          placeholder:
+            "Précisez éventuellement votre demande...",
+
+          fullWidth:
+            true,
         },
       ]}
+
       information={[
         {
-          title: "Montant autorisé",
-          text: "Le montant dépend du salaire déjà acquis pendant le mois.",
+          title:
+            "Montant demandé",
+
+          text:
+            "Le montant saisi doit être supérieur à zéro.",
         },
+
         {
-          title: "Délai de traitement",
-          text: "La demande est généralement traitée sous quelques jours.",
+          title:
+            "Traitement",
+
+          text:
+            "La demande sera transmise au service RH pour validation.",
         },
+
         {
-          title: "Validation",
-          text: "La demande doit être validée par le service paie.",
+          title:
+            "Suivi",
+
+          text:
+            "Après l’envoi, vous retrouverez la demande et son statut dans l’historique.",
         },
       ]}
-      history={[
-        {
-          id: 1,
-          date: "5 juin 2026",
-          title: "Acompte",
-          detail: "300 €",
-          status: "paid",
-        },
-        {
-          id: 2,
-          date: "8 avril 2026",
-          title: "Acompte",
-          detail: "250 €",
-          status: "approved",
-        },
-      ]}
+
     />
   );
 }

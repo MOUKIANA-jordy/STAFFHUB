@@ -1,4 +1,5 @@
 import React, {
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -18,9 +19,7 @@ import {
   FileText,
   Info,
   Loader2,
-  MapPin,
   RefreshCw,
-  UserRound,
   WalletCards,
   XCircle,
 } from "lucide-react";
@@ -30,8 +29,27 @@ import API from "../Services/api";
 import "../Styles/notifications.css";
 
 
-export default function Notifications() {
+// =========================================================
+// PAGINATION DRF
+// =========================================================
 
+const extractResults = (data) => {
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  if (
+    data
+    && Array.isArray(data.results)
+  ) {
+    return data.results;
+  }
+
+  return [];
+};
+
+
+export default function Notifications() {
   const navigate = useNavigate();
 
 
@@ -80,114 +98,82 @@ export default function Notifications() {
 
 
   // =========================================================
-  // PAGINATION DRF
-  // =========================================================
-
-  const extractResults = (data) => {
-
-    if (Array.isArray(data)) {
-      return data;
-    }
-
-    if (
-      data
-      && Array.isArray(data.results)
-    ) {
-      return data.results;
-    }
-
-    return [];
-
-  };
-
-
-  // =========================================================
   // CHARGEMENT DES NOTIFICATIONS
   // =========================================================
 
-  const fetchNotifications = async (
-    showRefresh = false
-  ) => {
+  const fetchNotifications = useCallback(
+    async (showRefresh = false) => {
+      if (showRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
 
-    if (showRefresh) {
-      setRefreshing(true);
-    } else {
-      setLoading(true);
-    }
+      setError("");
 
-    setError("");
+      try {
+        const [
+          notificationsResponse,
+          compteurResponse,
+        ] = await Promise.all([
+          API.get(
+            "/api/notifications/"
+          ),
 
-    try {
+          API.get(
+            "/api/notifications/compteur/"
+          ),
+        ]);
 
-      const [
-        notificationsResponse,
-        compteurResponse,
-      ] = await Promise.all([
-        API.get(
-          "/api/notifications/"
-        ),
+        const notificationData = (
+          extractResults(
+            notificationsResponse.data
+          )
+        );
 
-        API.get(
-          "/api/notifications/compteur/"
-        ),
-      ]);
+        setNotifications(
+          notificationData
+        );
 
+        setCompteur({
+          total:
+            compteurResponse.data?.total
+            || 0,
 
-      const notificationData = (
-        extractResults(
-          notificationsResponse.data
-        )
-      );
+          non_lues:
+            compteurResponse.data?.non_lues
+            || 0,
 
+          lues:
+            compteurResponse.data?.lues
+            || 0,
+        });
 
-      setNotifications(
-        notificationData
-      );
+      } catch (err) {
+        console.error(
+          "NOTIFICATIONS ERROR",
+          err
+        );
 
+        setError(
+          err.response?.data?.detail
+          || "Impossible de charger les notifications."
+        );
 
-      setCompteur({
-        total:
-          compteurResponse.data?.total
-          || 0,
+        setNotifications([]);
 
-        non_lues:
-          compteurResponse.data?.non_lues
-          || 0,
-
-        lues:
-          compteurResponse.data?.lues
-          || 0,
-      });
-
-    } catch (err) {
-
-      console.error(
-        "NOTIFICATIONS ERROR",
-        err
-      );
-
-      setError(
-        err.response?.data?.detail
-        || "Impossible de charger les notifications."
-      );
-
-      setNotifications([]);
-
-    } finally {
-
-      setLoading(false);
-      setRefreshing(false);
-
-    }
-
-  };
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    []
+  );
 
 
   useEffect(() => {
-
     fetchNotifications();
-
-  }, []);
+  }, [fetchNotifications]);
 
 
   // =========================================================
@@ -195,12 +181,10 @@ export default function Notifications() {
   // =========================================================
 
   const unreadCount = useMemo(() => {
-
     return notifications.filter(
       (notification) =>
         !notification.is_read
     ).length;
-
   }, [notifications]);
 
 
@@ -211,9 +195,7 @@ export default function Notifications() {
   const getNotificationIcon = (
     type
   ) => {
-
     const icons = {
-
       INFO:
         Info,
 
@@ -240,14 +222,12 @@ export default function Notifications() {
 
       POINTAGE:
         Clock3,
-
     };
 
     return (
       icons[type]
       || Bell
     );
-
   };
 
 
@@ -258,9 +238,7 @@ export default function Notifications() {
   const getNotificationTypeClass = (
     type
   ) => {
-
     const classes = {
-
       INFO:
         "notification-type-info",
 
@@ -287,14 +265,12 @@ export default function Notifications() {
 
       POINTAGE:
         "notification-type-time",
-
     };
 
     return (
       classes[type]
       || "notification-type-default"
     );
-
   };
 
 
@@ -305,7 +281,6 @@ export default function Notifications() {
   const getPriorityLabel = (
     notification
   ) => {
-
     if (
       notification.priorite_display
     ) {
@@ -314,9 +289,7 @@ export default function Notifications() {
       );
     }
 
-
     const labels = {
-
       BASSE:
         "Basse",
 
@@ -328,7 +301,6 @@ export default function Notifications() {
 
       URGENTE:
         "Urgente",
-
     };
 
     return (
@@ -338,7 +310,6 @@ export default function Notifications() {
       || notification.priorite
       || ""
     );
-
   };
 
 
@@ -349,7 +320,6 @@ export default function Notifications() {
   const formatDate = (
     value
   ) => {
-
     if (!value) {
       return "";
     }
@@ -366,7 +336,6 @@ export default function Notifications() {
       return "";
     }
 
-
     const now = new Date();
 
     const difference = (
@@ -374,24 +343,20 @@ export default function Notifications() {
       - date.getTime()
     );
 
-
     const minutes = Math.floor(
       difference
       / 60000
     );
-
 
     const hours = Math.floor(
       difference
       / 3600000
     );
 
-
     const days = Math.floor(
       difference
       / 86400000
     );
-
 
     if (
       minutes >= 0
@@ -399,7 +364,6 @@ export default function Notifications() {
     ) {
       return "À l'instant";
     }
-
 
     if (
       minutes >= 1
@@ -410,7 +374,6 @@ export default function Notifications() {
       );
     }
 
-
     if (
       hours >= 1
       && hours < 24
@@ -420,13 +383,11 @@ export default function Notifications() {
       );
     }
 
-
     if (
       days === 1
     ) {
       return "Hier";
     }
-
 
     if (
       days > 1
@@ -436,7 +397,6 @@ export default function Notifications() {
         `Il y a ${days} jours`
       );
     }
-
 
     return date.toLocaleDateString(
       "fr-FR",
@@ -448,7 +408,6 @@ export default function Notifications() {
         minute: "2-digit",
       }
     );
-
   };
 
 
@@ -459,7 +418,6 @@ export default function Notifications() {
   const markAsRead = async (
     notification
   ) => {
-
     if (
       !notification
       || notification.is_read
@@ -467,18 +425,14 @@ export default function Notifications() {
       return notification;
     }
 
-
     try {
-
       setProcessingId(
         notification.id
       );
 
-
       const response = await API.post(
         `/api/notifications/${notification.id}/marquer-lue/`
       );
-
 
       const updatedNotification = (
         response.data?.notification
@@ -487,7 +441,6 @@ export default function Notifications() {
           is_read: true,
         }
       );
-
 
       setNotifications(
         (currentNotifications) =>
@@ -499,7 +452,6 @@ export default function Notifications() {
                 : item
           )
       );
-
 
       setCompteur(
         (current) => ({
@@ -517,13 +469,11 @@ export default function Notifications() {
         })
       );
 
-
       return (
         updatedNotification
       );
 
     } catch (err) {
-
       console.error(
         "MARK READ ERROR",
         err
@@ -537,13 +487,10 @@ export default function Notifications() {
       return notification;
 
     } finally {
-
       setProcessingId(
         null
       );
-
     }
-
   };
 
 
@@ -554,7 +501,6 @@ export default function Notifications() {
   const markAsUnread = async (
     notification
   ) => {
-
     if (
       !notification
       || !notification.is_read
@@ -562,18 +508,14 @@ export default function Notifications() {
       return;
     }
 
-
     try {
-
       setProcessingId(
         notification.id
       );
 
-
       const response = await API.post(
         `/api/notifications/${notification.id}/marquer-non-lue/`
       );
-
 
       const updatedNotification = (
         response.data?.notification
@@ -582,7 +524,6 @@ export default function Notifications() {
           is_read: false,
         }
       );
-
 
       setNotifications(
         (currentNotifications) =>
@@ -594,7 +535,6 @@ export default function Notifications() {
                 : item
           )
       );
-
 
       setCompteur(
         (current) => ({
@@ -613,7 +553,6 @@ export default function Notifications() {
       );
 
     } catch (err) {
-
       console.error(
         "MARK UNREAD ERROR",
         err
@@ -625,13 +564,10 @@ export default function Notifications() {
       );
 
     } finally {
-
       setProcessingId(
         null
       );
-
     }
-
   };
 
 
@@ -640,7 +576,6 @@ export default function Notifications() {
   // =========================================================
 
   const markAllAsRead = async () => {
-
     if (
       compteur.non_lues === 0
       && unreadCount === 0
@@ -648,17 +583,13 @@ export default function Notifications() {
       return;
     }
 
-
     try {
-
       setMarkingAll(true);
       setError("");
-
 
       await API.post(
         "/api/notifications/tout-marquer-lu/"
       );
-
 
       setNotifications(
         (currentNotifications) =>
@@ -669,7 +600,6 @@ export default function Notifications() {
             })
           )
       );
-
 
       setCompteur(
         (current) => ({
@@ -685,7 +615,6 @@ export default function Notifications() {
       );
 
     } catch (err) {
-
       console.error(
         "MARK ALL READ ERROR",
         err
@@ -697,11 +626,8 @@ export default function Notifications() {
       );
 
     } finally {
-
       setMarkingAll(false);
-
     }
-
   };
 
 
@@ -712,28 +638,22 @@ export default function Notifications() {
   const handleNotificationClick = async (
     notification
   ) => {
-
     const updated = (
       await markAsRead(
         notification
       )
     );
 
-
     const link = (
       updated?.lien
       || notification.lien
     );
 
-
     if (link) {
-
       navigate(
         link
       );
-
     }
-
   };
 
 
@@ -744,13 +664,11 @@ export default function Notifications() {
   return (
     <section className="notifications-page">
 
-
       {/* ===================================================
           HEADER
       =================================================== */}
 
       <header className="notifications-header">
-
 
         <div>
 
@@ -762,13 +680,11 @@ export default function Notifications() {
 
             </div>
 
-
             <div>
 
               <h1>
                 Notifications
               </h1>
-
 
               <p>
 
@@ -799,7 +715,6 @@ export default function Notifications() {
 
 
         <div className="notifications-header-actions">
-
 
           <button
             type="button"
@@ -861,7 +776,6 @@ export default function Notifications() {
 
           </button>
 
-
         </div>
 
       </header>
@@ -872,7 +786,6 @@ export default function Notifications() {
       =================================================== */}
 
       <div className="notifications-summary">
-
 
         <article>
 
@@ -911,7 +824,6 @@ export default function Notifications() {
           </strong>
 
         </article>
-
 
       </div>
 
@@ -962,7 +874,6 @@ export default function Notifications() {
 
         <div className="notifications-list">
 
-
           {notifications.map(
             (notification) => {
 
@@ -972,12 +883,10 @@ export default function Notifications() {
                 )
               );
 
-
               const processing = (
                 processingId
                 === notification.id
               );
-
 
               return (
 
@@ -996,7 +905,6 @@ export default function Notifications() {
                   }
                 >
 
-
                   {/* =======================================
                       ICÔNE
                   ======================================= */}
@@ -1011,7 +919,6 @@ export default function Notifications() {
                     }
                     disabled={processing}
                   >
-
 
                     <div className="notification-icon">
 
@@ -1039,16 +946,13 @@ export default function Notifications() {
 
                     <div className="notification-content">
 
-
                       <div className="notification-title-row">
-
 
                         <div className="notification-title-container">
 
                           <h2>
                             {notification.titre}
                           </h2>
-
 
                           {!notification.is_read && (
 
@@ -1061,7 +965,6 @@ export default function Notifications() {
 
                         </div>
 
-
                         <time>
 
                           {formatDate(
@@ -1069,7 +972,6 @@ export default function Notifications() {
                           )}
 
                         </time>
-
 
                       </div>
 
@@ -1080,7 +982,6 @@ export default function Notifications() {
 
 
                       <div className="notification-meta">
-
 
                         <span>
 
@@ -1126,12 +1027,9 @@ export default function Notifications() {
 
                         )}
 
-
                       </div>
 
-
                     </div>
-
 
                   </button>
 
@@ -1141,7 +1039,6 @@ export default function Notifications() {
                   ======================================= */}
 
                   <div className="notification-actions">
-
 
                     {notification.is_read ? (
 
@@ -1195,9 +1092,7 @@ export default function Notifications() {
 
                     )}
 
-
                   </div>
-
 
                 </article>
 
@@ -1205,7 +1100,6 @@ export default function Notifications() {
 
             }
           )}
-
 
         </div>
 
@@ -1230,7 +1124,6 @@ export default function Notifications() {
         </div>
 
       )}
-
 
     </section>
   );

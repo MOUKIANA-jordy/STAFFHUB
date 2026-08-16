@@ -94,6 +94,7 @@ import CreateSalarie from "./Admin/CreateSalarie";
    CSS GLOBAL
 ========================================================= */
 
+import "./Styles/theme.css";
 import "./Styles/login.css";
 import "./Styles/etatcivil.css";
 import "./Styles/home.css";

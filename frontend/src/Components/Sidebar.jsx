@@ -46,7 +46,7 @@ const userLinks = [
   {
     label: "Messagerie",
     icon: Mail,
-    path: "/messagerie",
+    path: "/home/messagerie",
   },
   {
     label: "Planning",
@@ -92,11 +92,13 @@ export default function Sidebar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
+  const role = user?.role?.toLowerCase();
+
   const isAdmin =
     user?.is_staff ||
     user?.is_superuser ||
-    user?.role?.toLowerCase() === "admin" ||
-    user?.role?.toLowerCase() === "administrateur";
+    role === "admin" ||
+    role === "administrateur";
 
   const navClassName = ({ isActive }) =>
     `sidebar-link${isActive ? " sidebar-link-active" : ""}`;
@@ -107,9 +109,14 @@ export default function Sidebar() {
         await logout();
       }
 
-      navigate("/login", { replace: true });
+      navigate("/", { replace: true });
     } catch (error) {
       console.error("Erreur pendant la déconnexion :", error);
+
+      localStorage.removeItem("access");
+      localStorage.removeItem("refresh");
+
+      navigate("/", { replace: true });
     }
   };
 
@@ -123,14 +130,22 @@ export default function Sidebar() {
         className={navClassName}
         end={link.path === "/home" || link.path === "/admin"}
       >
-        <Icon className="sidebar-link-icon" size={21} strokeWidth={1.8} />
+        <span className="sidebar-icon-wrapper">
+          <Icon
+            className="sidebar-link-icon"
+            size={20}
+            strokeWidth={1.8}
+          />
+        </span>
 
-        <span className="sidebar-link-label">{link.label}</span>
+        <span className="sidebar-link-label">
+          {link.label}
+        </span>
 
         {link.hasArrow && (
           <ChevronRight
             className="sidebar-link-arrow"
-            size={18}
+            size={17}
             strokeWidth={1.8}
           />
         )}
@@ -140,51 +155,114 @@ export default function Sidebar() {
 
   return (
     <aside className="sidebar">
+
+      {/* ================= HEADER ================= */}
+
       <header className="sidebar-header">
+
+        <div className="sidebar-brand">
+
+          <div className="sidebar-logo-container">
+            <img
+              src="/images/rh-logo.png"
+              alt="RH Manager"
+              className="sidebar-logo-image"
+            />
+          </div>
+
+          <div className="sidebar-brand-text">
+            <strong>
+              <span className="brand-rh">RH</span>
+              <span className="brand-manager">Manager</span>
+            </strong>
+
+            <span>Ressources humaines</span>
+          </div>
+
+        </div>
+
         <button
           type="button"
           className="sidebar-menu-button"
           aria-label="Réduire le menu"
         >
-          <Menu size={24} />
+          <Menu size={21} />
         </button>
 
-        <div className="sidebar-brand">
-          <div className="sidebar-logo" aria-hidden="true">
-            G
-          </div>
-
-          <div className="sidebar-brand-text">
-            <strong>GestioPro</strong>
-            <span>Gestion d’entreprise</span>
-          </div>
-        </div>
       </header>
 
-      <nav className="sidebar-nav" aria-label="Navigation principale">
+      {/* ================= NAVIGATION ================= */}
+
+      <nav
+        className="sidebar-nav"
+        aria-label="Navigation principale"
+      >
+
+        <p className="sidebar-section-title">
+          Espace personnel
+        </p>
+
         <div className="sidebar-section">
           {userLinks.map(renderLink)}
         </div>
 
-        {isAdmin && (
-          <div className="sidebar-section sidebar-admin-section">
-            <p className="sidebar-section-title">Administration</p>
+        {/* ================= ADMIN ================= */}
 
-            {adminLinks.map(renderLink)}
+        {isAdmin && (
+          <div className="sidebar-admin-section">
+
+            <p className="sidebar-section-title">
+              Administration
+            </p>
+
+            <div className="sidebar-section">
+              {adminLinks.map(renderLink)}
+            </div>
+
           </div>
         )}
+
       </nav>
 
+      {/* ================= FOOTER ================= */}
+
       <footer className="sidebar-footer">
+
+        <div className="sidebar-user-mini">
+
+          <div className="sidebar-user-avatar">
+            {user?.first_name?.charAt(0)?.toUpperCase() ||
+              user?.username?.charAt(0)?.toUpperCase() ||
+              "U"}
+          </div>
+
+          <div className="sidebar-user-info">
+            <strong>
+              {user?.first_name
+                ? `${user.first_name} ${user.last_name || ""}`
+                : user?.username || "Utilisateur"}
+            </strong>
+
+            <span>
+              {isAdmin
+                ? "Administrateur"
+                : user?.role || "Salarié"}
+            </span>
+          </div>
+
+        </div>
+
         <button
           type="button"
           className="sidebar-logout-button"
           onClick={handleLogout}
+          title="Déconnexion"
         >
-          <LogOut size={22} strokeWidth={1.8} />
-          <span>Déconnexion</span>
+          <LogOut size={19} strokeWidth={1.8} />
         </button>
+
       </footer>
+
     </aside>
   );
 }
