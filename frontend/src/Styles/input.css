@@ -1,51 +1,257 @@
-/* GROUP */
-.input-group {
+/* =========================================================
+   INPUT GROUP
+========================================================= */
+
+.app-input-group {
+  width: 100%;
+
   display: flex;
   flex-direction: column;
-  margin-bottom: 18px;
+
+  gap: 7px;
 }
 
-/* LABEL */
-.input-group label {
-  font-size: 13px;
-  font-weight: 500;
-  color: #475569;
-  margin-bottom: 6px;
+
+/* =========================================================
+   LABEL
+========================================================= */
+
+.app-input-group label {
+  color:
+    var(--rh-text-secondary, #475569);
+
+  font-size: 10.5px;
+  font-weight: 650;
+
+  line-height: 1.4;
 }
 
-/* INPUT */
-.input-group input {
-  padding: 12px 14px;
 
-  border-radius: 10px;
-  border: 1px solid #e2e8f0;
+.app-input-required {
+  margin-left: 3px;
 
-  background: #f8fafc;
+  color:
+    var(--rh-danger, #dc4c64);
+}
 
-  font-size: 14px;
+
+/* =========================================================
+   WRAPPER
+========================================================= */
+
+.app-input-wrapper {
+  position: relative;
+
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+}
+
+
+/* =========================================================
+   INPUT
+========================================================= */
+
+.app-input-wrapper input {
+  width: 100%;
+  min-height: 42px;
+
+  padding: 0 12px;
+
+  border:
+    1px solid
+    var(--rh-border, #dbe3ed);
+
+  border-radius: 9px;
 
   outline: none;
 
-  transition: all 0.2s ease;
+  background: #ffffff;
+
+  color:
+    var(--rh-text, #122033);
+
+  font-family: inherit;
+  font-size: 12px;
+
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
 }
 
-/* HOVER */
-.input-group input:hover {
-  border-color: #cbd5f5;
+
+.app-input-wrapper input::placeholder {
+  color: #a6b1bf;
 }
 
-/* FOCUS */
-.input-group input:focus {
-  border-color: #22c55e;
 
-  background: white;
+/* =========================================================
+   HOVER
+========================================================= */
 
-  box-shadow: 0 0 0 3px rgba(34,197,94,0.15);
+.app-input-wrapper input:hover:not(:disabled):not([readonly]) {
+  border-color:
+    #c6d2df;
 }
 
-/* DISABLED / READONLY */
-.input-group input:disabled,
-.input-group input[readonly] {
-  background: #f1f5f9;
+
+/* =========================================================
+   FOCUS
+========================================================= */
+
+.app-input-wrapper input:focus {
+  border-color:
+    rgba(8, 124, 240, 0.58);
+
+  background: #ffffff;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(8, 124, 240, 0.08);
+}
+
+
+/* =========================================================
+   ICON
+========================================================= */
+
+.app-input-icon {
+  position: absolute;
+
+  left: 12px;
+
+  z-index: 1;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  color:
+    var(--rh-text-muted, #8a98aa);
+
+  pointer-events: none;
+}
+
+
+.app-input-icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+
+.app-input-with-icon {
+  padding-left: 39px !important;
+}
+
+
+/* =========================================================
+   DISABLED / READONLY
+========================================================= */
+
+.app-input-wrapper input:disabled,
+.app-input-wrapper input[readonly] {
+  border-color:
+    var(--rh-border-light, #e6ebf1);
+
+  background:
+    #f6f8fb;
+
+  color:
+    #7f8b99;
+
   cursor: not-allowed;
+}
+
+
+/* =========================================================
+   HELP
+========================================================= */
+
+.app-input-help {
+  color:
+    var(--rh-text-muted, #8a98aa);
+
+  font-size: 9.5px;
+
+  line-height: 1.45;
+}
+
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.app-input-group-error
+.app-input-wrapper input {
+  border-color:
+    rgba(220, 76, 100, 0.55);
+
+  background:
+    rgba(220, 76, 100, 0.015);
+}
+
+
+.app-input-group-error
+.app-input-wrapper input:focus {
+  border-color:
+    var(--rh-danger, #dc4c64);
+
+  box-shadow:
+    0 0 0 3px
+    rgba(220, 76, 100, 0.08);
+}
+
+
+.app-input-error {
+  color:
+    var(--rh-danger, #dc4c64);
+
+  font-size: 9.5px;
+
+  line-height: 1.45;
+}
+
+
+/* =========================================================
+   DATE
+========================================================= */
+
+.app-input-wrapper
+input[type="date"] {
+  color-scheme: light;
+}
+
+
+/* =========================================================
+   NUMBER
+========================================================= */
+
+.app-input-wrapper
+input[type="number"] {
+  appearance: textfield;
+}
+
+
+.app-input-wrapper
+input[type="number"]::-webkit-inner-spin-button,
+.app-input-wrapper
+input[type="number"]::-webkit-outer-spin-button {
+  margin: 0;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 700px) {
+
+  .app-input-wrapper input {
+    min-height: 44px;
+
+    font-size: 13px;
+  }
+
 }

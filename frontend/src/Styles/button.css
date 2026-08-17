@@ -1,0 +1,231 @@
+/* =========================================================
+   BUTTON
+========================================================= */
+
+.app-button {
+  min-height: 41px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  padding: 0 15px;
+
+  border: 0;
+  border-radius: 9px;
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 650;
+
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.16s ease,
+    background 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease,
+    box-shadow 0.16s ease,
+    opacity 0.16s ease;
+}
+
+
+/* =========================================================
+   PRIMARY
+========================================================= */
+
+.app-button-primary {
+  color: #ffffff;
+
+  background:
+    var(
+      --rh-gradient-blue,
+      linear-gradient(
+        135deg,
+        #087cf0,
+        #08b7f2
+      )
+    );
+
+  box-shadow:
+    0 6px 18px
+    rgba(8, 124, 240, 0.18);
+}
+
+
+.app-button-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 9px 24px
+    rgba(8, 124, 240, 0.25);
+}
+
+
+/* =========================================================
+   SECONDARY
+========================================================= */
+
+.app-button-secondary {
+  color:
+    var(--rh-text-secondary, #475569);
+
+  background: #ffffff;
+
+  border:
+    1px solid
+    var(--rh-border, #dbe3ed);
+}
+
+
+.app-button-secondary:hover:not(:disabled) {
+  color:
+    var(--rh-blue, #087cf0);
+
+  border-color:
+    rgba(8, 124, 240, 0.28);
+
+  background:
+    rgba(8, 124, 240, 0.035);
+}
+
+
+/* =========================================================
+   GHOST
+========================================================= */
+
+.app-button-ghost {
+  color:
+    var(--rh-text-secondary, #475569);
+
+  background: transparent;
+}
+
+
+.app-button-ghost:hover:not(:disabled) {
+  color:
+    var(--rh-blue, #087cf0);
+
+  background:
+    rgba(8, 124, 240, 0.06);
+}
+
+
+/* =========================================================
+   DANGER
+========================================================= */
+
+.app-button-danger {
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      135deg,
+      #dc4c64,
+      #ef5c72
+    );
+
+  box-shadow:
+    0 6px 18px
+    rgba(220, 76, 100, 0.16);
+}
+
+
+.app-button-danger:hover:not(:disabled) {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 9px 22px
+    rgba(220, 76, 100, 0.22);
+}
+
+
+/* =========================================================
+   SIZES
+========================================================= */
+
+.app-button-small {
+  min-height: 34px;
+
+  padding: 0 11px;
+
+  font-size: 10.5px;
+
+  border-radius: 8px;
+}
+
+
+.app-button-medium {
+  min-height: 41px;
+}
+
+
+.app-button-large {
+  min-height: 48px;
+
+  padding: 0 19px;
+
+  font-size: 13px;
+
+  border-radius: 10px;
+}
+
+
+/* =========================================================
+   FULL WIDTH
+========================================================= */
+
+.app-button-full {
+  width: 100%;
+}
+
+
+/* =========================================================
+   DISABLED
+========================================================= */
+
+.app-button:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+
+  transform: none;
+
+  box-shadow: none;
+}
+
+
+/* =========================================================
+   SPINNER
+========================================================= */
+
+.app-button-spinner {
+  width: 15px;
+  height: 15px;
+
+  border:
+    2px solid
+    rgba(255, 255, 255, 0.4);
+
+  border-top-color:
+    #ffffff;
+
+  border-radius: 50%;
+
+  animation:
+    app-button-spin
+    0.75s
+    linear
+    infinite;
+}
+
+
+@keyframes app-button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

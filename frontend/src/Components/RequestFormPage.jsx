@@ -78,9 +78,7 @@ export default function RequestFormPage({
   // =========================================================
 
   useEffect(() => {
-    setFormData(
-      initialValues
-    );
+    setFormData(initialValues);
   }, [initialValues]);
 
 
@@ -88,10 +86,7 @@ export default function RequestFormPage({
   // PAGINATION DRF
   // =========================================================
 
-  const extractResults = (
-    data
-  ) => {
-
+  const extractResults = (data) => {
     if (Array.isArray(data)) {
       return data;
     }
@@ -120,13 +115,10 @@ export default function RequestFormPage({
       ) {
         setHistory([]);
         setLoadingHistory(false);
-
         return;
       }
 
-
       try {
-
         setLoadingHistory(true);
 
         const response = await API.get(
@@ -142,7 +134,6 @@ export default function RequestFormPage({
           }
         );
 
-
         setHistory(
           extractResults(
             response.data
@@ -150,7 +141,6 @@ export default function RequestFormPage({
         );
 
       } catch (error) {
-
         console.error(
           "HISTORY ERROR",
           error
@@ -159,9 +149,7 @@ export default function RequestFormPage({
         setHistory([]);
 
       } finally {
-
         setLoadingHistory(false);
-
       }
 
     },
@@ -191,7 +179,6 @@ export default function RequestFormPage({
       files,
     } = event.target;
 
-
     setFormData(
       (currentData) => ({
         ...currentData,
@@ -213,7 +200,6 @@ export default function RequestFormPage({
   const toSnakeCase = (
     value
   ) => {
-
     return value
       .replace(
         /([a-z0-9])([A-Z])/g,
@@ -224,7 +210,6 @@ export default function RequestFormPage({
         "_"
       )
       .toLowerCase();
-
   };
 
 
@@ -237,18 +222,23 @@ export default function RequestFormPage({
     const details = {};
 
     let montantSouhaite = null;
-
     let document = null;
-
     let pointages = [];
 
 
     fields.forEach(
       (field) => {
 
-        const value = (
-          formData[field.name]
-        );
+        // champ masqué = ne pas envoyer
+        if (
+          typeof field.hidden === "function"
+          && field.hidden(formData)
+        ) {
+          return;
+        }
+
+        const value =
+          formData[field.name];
 
 
         if (
@@ -266,7 +256,7 @@ export default function RequestFormPage({
 
         if (
           field.apiField
-          === "montant_souhaite"
+            === "montant_souhaite"
           || field.name === "amount"
           || field.name
             === "montant_souhaite"
@@ -284,7 +274,7 @@ export default function RequestFormPage({
 
         if (
           field.apiField
-          === "document"
+            === "document"
           || field.name === "document"
         ) {
 
@@ -300,20 +290,14 @@ export default function RequestFormPage({
 
         if (
           field.apiField
-          === "pointages"
+            === "pointages"
           || field.name === "pointages"
         ) {
 
           if (Array.isArray(value)) {
-
             pointages = value;
-
           } else {
-
-            pointages = [
-              value
-            ];
-
+            pointages = [value];
           }
 
           return;
@@ -322,16 +306,14 @@ export default function RequestFormPage({
 
         // -----------------------------------------------------
         // DETAILS
-        // Tout le reste va dans details.
         // -----------------------------------------------------
 
-        const detailKey = (
+        const detailKey =
           field.detailKey
           || field.apiField
           || toSnakeCase(
             field.name
-          )
-        );
+          );
 
 
         details[
@@ -353,33 +335,26 @@ export default function RequestFormPage({
     if (
       montantSouhaite !== null
     ) {
-
       payload.montant_souhaite =
         montantSouhaite;
-
     }
 
 
     if (
       pointages.length > 0
     ) {
-
       payload.pointages =
         pointages;
-
     }
 
 
     if (document) {
-
       payload.document =
         document;
-
     }
 
 
     return payload;
-
   };
 
 
@@ -451,11 +426,10 @@ export default function RequestFormPage({
           of Object.values(value)
         ) {
 
-          const result = (
+          const result =
             extractMessage(
               nestedValue
-            )
-          );
+            );
 
           if (result) {
             return result;
@@ -467,7 +441,6 @@ export default function RequestFormPage({
 
 
       return null;
-
     };
 
 
@@ -476,11 +449,10 @@ export default function RequestFormPage({
       of Object.values(data)
     ) {
 
-      const result = (
+      const result =
         extractMessage(
           value
-        )
-      );
+        );
 
       if (result) {
         return result;
@@ -492,7 +464,6 @@ export default function RequestFormPage({
     return (
       "La demande contient des informations invalides."
     );
-
   };
 
 
@@ -506,7 +477,6 @@ export default function RequestFormPage({
 
     event.preventDefault();
 
-
     setMessage("");
     setMessageType("");
     setIsSubmitting(true);
@@ -515,36 +485,30 @@ export default function RequestFormPage({
     try {
 
       if (!endpoint) {
-
         throw new Error(
           "Aucun endpoint API n’a été défini pour cette demande."
         );
-
       }
 
 
       if (!requestType) {
-
         throw new Error(
           "Aucun type de demande n’a été défini."
         );
-
       }
 
 
-      const payload = (
-        buildPayload()
-      );
+      const payload =
+        buildPayload();
 
 
       // -----------------------------------------------------
       // FICHIER ?
       // -----------------------------------------------------
 
-      const hasFile = (
+      const hasFile =
         payload.document
-        instanceof File
-      );
+        instanceof File;
 
 
       let requestPayload;
@@ -623,10 +587,8 @@ export default function RequestFormPage({
           payload.montant_souhaite
           !== undefined
         ) {
-
           requestPayload.montant_souhaite =
             payload.montant_souhaite;
-
         }
 
 
@@ -634,13 +596,10 @@ export default function RequestFormPage({
           Array.isArray(
             payload.pointages
           )
-          && payload.pointages.length
-            > 0
+          && payload.pointages.length > 0
         ) {
-
           requestPayload.pointages =
             payload.pointages;
-
         }
 
       }
@@ -684,9 +643,8 @@ export default function RequestFormPage({
       );
 
 
-      const apiErrors = (
-        error.response?.data
-      );
+      const apiErrors =
+        error.response?.data;
 
 
       setMessage(
@@ -729,9 +687,8 @@ export default function RequestFormPage({
     }
 
 
-    const date = new Date(
-      value
-    );
+    const date =
+      new Date(value);
 
 
     if (
@@ -763,6 +720,7 @@ export default function RequestFormPage({
     item
   ) => {
 
+    // montant
     if (
       item.montant_souhaite
       !== null
@@ -770,9 +728,10 @@ export default function RequestFormPage({
       !== undefined
     ) {
 
-      const amount = Number(
-        item.montant_souhaite
-      );
+      const amount =
+        Number(
+          item.montant_souhaite
+        );
 
 
       if (
@@ -796,10 +755,106 @@ export default function RequestFormPage({
     }
 
 
-    const details = (
-      item.details || {}
-    );
+    const details =
+      item.details || {};
 
+
+    // -------------------------------------------------------
+    // CALENDRIER
+    // -------------------------------------------------------
+
+    if (
+      item.type_demande
+      === "CALENDRIER"
+    ) {
+
+      const parts = [];
+
+
+      if (details.date) {
+
+        const date =
+          new Date(
+            `${details.date}T12:00:00`
+          );
+
+
+        if (
+          !Number.isNaN(
+            date.getTime()
+          )
+        ) {
+
+          parts.push(
+            date.toLocaleDateString(
+              "fr-FR"
+            )
+          );
+
+        }
+
+      }
+
+
+      const typeLabels = {
+        BUREAU: "Bureau",
+        TELETRAVAIL: "Télétravail",
+        CONGE: "Congé",
+        ABSENCE: "Absence",
+        VACATION: "Vacation",
+        FORMATION: "Formation",
+      };
+
+
+      if (
+        details.type_journee
+      ) {
+
+        parts.push(
+          typeLabels[
+            details.type_journee
+          ]
+          || details.type_journee
+        );
+
+      }
+
+
+      if (
+        details.heure_debut
+        && details.heure_fin
+      ) {
+
+        parts.push(
+          `${details.heure_debut} - ${details.heure_fin}`
+        );
+
+      }
+
+
+      if (
+        details.motif
+      ) {
+
+        parts.push(
+          details.motif
+        );
+
+      }
+
+
+      return (
+        parts.length > 0
+          ? parts.join(" • ")
+          : "—"
+      );
+
+    }
+
+
+    // -------------------------------------------------------
+    // AUTRES DEMANDES
+    // -------------------------------------------------------
 
     if (
       details.commentaire
@@ -809,9 +864,23 @@ export default function RequestFormPage({
 
 
     if (
+      details.reason
+    ) {
+      return details.reason;
+    }
+
+
+    if (
       details.motif
     ) {
       return details.motif;
+    }
+
+
+    if (
+      details.date
+    ) {
+      return details.date;
     }
 
 
@@ -950,6 +1019,9 @@ export default function RequestFormPage({
                     }
                     onChange={
                       handleChange
+                    }
+                    formData={
+                      formData
                     }
                   />
 
@@ -1226,7 +1298,31 @@ function RequestField({
   field,
   value,
   onChange,
+  formData,
 }) {
+
+  // champ conditionnel
+  if (
+    typeof field.hidden
+    === "function"
+    && field.hidden(
+      formData
+    )
+  ) {
+    return null;
+  }
+
+
+  const isRequired =
+    typeof field.required
+    === "function"
+      ? field.required(
+          formData
+        )
+      : Boolean(
+          field.required
+        );
+
 
   const commonProps = {
     id:
@@ -1241,7 +1337,7 @@ function RequestField({
     onChange,
 
     required:
-      field.required,
+      isRequired,
 
     disabled:
       field.disabled,
@@ -1266,7 +1362,7 @@ function RequestField({
 
         {field.label}
 
-        {field.required && (
+        {isRequired && (
           <span>
             {" "}*
           </span>
@@ -1289,20 +1385,18 @@ function RequestField({
           {field.options?.map(
             (option) => {
 
-              const optionValue = (
+              const optionValue =
                 typeof option
                 === "string"
                   ? option
-                  : option.value
-              );
+                  : option.value;
 
 
-              const optionLabel = (
+              const optionLabel =
                 typeof option
                 === "string"
                   ? option
-                  : option.label
-              );
+                  : option.label;
 
 
               return (
@@ -1353,7 +1447,7 @@ function RequestField({
             onChange
           }
           required={
-            field.required
+            isRequired
           }
           disabled={
             field.disabled

@@ -1,0 +1,485 @@
+/* =========================================================
+   ADMIN - DEMANDES
+========================================================= */
+
+.admin-demandes-page {
+  width: 100%;
+  min-height: 100%;
+  padding: 30px;
+
+  background:
+    radial-gradient(
+      circle at 95% 0%,
+      rgba(8, 124, 240, 0.05),
+      transparent 28%
+    ),
+    var(--rh-background);
+
+  color: var(--rh-text);
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.admin-demandes-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.admin-demandes-eyebrow {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: var(--rh-blue);
+
+  font-size: 11px;
+  font-weight: 750;
+
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+
+.admin-demandes-heading h1 {
+  margin: 0;
+
+  color: var(--rh-text);
+
+  font-size: 30px;
+  font-weight: 760;
+
+  letter-spacing: -0.035em;
+}
+
+.admin-demandes-heading p {
+  max-width: 720px;
+
+  margin: 7px 0 0;
+
+  color: var(--rh-text-secondary);
+
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.admin-demandes-error {
+  margin-bottom: 20px;
+  padding: 12px 15px;
+
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+
+  background: #fef2f2;
+
+  color: #991b1b;
+
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   STATS
+========================================================= */
+
+.admin-demandes-stats {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 17px;
+
+  margin-bottom: 20px;
+}
+
+.admin-demandes-stat-card {
+  min-height: 108px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  padding: 18px;
+
+  border: 1px solid var(--rh-border-light);
+  border-radius: var(--rh-radius);
+
+  background: var(--rh-surface);
+
+  box-shadow: var(--rh-shadow-sm);
+}
+
+.admin-demandes-stat-icon {
+  width: 46px;
+  height: 46px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 46px;
+
+  border-radius: 11px;
+}
+
+.admin-demandes-stat-icon-blue {
+  background: rgba(8, 124, 240, 0.09);
+  color: var(--rh-blue);
+}
+
+.admin-demandes-stat-icon-orange {
+  background: rgba(233, 162, 59, 0.1);
+  color: var(--rh-warning);
+}
+
+.admin-demandes-stat-icon-green {
+  background: rgba(22, 163, 106, 0.09);
+  color: var(--rh-success);
+}
+
+.admin-demandes-stat-icon-red {
+  background: rgba(220, 76, 100, 0.09);
+  color: var(--rh-danger);
+}
+
+.admin-demandes-stat-card strong {
+  color: var(--rh-text);
+
+  font-size: 22px;
+  font-weight: 740;
+}
+
+.admin-demandes-stat-card p {
+  margin: 5px 0 0;
+
+  color: var(--rh-text-secondary);
+
+  font-size: 10.5px;
+}
+
+
+/* =========================================================
+   CARD
+========================================================= */
+
+.admin-demandes-card {
+  padding: 20px;
+
+  border: 1px solid var(--rh-border-light);
+  border-radius: var(--rh-radius);
+
+  background: var(--rh-surface);
+
+  box-shadow: var(--rh-shadow-sm);
+}
+
+
+/* =========================================================
+   TOOLBAR
+========================================================= */
+
+.admin-demandes-toolbar {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  margin-bottom: 18px;
+}
+
+.admin-demandes-search {
+  min-height: 42px;
+
+  display: flex;
+  align-items: center;
+
+  flex: 1;
+
+  gap: 9px;
+
+  padding: 0 12px;
+
+  border: 1px solid var(--rh-border);
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  color: var(--rh-text-muted);
+}
+
+.admin-demandes-search input {
+  width: 100%;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+
+  color: var(--rh-text);
+
+  font: inherit;
+  font-size: 11.5px;
+}
+
+.admin-demandes-search input::placeholder {
+  color: #9aa7b6;
+}
+
+.admin-demandes-toolbar select {
+  min-height: 42px;
+
+  min-width: 165px;
+
+  padding: 0 11px;
+
+  border: 1px solid var(--rh-border);
+  border-radius: 9px;
+
+  outline: none;
+
+  background: #ffffff;
+
+  color: var(--rh-text-secondary);
+
+  font: inherit;
+  font-size: 11px;
+}
+
+.admin-demandes-toolbar select:focus,
+.admin-demandes-search:focus-within {
+  border-color: rgba(8, 124, 240, 0.5);
+
+  box-shadow:
+    0 0 0 3px
+    rgba(8, 124, 240, 0.06);
+}
+
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+.admin-demandes-table-wrapper {
+  overflow-x: auto;
+
+  border: 1px solid var(--rh-border-light);
+  border-radius: 11px;
+}
+
+.admin-demandes-table {
+  width: 100%;
+  min-width: 820px;
+
+  border-collapse: collapse;
+
+  background: #ffffff;
+}
+
+.admin-demandes-table thead {
+  background: var(--rh-surface-secondary);
+}
+
+.admin-demandes-table th,
+.admin-demandes-table td {
+  padding: 14px 13px;
+
+  border-bottom: 1px solid var(--rh-border-light);
+
+  text-align: left;
+}
+
+.admin-demandes-table th {
+  color: var(--rh-text-muted);
+
+  font-size: 9px;
+  font-weight: 700;
+
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.admin-demandes-table td {
+  color: var(--rh-text-secondary);
+
+  font-size: 10.5px;
+}
+
+.admin-demandes-table tbody tr {
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+
+.admin-demandes-table tbody tr:hover {
+  background: rgba(8, 124, 240, 0.025);
+}
+
+.admin-demandes-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+
+/* =========================================================
+   USER
+========================================================= */
+
+.admin-demandes-user {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+}
+
+.admin-demandes-avatar {
+  width: 34px;
+  height: 34px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 34px;
+
+  border-radius: 50%;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(8, 124, 240, 0.12),
+      rgba(84, 55, 245, 0.11)
+    );
+
+  color: var(--rh-blue);
+
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.admin-demandes-user strong {
+  color: var(--rh-text);
+
+  font-size: 10.5px;
+  font-weight: 650;
+}
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+.admin-demandes-status {
+  display: inline-flex;
+
+  padding: 5px 8px;
+
+  border-radius: 999px;
+
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.admin-demandes-status-pending {
+  background: rgba(233, 162, 59, 0.1);
+  color: #c77d18;
+}
+
+.admin-demandes-status-approved {
+  background: rgba(22, 163, 106, 0.09);
+  color: var(--rh-success);
+}
+
+.admin-demandes-status-rejected {
+  background: rgba(220, 76, 100, 0.09);
+  color: var(--rh-danger);
+}
+
+
+/* =========================================================
+   OPEN
+========================================================= */
+
+.admin-demandes-open {
+  color: var(--rh-blue) !important;
+
+  font-size: 9.5px !important;
+  font-weight: 650;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   EMPTY / LOADING
+========================================================= */
+
+.admin-demandes-empty,
+.admin-demandes-loading {
+  min-height: 260px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--rh-text-muted);
+
+  text-align: center;
+
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1100px) {
+  .admin-demandes-stats {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-demandes-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .admin-demandes-search {
+    flex-basis: 100%;
+  }
+
+  .admin-demandes-toolbar select {
+    flex: 1;
+  }
+}
+
+@media (max-width: 700px) {
+  .admin-demandes-page {
+    padding: 20px 14px;
+  }
+
+  .admin-demandes-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-demandes-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-demandes-toolbar select {
+    width: 100%;
+  }
+}

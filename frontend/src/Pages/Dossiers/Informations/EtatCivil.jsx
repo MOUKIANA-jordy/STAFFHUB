@@ -1,183 +1,803 @@
-import React, { useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  CheckCircle2,
+  Loader2,
+  RefreshCw,
+  Save,
+  UserRound,
+} from "lucide-react";
+
+import API from "../../../Services/api";
+
+import "../../../Styles/etatcivil.css";
+
+
+const EMPTY_FORM = {
+  numero_secu: "",
+  nom_naissance: "",
+  nom_usage: "",
+  prenom: "",
+  sexe: "NR",
+  date_naissance: "",
+  lieu_naissance: "",
+  pays_naissance: "",
+  nationalite: "",
+};
+
+
+const extractResults = (data) => {
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  if (
+    data
+    && Array.isArray(data.results)
+  ) {
+    return data.results;
+  }
+
+  return [];
+};
+
 
 export default function EtatCivil() {
 
-  const [data, setData] = useState({
-    numeroSecu: "",
-    civilite: "",
-    nomUsuel: "",
-    nomPatronymique: "",
-    nomMarital: "",
-    prenom: "",
-    prenom2: "",
-    prenom3: "",
-    sexe: "",
-    situationFamiliale: "",
-    matricule: "",
-    nationalite: "",
-    naturalisation: "",
-    dateNaissance: "",
-    paysNaissance: "",
-    departementNaissance: "",
-    lieuNaissance: "",
-    codeINSEE: ""
+  const [
+    formData,
+    setFormData,
+  ] = useState(EMPTY_FORM);
+
+  const [
+    recordId,
+    setRecordId,
+  ] = useState(null);
+
+  const [
+    maskedSocialSecurity,
+    setMaskedSocialSecurity,
+  ] = useState("");
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
+
+  const [
+    saving,
+    setSaving,
+  ] = useState(false);
+
+  const [
+    refreshing,
+    setRefreshing,
+  ] = useState(false);
+
+  const [
+    message,
+    setMessage,
+  ] = useState({
+    type: "",
+    text: "",
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
 
-    setData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  // =========================================================
+  // CHARGEMENT
+  // =========================================================
+
+  const fetchEtatCivil = useCallback(
+    async (refresh = false) => {
+
+      if (refresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+
+      setMessage({
+        type: "",
+        text: "",
+      });
+
+      try {
+
+        const response =
+          await API.get(
+            "/api/etatcivil/"
+          );
+
+        const results =
+          extractResults(
+            response.data
+          );
+
+        const item =
+          results[0];
+
+        if (!item) {
+          setRecordId(null);
+
+          setMaskedSocialSecurity("");
+
+          setFormData(
+            EMPTY_FORM
+          );
+
+          return;
+        }
+
+        setRecordId(
+          item.id
+        );
+
+        setMaskedSocialSecurity(
+          item.numero_secu_masque
+          || ""
+        );
+
+        setFormData({
+          numero_secu: "",
+          nom_naissance:
+            item.nom_naissance
+            || "",
+          nom_usage:
+            item.nom_usage
+            || "",
+          prenom:
+            item.prenom
+            || "",
+          sexe:
+            item.sexe
+            || "NR",
+          date_naissance:
+            item.date_naissance
+            || "",
+          lieu_naissance:
+            item.lieu_naissance
+            || "",
+          pays_naissance:
+            item.pays_naissance
+            || "",
+          nationalite:
+            item.nationalite
+            || "",
+        });
+
+      } catch (error) {
+
+        console.error(
+          "ETAT CIVIL ERROR",
+          error
+        );
+
+        setMessage({
+          type: "error",
+          text:
+            error.response?.data?.detail
+            || "Impossible de charger votre état civil.",
+        });
+
+      } finally {
+
+        setLoading(false);
+        setRefreshing(false);
+
+      }
+
+    },
+    []
+  );
+
+
+  useEffect(() => {
+    fetchEtatCivil();
+  }, [fetchEtatCivil]);
+
+
+  // =========================================================
+  // CHANGE
+  // =========================================================
+
+  const handleChange = (
+    event
+  ) => {
+
+    const {
+      name,
+      value,
+    } = event.target;
+
+    setFormData(
+      (current) => ({
+        ...current,
+        [name]: value,
+      })
+    );
+
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("DATA :", data);
+
+  // =========================================================
+  // SAVE
+  // =========================================================
+
+  const handleSubmit = async (
+    event
+  ) => {
+
+    event.preventDefault();
+
+    setMessage({
+      type: "",
+      text: "",
+    });
+
+    setSaving(true);
+
+    try {
+
+      const payload = {
+        nom_naissance:
+          formData.nom_naissance,
+
+        nom_usage:
+          formData.nom_usage,
+
+        prenom:
+          formData.prenom,
+
+        sexe:
+          formData.sexe,
+
+        date_naissance:
+          formData.date_naissance
+          || null,
+
+        lieu_naissance:
+          formData.lieu_naissance,
+
+        pays_naissance:
+          formData.pays_naissance,
+
+        nationalite:
+          formData.nationalite,
+      };
+
+
+      if (
+        formData.numero_secu
+          .trim()
+      ) {
+
+        payload.numero_secu =
+          formData.numero_secu
+            .replace(/\s/g, "");
+
+      }
+
+
+      let response;
+
+
+      if (recordId) {
+
+        response =
+          await API.patch(
+            `/api/etatcivil/${recordId}/`,
+            payload
+          );
+
+      } else {
+
+        response =
+          await API.post(
+            "/api/etatcivil/",
+            payload
+          );
+
+      }
+
+
+      const saved =
+        response.data;
+
+
+      setRecordId(
+        saved.id
+      );
+
+      setMaskedSocialSecurity(
+        saved.numero_secu_masque
+        || maskedSocialSecurity
+      );
+
+
+      setFormData(
+        (current) => ({
+          ...current,
+          numero_secu: "",
+        })
+      );
+
+
+      setMessage({
+        type: "success",
+        text:
+          recordId
+            ? "Votre état civil a été mis à jour."
+            : "Votre état civil a été enregistré.",
+      });
+
+
+      await fetchEtatCivil();
+
+    } catch (error) {
+
+      console.error(
+        "ETAT CIVIL SAVE ERROR",
+        error
+      );
+
+
+      const apiData =
+        error.response?.data;
+
+
+      let errorMessage =
+        "Impossible d'enregistrer votre état civil.";
+
+
+      if (
+        apiData?.detail
+      ) {
+
+        errorMessage =
+          apiData.detail;
+
+      } else if (
+        apiData
+        && typeof apiData
+          === "object"
+      ) {
+
+        const firstError =
+          Object.values(
+            apiData
+          )[0];
+
+        errorMessage =
+          Array.isArray(
+            firstError
+          )
+            ? firstError[0]
+            : String(
+                firstError
+              );
+
+      }
+
+
+      setMessage({
+        type: "error",
+        text:
+          errorMessage,
+      });
+
+    } finally {
+
+      setSaving(false);
+
+    }
+
   };
+
+
+  // =========================================================
+  // LOADING
+  // =========================================================
+
+  if (loading) {
+
+    return (
+      <div className="etatcivil-page">
+
+        <div className="etatcivil-loading">
+
+          <Loader2
+            size={30}
+            className="etatcivil-spin"
+          />
+
+          <span>
+            Chargement de l'état civil...
+          </span>
+
+        </div>
+
+      </div>
+    );
+
+  }
+
+
+  // =========================================================
+  // RENDER
+  // =========================================================
 
   return (
-    <div className="form-page">
+    <div className="etatcivil-page">
 
-      <h2>État civil</h2>
 
-      <form className="form-box" onSubmit={handleSubmit}>
+      <section className="etatcivil-heading">
 
-        <div className="form-grid">
+        <div>
 
-          <div className="form-field">
-            <label>Numéro sécurité sociale</label>
-            <input
-              name="numeroSecu"
-              value={data.numeroSecu}
-              onChange={handleChange}
+          <span className="etatcivil-eyebrow">
+            Informations personnelles
+          </span>
+
+          <h1>
+            État civil
+          </h1>
+
+          <p>
+            Consultez et mettez à jour
+            vos informations d'identité.
+          </p>
+
+        </div>
+
+
+        <button
+          type="button"
+          className="etatcivil-secondary-button"
+          onClick={() =>
+            fetchEtatCivil(
+              true
+            )
+          }
+          disabled={
+            refreshing
+          }
+        >
+
+          <RefreshCw
+            size={17}
+            className={
+              refreshing
+                ? "etatcivil-spin"
+                : ""
+            }
+          />
+
+          Actualiser
+
+        </button>
+
+      </section>
+
+
+      {
+        message.text
+        && (
+
+          <div
+            className={
+              `etatcivil-message etatcivil-message-${message.type}`
+            }
+          >
+
+            {
+              message.type
+                === "success"
+                ? (
+                  <CheckCircle2
+                    size={18}
+                  />
+                )
+                : null
+            }
+
+            {message.text}
+
+          </div>
+
+        )
+      }
+
+
+      <form
+        className="etatcivil-card"
+        onSubmit={
+          handleSubmit
+        }
+      >
+
+
+        <div className="etatcivil-card-heading">
+
+          <div>
+
+            <h2>
+              Informations d'identité
+            </h2>
+
+            <p>
+              Les champs sont enregistrés
+              directement dans votre dossier RH.
+            </p>
+
+          </div>
+
+
+          <span className="etatcivil-card-icon">
+
+            <UserRound
+              size={21}
             />
-          </div>
 
-          <div className="form-field">
-            <label>Civilité</label>
+          </span>
+
+        </div>
+
+
+        <div className="etatcivil-form-grid">
+
+
+          <Field
+            label="Prénom"
+            name="prenom"
+            value={
+              formData.prenom
+            }
+            onChange={
+              handleChange
+            }
+            required
+          />
+
+
+          <Field
+            label="Nom de naissance"
+            name="nom_naissance"
+            value={
+              formData.nom_naissance
+            }
+            onChange={
+              handleChange
+            }
+          />
+
+
+          <Field
+            label="Nom d'usage"
+            name="nom_usage"
+            value={
+              formData.nom_usage
+            }
+            onChange={
+              handleChange
+            }
+          />
+
+
+          <div className="etatcivil-field">
+
+            <label htmlFor="sexe">
+              Sexe
+            </label>
+
             <select
-              name="civilite"
-              value={data.civilite}
-              onChange={handleChange}
+              id="sexe"
+              name="sexe"
+              value={
+                formData.sexe
+              }
+              onChange={
+                handleChange
+              }
             >
-              <option value="">-- Choisir --</option>
-              <option value="Monsieur">Monsieur</option>
-              <option value="Madame">Madame</option>
+
+              <option value="NR">
+                Non renseigné
+              </option>
+
+              <option value="M">
+                Homme
+              </option>
+
+              <option value="F">
+                Femme
+              </option>
+
+              <option value="AUTRE">
+                Autre
+              </option>
+
             </select>
+
           </div>
 
-          <div className="form-field">
-            <label>Nom usuel</label>
-            <input name="nomUsuel" value={data.nomUsuel} onChange={handleChange} />
-          </div>
 
-          <div className="form-field">
-            <label>Nom patronymique</label>
-            <input name="nomPatronymique" value={data.nomPatronymique} onChange={handleChange} />
-          </div>
+          <Field
+            label="Date de naissance"
+            name="date_naissance"
+            type="date"
+            value={
+              formData.date_naissance
+            }
+            onChange={
+              handleChange
+            }
+          />
 
-          <div className="form-field">
-            <label>Nom marital</label>
-            <input name="nomMarital" value={data.nomMarital} onChange={handleChange} />
-          </div>
 
-          <div className="form-field">
-            <label>Prénom</label>
-            <input name="prenom" value={data.prenom} onChange={handleChange} required />
-          </div>
+          <Field
+            label="Lieu de naissance"
+            name="lieu_naissance"
+            value={
+              formData.lieu_naissance
+            }
+            onChange={
+              handleChange
+            }
+          />
 
-          <div className="form-field">
-            <label>2ème prénom</label>
-            <input name="prenom2" value={data.prenom2} onChange={handleChange} />
-          </div>
 
-          <div className="form-field">
-            <label>3ème prénom</label>
-            <input name="prenom3" value={data.prenom3} onChange={handleChange} />
-          </div>
+          <Field
+            label="Pays de naissance"
+            name="pays_naissance"
+            value={
+              formData.pays_naissance
+            }
+            onChange={
+              handleChange
+            }
+          />
 
-          <div className="form-field">
-            <label>Sexe</label>
-            <select name="sexe" value={data.sexe} onChange={handleChange}>
-              <option value="">-- Choisir --</option>
-              <option value="Masculin">Masculin</option>
-              <option value="Féminin">Féminin</option>
-            </select>
-          </div>
 
-          <div className="form-field">
-            <label>Situation familiale</label>
-            <select
-              name="situationFamiliale"
-              value={data.situationFamiliale}
-              onChange={handleChange}
-            >
-              <option value="">-- Choisir --</option>
-              <option value="Célibataire">Célibataire</option>
-              <option value="Marié">Marié</option>
-              <option value="Divorcé">Divorcé</option>
-            </select>
-          </div>
+          <Field
+            label="Nationalité"
+            name="nationalite"
+            value={
+              formData.nationalite
+            }
+            onChange={
+              handleChange
+            }
+          />
 
-          <div className="form-field">
-            <label>Matricule</label>
-            <input name="matricule" value={data.matricule} onChange={handleChange} />
-          </div>
 
-          <div className="form-field">
-            <label>Nationalité</label>
-            <input name="nationalite" value={data.nationalite} onChange={handleChange} />
-          </div>
+          <div className="etatcivil-field etatcivil-field-full">
 
-          <div className="form-field">
-            <label>Naturalisation française</label>
-            <select name="naturalisation" value={data.naturalisation} onChange={handleChange}>
-              <option value="">-- Choisir --</option>
-              <option value="Non">Non</option>
-              <option value="Oui">Oui</option>
-            </select>
-          </div>
+            <label htmlFor="numero_secu">
+              Numéro de sécurité sociale
+            </label>
 
-          <div className="form-field">
-            <label>Date de naissance</label>
+
+            {
+              maskedSocialSecurity
+              && (
+
+                <div className="etatcivil-masked-value">
+
+                  Numéro enregistré :
+                  <strong>
+                    {maskedSocialSecurity}
+                  </strong>
+
+                </div>
+
+              )
+            }
+
+
             <input
-              type="date"
-              name="dateNaissance"
-              value={data.dateNaissance}
-              onChange={handleChange}
+              id="numero_secu"
+              name="numero_secu"
+              type="text"
+              inputMode="numeric"
+              value={
+                formData.numero_secu
+              }
+              onChange={
+                handleChange
+              }
+              placeholder={
+                maskedSocialSecurity
+                  ? "Saisir uniquement pour remplacer le numéro actuel"
+                  : "Saisir le numéro de sécurité sociale"
+              }
             />
-          </div>
 
-          <div className="form-field">
-            <label>Pays naissance</label>
-            <input name="paysNaissance" value={data.paysNaissance} onChange={handleChange} />
-          </div>
 
-          <div className="form-field">
-            <label>Département naissance</label>
-            <input name="departementNaissance" value={data.departementNaissance} onChange={handleChange} />
-          </div>
+            <small>
+              Pour des raisons de sécurité,
+              le numéro complet n'est jamais
+              renvoyé par l'API.
+            </small>
 
-          <div className="form-field">
-            <label>Lieu naissance</label>
-            <input name="lieuNaissance" value={data.lieuNaissance} onChange={handleChange} />
-          </div>
-
-          <div className="form-field">
-            <label>Code INSEE</label>
-            <input name="codeINSEE" value={data.codeINSEE} onChange={handleChange} />
           </div>
 
         </div>
 
-        <button className="btn-primary" type="submit">
-          Enregistrer
-        </button>
+
+        <div className="etatcivil-actions">
+
+          <button
+            type="submit"
+            className="etatcivil-primary-button"
+            disabled={
+              saving
+            }
+          >
+
+            {
+              saving
+                ? (
+                  <>
+                    <Loader2
+                      size={17}
+                      className="etatcivil-spin"
+                    />
+
+                    Enregistrement...
+                  </>
+                )
+                : (
+                  <>
+                    <Save
+                      size={17}
+                    />
+
+                    Enregistrer
+                  </>
+                )
+            }
+
+          </button>
+
+        </div>
 
       </form>
+
     </div>
   );
 }
 
+
+function Field({
+  label,
+  name,
+  type = "text",
+  value,
+  onChange,
+  required = false,
+}) {
+
+  return (
+    <div className="etatcivil-field">
+
+      <label htmlFor={name}>
+        {label}
+        {required ? " *" : ""}
+      </label>
+
+      <input
+        id={name}
+        name={name}
+        type={type}
+        value={value}
+        onChange={onChange}
+        required={required}
+      />
+
+    </div>
+  );
+}

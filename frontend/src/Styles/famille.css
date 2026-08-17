@@ -1,0 +1,437 @@
+.famille-page {
+  width: 100%;
+  min-height: 100%;
+  padding: 30px;
+
+  background:
+    radial-gradient(
+      circle at 95% 0%,
+      rgba(8, 124, 240, 0.055),
+      transparent 27%
+    ),
+    var(--rh-background);
+
+  color: var(--rh-text);
+}
+
+.famille-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.famille-eyebrow {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--rh-blue);
+  font-size: 11px;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+
+.famille-heading h1 {
+  margin: 0;
+  color: var(--rh-text);
+  font-size: 30px;
+  font-weight: 760;
+  letter-spacing: -0.035em;
+}
+
+.famille-heading p {
+  margin: 7px 0 0;
+  color: var(--rh-text-secondary);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.famille-heading-actions {
+  display: flex;
+  gap: 9px;
+}
+
+.famille-primary-button,
+.famille-secondary-button {
+  min-height: 41px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.famille-primary-button {
+  border: 0;
+  background: var(--rh-gradient-blue);
+  color: #fff;
+  box-shadow:
+    0 6px 18px
+    rgba(8, 124, 240, 0.18);
+}
+
+.famille-secondary-button {
+  border: 1px solid var(--rh-border);
+  background: #fff;
+  color: var(--rh-text-secondary);
+}
+
+.famille-primary-button:disabled,
+.famille-secondary-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.famille-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 12px 15px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.famille-message-success {
+  border: 1px solid rgba(22, 163, 106, 0.18);
+  background: rgba(22, 163, 106, 0.07);
+  color: var(--rh-success);
+}
+
+.famille-message-error {
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.famille-card,
+.famille-form-card {
+  padding: 21px;
+  margin-bottom: 20px;
+  border: 1px solid var(--rh-border-light);
+  border-radius: var(--rh-radius);
+  background: var(--rh-surface);
+  box-shadow: var(--rh-shadow-sm);
+}
+
+.famille-card-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 21px;
+}
+
+.famille-card-heading h2 {
+  margin: 0;
+  color: var(--rh-text);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.famille-card-heading p {
+  margin: 5px 0 0;
+  color: var(--rh-text-muted);
+  font-size: 10.5px;
+}
+
+.famille-card-icon {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(8, 124, 240, 0.08);
+  color: var(--rh-blue);
+}
+
+.famille-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 17px;
+}
+
+.famille-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.famille-field-full {
+  grid-column: 1 / -1;
+}
+
+.famille-field > label:not(.famille-checkbox) {
+  color: var(--rh-text-secondary);
+  font-size: 10.5px;
+  font-weight: 650;
+}
+
+.famille-field input,
+.famille-field select {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--rh-border);
+  border-radius: 9px;
+  outline: none;
+  background: #fff;
+  color: var(--rh-text);
+  font: inherit;
+  font-size: 12px;
+}
+
+.famille-field input:focus,
+.famille-field select:focus {
+  border-color: rgba(8, 124, 240, 0.55);
+  box-shadow:
+    0 0 0 3px
+    rgba(8, 124, 240, 0.07);
+}
+
+.famille-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 14px;
+  border: 1px solid var(--rh-border-light);
+  border-radius: 10px;
+  background: var(--rh-surface-secondary);
+  cursor: pointer;
+}
+
+.famille-checkbox input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.famille-checkbox-control {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 19px;
+  border: 1px solid var(--rh-border);
+  border-radius: 5px;
+  background: #fff;
+}
+
+.famille-checkbox input:checked
++ .famille-checkbox-control {
+  border-color: var(--rh-blue);
+  background:
+    var(--rh-blue);
+  box-shadow:
+    inset 0 0 0 4px #fff;
+}
+
+.famille-checkbox strong {
+  display: block;
+  color: var(--rh-text);
+  font-size: 11px;
+}
+
+.famille-checkbox small {
+  display: block;
+  margin-top: 3px;
+  color: var(--rh-text-muted);
+  font-size: 9.5px;
+}
+
+.famille-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.famille-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.famille-member-card {
+  padding: 16px;
+  border: 1px solid var(--rh-border-light);
+  border-radius: 12px;
+  background: var(--rh-surface-secondary);
+}
+
+.famille-member-header {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.famille-avatar {
+  width: 43px;
+  height: 43px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 43px;
+  border-radius: 50%;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(8, 124, 240, 0.13),
+      rgba(84, 55, 245, 0.12)
+    );
+  color: var(--rh-blue);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.famille-member-header h3 {
+  margin: 0;
+  color: var(--rh-text);
+  font-size: 12px;
+}
+
+.famille-relation {
+  display: block;
+  margin-top: 3px;
+  color: var(--rh-text-muted);
+  font-size: 9.5px;
+}
+
+.famille-member-info {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 15px;
+}
+
+.famille-member-info > div {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--rh-text-secondary);
+  font-size: 10px;
+}
+
+.famille-mail-symbol {
+  width: 15px;
+  text-align: center;
+  color: var(--rh-blue);
+  font-weight: 700;
+}
+
+.famille-emergency-badge {
+  display: inline-flex;
+  margin-top: 13px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(220, 76, 100, 0.08);
+  color: var(--rh-danger);
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.famille-member-actions {
+  display: flex;
+  gap: 7px;
+  margin-top: 15px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rh-border-light);
+}
+
+.famille-member-actions button {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 5px;
+  border: 1px solid var(--rh-border);
+  border-radius: 7px;
+  background: #fff;
+  color: var(--rh-text-secondary);
+  font: inherit;
+  font-size: 9.5px;
+  cursor: pointer;
+}
+
+.famille-member-actions
+.famille-delete-button {
+  color: var(--rh-danger);
+}
+
+.famille-empty,
+.famille-loading {
+  min-height: 230px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--rh-text-muted);
+  text-align: center;
+}
+
+.famille-loading {
+  min-height: 450px;
+}
+
+.famille-empty strong {
+  color: var(--rh-text);
+  font-size: 12px;
+}
+
+.famille-empty span,
+.famille-loading span {
+  font-size: 10px;
+}
+
+.famille-spin {
+  animation:
+    famille-spin 0.85s linear infinite;
+}
+
+@keyframes famille-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 1100px) {
+  .famille-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .famille-page {
+    padding: 20px 14px;
+  }
+
+  .famille-heading {
+    flex-direction: column;
+  }
+
+  .famille-heading-actions {
+    width: 100%;
+  }
+
+  .famille-heading-actions button {
+    flex: 1;
+  }
+
+  .famille-form-grid,
+  .famille-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .famille-field-full {
+    grid-column: auto;
+  }
+}

@@ -1,0 +1,350 @@
+.iban-page {
+  width: 100%;
+  min-height: 100%;
+  padding: 30px;
+
+  background:
+    radial-gradient(
+      circle at 95% 0%,
+      rgba(8, 124, 240, 0.055),
+      transparent 27%
+    ),
+    var(--rh-background);
+
+  color: var(--rh-text);
+}
+
+.iban-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.iban-eyebrow {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--rh-blue);
+  font-size: 11px;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+
+.iban-heading h1 {
+  margin: 0;
+  color: var(--rh-text);
+  font-size: 30px;
+  font-weight: 760;
+  letter-spacing: -0.035em;
+}
+
+.iban-heading p {
+  margin: 7px 0 0;
+  color: var(--rh-text-secondary);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.iban-primary-button,
+.iban-secondary-button {
+  min-height: 41px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.iban-primary-button {
+  border: 0;
+  background: var(--rh-gradient-blue);
+  color: #fff;
+  box-shadow:
+    0 6px 18px
+    rgba(8, 124, 240, 0.18);
+}
+
+.iban-secondary-button {
+  border: 1px solid var(--rh-border);
+  background: #fff;
+  color: var(--rh-text-secondary);
+}
+
+.iban-primary-button:disabled,
+.iban-secondary-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.iban-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 12px 15px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.iban-message-success {
+  border: 1px solid rgba(22, 163, 106, 0.18);
+  background: rgba(22, 163, 106, 0.07);
+  color: var(--rh-success);
+}
+
+.iban-message-error {
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.iban-current-card,
+.iban-card {
+  border: 1px solid var(--rh-border-light);
+  border-radius: var(--rh-radius);
+  background: var(--rh-surface);
+  box-shadow: var(--rh-shadow-sm);
+}
+
+.iban-current-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding: 18px;
+}
+
+.iban-bank-icon {
+  width: 48px;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 48px;
+  border-radius: 12px;
+  background:
+    rgba(8, 124, 240, 0.09);
+  color: var(--rh-blue);
+}
+
+.iban-current-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.iban-current-content span {
+  display: block;
+  color: var(--rh-text-muted);
+  font-size: 9.5px;
+}
+
+.iban-current-content strong {
+  display: block;
+  margin-top: 5px;
+  color: var(--rh-text);
+  font-size: 18px;
+  letter-spacing: 0.03em;
+}
+
+.iban-current-content small {
+  display: block;
+  margin-top: 5px;
+  color: var(--rh-text-secondary);
+  font-size: 10px;
+}
+
+.iban-secure-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background:
+    rgba(22, 163, 106, 0.08);
+  color: var(--rh-success);
+  font-size: 9.5px;
+  font-weight: 650;
+}
+
+.iban-card {
+  padding: 21px;
+}
+
+.iban-card-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.iban-card-heading h2 {
+  margin: 0;
+  color: var(--rh-text);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.iban-card-heading p {
+  margin: 5px 0 0;
+  color: var(--rh-text-muted);
+  font-size: 10.5px;
+}
+
+.iban-card-icon {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background:
+    rgba(84, 55, 245, 0.08);
+  color: var(--rh-purple);
+}
+
+.iban-security-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 13px;
+  border: 1px solid
+    rgba(8, 124, 240, 0.11);
+  border-radius: 10px;
+  background:
+    rgba(8, 124, 240, 0.04);
+  color: var(--rh-blue);
+}
+
+.iban-security-note strong {
+  display: block;
+  color: var(--rh-text);
+  font-size: 10.5px;
+}
+
+.iban-security-note p {
+  margin: 4px 0 0;
+  color: var(--rh-text-secondary);
+  font-size: 9.5px;
+  line-height: 1.5;
+}
+
+.iban-form-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 17px;
+}
+
+.iban-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.iban-field-full {
+  grid-column: 1 / -1;
+}
+
+.iban-field label {
+  color: var(--rh-text-secondary);
+  font-size: 10.5px;
+  font-weight: 650;
+}
+
+.iban-field input {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--rh-border);
+  border-radius: 9px;
+  outline: none;
+  background: #fff;
+  color: var(--rh-text);
+  font: inherit;
+  font-size: 12px;
+}
+
+.iban-field input:focus {
+  border-color:
+    rgba(8, 124, 240, 0.55);
+  box-shadow:
+    0 0 0 3px
+    rgba(8, 124, 240, 0.07);
+}
+
+.iban-field small {
+  color: var(--rh-text-muted);
+  font-size: 9.5px;
+}
+
+.iban-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 22px;
+}
+
+.iban-loading {
+  min-height: 450px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  color: var(--rh-text-secondary);
+  font-size: 12px;
+}
+
+.iban-spin {
+  animation:
+    iban-spin 0.85s linear infinite;
+}
+
+@keyframes iban-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 700px) {
+  .iban-page {
+    padding: 20px 14px;
+  }
+
+  .iban-heading {
+    flex-direction: column;
+  }
+
+  .iban-secondary-button {
+    width: 100%;
+  }
+
+  .iban-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .iban-field-full {
+    grid-column: auto;
+  }
+
+  .iban-current-card {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .iban-secure-badge {
+    margin-left: 63px;
+  }
+
+  .iban-primary-button {
+    width: 100%;
+  }
+}

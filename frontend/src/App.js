@@ -66,6 +66,7 @@ import Adresse from "./Pages/Dossiers/Informations/Adresse";
 import Famille from "./Pages/Dossiers/Informations/Famille";
 import Iban from "./Pages/Dossiers/Informations/Iban";
 import Documents from "./Pages/Dossiers/Informations/Documents";
+import DonneesComple from "./Pages/Dossiers/Informations/Donnees_Comple";
 
 
 /* =========================================================
@@ -89,6 +90,7 @@ import Paie from "./Admin/Paie";
 import Settings from "./Admin/Settings";
 import AdminPanel from "./Admin/AdminPanel";
 import CreateSalarie from "./Admin/CreateSalarie";
+import DemandeDetail from "./Admin/DemandeDetail";
 
 
 /* =========================================================
@@ -268,6 +270,11 @@ function App() {
               element={<Documents />}
             />
 
+	    <Route
+              path="/dossiers/informations/donnees-complementaires"
+              element={<DonneesComple />}
+            />
+
 
             {/* =============================================
                 ACTIVITÉS
@@ -340,6 +347,11 @@ function App() {
             <Route
               path="/admin/panel"
               element={<AdminPanel />}
+            />
+
+	    <Route
+  	      path="/admin/demandes/:id"
+  	      element={<DemandeDetail />}
             />
 
 

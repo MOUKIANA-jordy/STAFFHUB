@@ -15,6 +15,7 @@ import {
   UserRound,
   UsersRound,
   WalletCards,
+  Settings2,
 } from "lucide-react";
 
 import "../../Styles/dossiers.css";
@@ -61,6 +62,13 @@ const demandes = [
     description: "Demander le paiement de vos heures supplémentaires.",
     icon: CreditCard,
     path: "/dossiers/demandes/paiement-hsup",
+    accent: "cyan",
+  },
+  {
+    title: "Données complémentaires",
+    description: "Gérez les informations complémentaires de votre dossier RH.",
+    icon: Settings2,
+    path: "/dossiers/informations/donnees-complementaires",
     accent: "cyan",
   },
 ];
