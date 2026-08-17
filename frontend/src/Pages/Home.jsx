@@ -215,22 +215,6 @@ export default function Home() {
           ),
         ]);
 
-
-        // =====================================================
-        // TEMPORAIRE :
-        // AFFICHAGE COMPLET DU JSON DES POINTAGES
-        // =====================================================
-
-        console.log(
-          "POINTAGES API COMPLET :\n",
-          JSON.stringify(
-            pointagesResponse.data,
-            null,
-            2
-          )
-        );
-
-
         setDemandes(
           extractResults(
             demandesResponse.data
@@ -373,29 +357,26 @@ export default function Home() {
   const parseHours = (
     pointage
   ) => {
-    const possibleValues = [
-      pointage.total_heures,
-      pointage.total,
-      pointage.heures,
-      pointage.duree,
-    ];
+    const value = Number(
+      pointage?.heures_travaillees
+    );
 
-    for (
-      const value
-      of possibleValues
-    ) {
-      const parsed = Number(
-        value
-      );
+    return Number.isFinite(value)
+      ? value
+      : 0;
+  };
 
-      if (
-        Number.isFinite(parsed)
-      ) {
-        return parsed;
-      }
-    }
 
-    return 0;
+  const parseOvertime = (
+    pointage
+  ) => {
+    const value = Number(
+      pointage?.heures_sup
+    );
+
+    return Number.isFinite(value)
+      ? value
+      : 0;
   };
 
 
@@ -405,6 +386,20 @@ export default function Home() {
         (total, pointage) =>
           total
           + parseHours(
+            pointage
+          ),
+        0
+      ),
+    [pointages]
+  );
+
+
+  const totalOvertime = useMemo(
+    () =>
+      pointages.reduce(
+        (total, pointage) =>
+          total
+          + parseOvertime(
             pointage
           ),
         0
@@ -648,7 +643,6 @@ export default function Home() {
   return (
     <div className="dashboard">
 
-
       {/* ===================================================
           INTRODUCTION
       =================================================== */}
@@ -711,7 +705,6 @@ export default function Home() {
       =================================================== */}
 
       <section className="stats-grid">
-
 
         {/* DEMANDES */}
 
@@ -843,14 +836,10 @@ export default function Home() {
             </span>
 
             <small>
-              {
-                pointages.length
-              } pointage
-              {
-                pointages.length > 1
-                  ? "s"
-                  : ""
-              }
+              {pointages.length} pointage
+              {pointages.length > 1 ? "s" : ""}
+              {" • "}
+              {formatHours(totalOvertime)} supplémentaires
             </small>
 
           </div>
@@ -919,7 +908,6 @@ export default function Home() {
       =================================================== */}
 
       <section className="dashboard-main-grid">
-
 
         {/* ACCÈS RAPIDES */}
 
@@ -1113,7 +1101,6 @@ export default function Home() {
       =================================================== */}
 
       <section className="dashboard-bottom-grid">
-
 
         {/* ABSENCES */}
 
@@ -1341,6 +1328,18 @@ export default function Home() {
               {
                 formatHours(
                   totalHours
+                )
+              }
+            </strong>
+
+            <span>
+              • Sup :
+            </span>
+
+            <strong>
+              {
+                formatHours(
+                  totalOvertime
                 )
               }
             </strong>

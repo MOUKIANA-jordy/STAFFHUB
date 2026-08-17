@@ -1,5 +1,4 @@
 import React from "react";
-import "../../../Styles/form.css";
 
 const defaultData = {
   nom: "",

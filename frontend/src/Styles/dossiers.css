@@ -1,0 +1,412 @@
+/* =========================================================
+   RH MANAGER
+   DOSSIERS
+========================================================= */
+
+.dossiers-page {
+  width: 100%;
+  min-height: 100%;
+  padding: 30px;
+
+  background:
+    radial-gradient(
+      circle at 95% 0%,
+      rgba(8, 124, 240, 0.055),
+      transparent 27%
+    ),
+    var(--rh-background);
+
+  color: var(--rh-text);
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.dossiers-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 24px;
+
+  margin-bottom: 25px;
+}
+
+
+.dossiers-eyebrow {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: var(--rh-blue);
+
+  font-size: 11px;
+  font-weight: 750;
+
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+
+
+.dossiers-heading h1 {
+  margin: 0;
+
+  color: var(--rh-text);
+
+  font-size: 30px;
+  font-weight: 760;
+
+  letter-spacing: -0.035em;
+}
+
+
+.dossiers-heading p {
+  max-width: 650px;
+
+  margin: 7px 0 0;
+
+  color: var(--rh-text-secondary);
+
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+
+.dossiers-heading-icon {
+  width: 52px;
+  height: 52px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 13px;
+
+  background: var(--rh-gradient);
+
+  color: #ffffff;
+
+  box-shadow:
+    0 8px 24px
+    rgba(8, 124, 240, 0.19);
+}
+
+
+/* =========================================================
+   SECTION
+========================================================= */
+
+.dossiers-section {
+  margin-bottom: 20px;
+
+  padding: 21px;
+
+  border:
+    1px solid var(--rh-border-light);
+
+  border-radius: var(--rh-radius);
+
+  background: var(--rh-surface);
+
+  box-shadow: var(--rh-shadow-sm);
+}
+
+
+/* =========================================================
+   SECTION HEADER
+========================================================= */
+
+.dossiers-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  margin-bottom: 20px;
+}
+
+
+.dossiers-section-heading > div {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+}
+
+
+.dossiers-section-heading h2 {
+  margin: 0;
+
+  color: var(--rh-text);
+
+  font-size: 16px;
+  font-weight: 700;
+}
+
+
+.dossiers-section-heading p {
+  margin: 4px 0 0;
+
+  color: var(--rh-text-muted);
+
+  font-size: 10.5px;
+}
+
+
+.dossiers-section-icon {
+  width: 40px;
+  height: 40px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 10px;
+}
+
+
+.dossiers-section-icon-blue {
+  background:
+    rgba(8, 124, 240, 0.09);
+
+  color: var(--rh-blue);
+}
+
+
+.dossiers-section-icon-purple {
+  background:
+    rgba(84, 55, 245, 0.09);
+
+  color: var(--rh-purple);
+}
+
+
+.dossiers-count {
+  min-width: 29px;
+  height: 29px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 8px;
+
+  border-radius: 999px;
+
+  background:
+    var(--rh-surface-secondary);
+
+  color: var(--rh-text-secondary);
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   GRID
+========================================================= */
+
+.dossiers-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+  gap: 12px;
+}
+
+
+/* =========================================================
+   ITEM
+========================================================= */
+
+.dossiers-item {
+  min-height: 105px;
+
+  display: grid;
+
+  grid-template-columns:
+    43px
+    minmax(0, 1fr)
+    18px;
+
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 14px;
+
+  border:
+    1px solid var(--rh-border-light);
+
+  border-radius: 11px;
+
+  background:
+    var(--rh-surface-secondary);
+
+  color: var(--rh-text);
+
+  text-decoration: none;
+
+  transition:
+    transform 0.16s ease,
+    border-color 0.16s ease,
+    background 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+
+.dossiers-item:hover {
+  transform: translateY(-2px);
+
+  border-color:
+    rgba(8, 124, 240, 0.20);
+
+  background: #ffffff;
+
+  box-shadow:
+    0 7px 20px
+    rgba(3, 27, 61, 0.06);
+}
+
+
+/* =========================================================
+   ICON
+========================================================= */
+
+.dossiers-item-icon {
+  width: 42px;
+  height: 42px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 10px;
+}
+
+
+.dossiers-item-icon-blue {
+  background:
+    rgba(8, 124, 240, 0.09);
+
+  color: var(--rh-blue);
+}
+
+
+.dossiers-item-icon-cyan {
+  background:
+    rgba(8, 183, 242, 0.1);
+
+  color: #079bcf;
+}
+
+
+.dossiers-item-icon-purple {
+  background:
+    rgba(84, 55, 245, 0.09);
+
+  color: var(--rh-purple);
+}
+
+
+/* =========================================================
+   CONTENT
+========================================================= */
+
+.dossiers-item-content {
+  min-width: 0;
+}
+
+
+.dossiers-item-content strong {
+  display: block;
+
+  color: var(--rh-text);
+
+  font-size: 11.5px;
+  font-weight: 670;
+}
+
+
+.dossiers-item-content p {
+  margin: 5px 0 0;
+
+  color: var(--rh-text-muted);
+
+  font-size: 9.5px;
+  line-height: 1.45;
+}
+
+
+.dossiers-item-arrow {
+  color: #b3c0cf;
+
+  transition:
+    transform 0.16s ease,
+    color 0.16s ease;
+}
+
+
+.dossiers-item:hover
+.dossiers-item-arrow {
+  transform: translateX(3px);
+
+  color: var(--rh-blue);
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1150px) {
+
+  .dossiers-grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+}
+
+
+@media (max-width: 700px) {
+
+  .dossiers-page {
+    padding:
+      20px
+      14px;
+  }
+
+
+  .dossiers-heading {
+    align-items: flex-start;
+  }
+
+
+  .dossiers-grid {
+    grid-template-columns: 1fr;
+  }
+
+
+  .dossiers-section {
+    padding: 16px;
+  }
+
+}

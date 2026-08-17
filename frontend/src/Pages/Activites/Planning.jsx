@@ -1,440 +1,1659 @@
-import React, { useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  Link,
+} from "react-router-dom";
+
+import {
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  Clock3,
+  Download,
+  Home,
+  Loader2,
+  MapPin,
+  RefreshCw,
+  Umbrella,
+} from "lucide-react";
+
+import API from "../../Services/api";
+
 import "../../Styles/planning.css";
 
-const INITIAL_SCHEDULE = {
-  1: [
-    {
-      id: 1,
-      title: "Travail",
-      start: "08:30",
-      end: "12:00",
-      type: "work",
-      location: "Bureau principal",
-    },
-    {
-      id: 2,
-      title: "Pause déjeuner",
-      start: "12:00",
-      end: "13:00",
-      type: "break",
-      location: "Pause",
-    },
-    {
-      id: 3,
-      title: "Travail",
-      start: "13:00",
-      end: "17:00",
-      type: "work",
-      location: "Bureau principal",
-    },
-  ],
-  2: [
-    {
-      id: 4,
-      title: "Travail",
-      start: "08:30",
-      end: "12:00",
-      type: "work",
-      location: "Bureau principal",
-    },
-    {
-      id: 5,
-      title: "Réunion d'équipe",
-      start: "10:00",
-      end: "11:00",
-      type: "meeting",
-      location: "Salle Horizon",
-    },
-    {
-      id: 6,
-      title: "Travail",
-      start: "13:00",
-      end: "17:00",
-      type: "work",
-      location: "Télétravail",
-    },
-  ],
-  3: [
-    {
-      id: 7,
-      title: "Télétravail",
-      start: "08:30",
-      end: "12:00",
-      type: "remote",
-      location: "À distance",
-    },
-    {
-      id: 8,
-      title: "Pause déjeuner",
-      start: "12:00",
-      end: "13:00",
-      type: "break",
-      location: "Pause",
-    },
-    {
-      id: 9,
-      title: "Télétravail",
-      start: "13:00",
-      end: "17:00",
-      type: "remote",
-      location: "À distance",
-    },
-  ],
-  4: [
-    {
-      id: 10,
-      title: "Travail",
-      start: "08:30",
-      end: "12:00",
-      type: "work",
-      location: "Bureau principal",
-    },
-    {
-      id: 11,
-      title: "Formation",
-      start: "14:00",
-      end: "16:00",
-      type: "training",
-      location: "Salle Atlas",
-    },
-  ],
-  5: [
-    {
-      id: 12,
-      title: "Travail",
-      start: "08:30",
-      end: "12:00",
-      type: "work",
-      location: "Bureau principal",
-    },
-    {
-      id: 13,
-      title: "Travail",
-      start: "13:00",
-      end: "16:30",
-      type: "work",
-      location: "Bureau principal",
-    },
-  ],
-  6: [],
-  0: [],
+
+// =========================================================
+// DRF
+// =========================================================
+
+const extractResults = (data) => {
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  if (
+    data
+    && Array.isArray(data.results)
+  ) {
+    return data.results;
+  }
+
+  return [];
 };
 
-const DAY_LABELS = [
-  "Dimanche",
-  "Lundi",
-  "Mardi",
-  "Mercredi",
-  "Jeudi",
-  "Vendredi",
-  "Samedi",
-];
+
+// =========================================================
+// DATES
+// =========================================================
 
 function getMonday(date) {
-  const selectedDate = new Date(date);
-  const day = selectedDate.getDay();
-  const difference = day === 0 ? -6 : 1 - day;
+  const result = new Date(date);
 
-  selectedDate.setDate(selectedDate.getDate() + difference);
-  selectedDate.setHours(0, 0, 0, 0);
+  const day =
+    result.getDay();
 
-  return selectedDate;
-}
+  const difference =
+    day === 0
+      ? -6
+      : 1 - day;
 
-function addDays(date, numberOfDays) {
-  const newDate = new Date(date);
-  newDate.setDate(newDate.getDate() + numberOfDays);
-
-  return newDate;
-}
-
-function formatDate(date) {
-  return new Intl.DateTimeFormat("fr-FR", {
-    day: "2-digit",
-    month: "short",
-  }).format(date);
-}
-
-function formatLongDate(date) {
-  return new Intl.DateTimeFormat("fr-FR", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(date);
-}
-
-export default function Planning() {
-  const [currentWeekStart, setCurrentWeekStart] = useState(
-    getMonday(new Date())
+  result.setDate(
+    result.getDate()
+    + difference
   );
 
-  const [selectedDay, setSelectedDay] = useState(new Date().getDay());
+  result.setHours(
+    0,
+    0,
+    0,
+    0
+  );
+
+  return result;
+}
+
+
+function addDays(
+  date,
+  numberOfDays
+) {
+  const result =
+    new Date(date);
+
+  result.setDate(
+    result.getDate()
+    + numberOfDays
+  );
+
+  return result;
+}
+
+
+function toApiDate(
+  date
+) {
+  const year =
+    date.getFullYear();
+
+  const month =
+    String(
+      date.getMonth() + 1
+    ).padStart(
+      2,
+      "0"
+    );
+
+  const day =
+    String(
+      date.getDate()
+    ).padStart(
+      2,
+      "0"
+    );
+
+  return (
+    `${year}-${month}-${day}`
+  );
+}
+
+
+function formatLongDate(
+  date
+) {
+  return new Intl.DateTimeFormat(
+    "fr-FR",
+    {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }
+  ).format(
+    date
+  );
+}
+
+
+function formatDayName(
+  date
+) {
+  return new Intl.DateTimeFormat(
+    "fr-FR",
+    {
+      weekday: "long",
+    }
+  ).format(
+    date
+  );
+}
+
+
+function formatShortDay(
+  date
+) {
+  return new Intl.DateTimeFormat(
+    "fr-FR",
+    {
+      weekday: "short",
+    }
+  ).format(
+    date
+  );
+}
+
+
+// =========================================================
+// HEURES
+// =========================================================
+
+function timeToMinutes(
+  value
+) {
+  if (!value) {
+    return null;
+  }
+
+  const [
+    hours,
+    minutes,
+  ] = String(
+    value
+  )
+    .split(":")
+    .map(Number);
+
+  if (
+    !Number.isFinite(hours)
+    || !Number.isFinite(minutes)
+  ) {
+    return null;
+  }
+
+  return (
+    hours * 60
+    + minutes
+  );
+}
+
+
+function calculateHours(
+  item
+) {
+  const start =
+    timeToMinutes(
+      item.heure_debut
+    );
+
+  const end =
+    timeToMinutes(
+      item.heure_fin
+    );
+
+  if (
+    start === null
+    || end === null
+    || end <= start
+  ) {
+    return 0;
+  }
+
+  return (
+    (end - start)
+    / 60
+  );
+}
+
+
+function formatHours(
+  value
+) {
+  const number =
+    Number(value);
+
+  if (
+    !Number.isFinite(number)
+  ) {
+    return "0h";
+  }
+
+  const hours =
+    Math.floor(number);
+
+  const minutes =
+    Math.round(
+      (number - hours)
+      * 60
+    );
+
+  if (
+    minutes === 0
+  ) {
+    return `${hours}h`;
+  }
+
+  return (
+    `${hours}h${String(
+      minutes
+    ).padStart(
+      2,
+      "0"
+    )}`
+  );
+}
+
+
+function formatTime(
+  value
+) {
+  if (!value) {
+    return "—";
+  }
+
+  return String(
+    value
+  ).slice(
+    0,
+    5
+  );
+}
+
+
+// =========================================================
+// TYPE
+// =========================================================
+
+function normalizeType(
+  value
+) {
+  return String(
+    value || ""
+  ).toUpperCase();
+}
+
+
+function getTypeClass(
+  type
+) {
+  const value =
+    normalizeType(type);
+
+  if (
+    value === "TELETRAVAIL"
+  ) {
+    return "remote";
+  }
+
+  if (
+    value === "ABSENCE"
+  ) {
+    return "absence";
+  }
+
+  if (
+    value === "CONGE"
+    || value === "CONGES"
+  ) {
+    return "leave";
+  }
+
+  if (
+    value === "FORMATION"
+  ) {
+    return "training";
+  }
+
+  return "work";
+}
+
+
+// =========================================================
+// PAGE
+// =========================================================
+
+export default function Planning() {
+
+  const [
+    planning,
+    setPlanning,
+  ] = useState([]);
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
+
+  const [
+    refreshing,
+    setRefreshing,
+  ] = useState(false);
+
+  const [
+    error,
+    setError,
+  ] = useState("");
+
+  const [
+    currentWeekStart,
+    setCurrentWeekStart,
+  ] = useState(
+    getMonday(
+      new Date()
+    )
+  );
+
+  const [
+    selectedDate,
+    setSelectedDate,
+  ] = useState(
+    toApiDate(
+      new Date()
+    )
+  );
+
+
+  // =========================================================
+  // API
+  // =========================================================
+
+  const fetchPlanning = useCallback(
+    async (
+      refresh = false
+    ) => {
+
+      if (refresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+
+      setError("");
+
+      try {
+
+        const response =
+          await API.get(
+            "/api/planning/"
+          );
+
+        setPlanning(
+          extractResults(
+            response.data
+          )
+        );
+
+      } catch (err) {
+
+        console.error(
+          "PLANNING ERROR",
+          err
+        );
+
+        setError(
+          err.response?.data?.detail
+          || "Impossible de charger votre planning."
+        );
+
+        setPlanning([]);
+
+      } finally {
+
+        setLoading(false);
+        setRefreshing(false);
+
+      }
+
+    },
+    []
+  );
+
+
+  useEffect(() => {
+    fetchPlanning();
+  }, [fetchPlanning]);
+
+
+  // =========================================================
+  // SEMAINE
+  // =========================================================
 
   const weekDays = useMemo(
     () =>
-      Array.from({ length: 7 }, (_, index) =>
-        addDays(currentWeekStart, index)
+      Array.from(
+        {
+          length: 7,
+        },
+        (
+          _,
+          index
+        ) =>
+          addDays(
+            currentWeekStart,
+            index
+          )
       ),
     [currentWeekStart]
   );
 
-  const selectedEvents = INITIAL_SCHEDULE[selectedDay] || [];
+
+  const weekStartApi = useMemo(
+    () =>
+      toApiDate(
+        currentWeekStart
+      ),
+    [currentWeekStart]
+  );
+
+
+  const weekEndApi = useMemo(
+    () =>
+      toApiDate(
+        addDays(
+          currentWeekStart,
+          6
+        )
+      ),
+    [currentWeekStart]
+  );
+
+
+  const weekPlanning = useMemo(
+    () =>
+      planning.filter(
+        (item) =>
+          item.date
+          >= weekStartApi
+          &&
+          item.date
+          <= weekEndApi
+      ),
+    [
+      planning,
+      weekStartApi,
+      weekEndApi,
+    ]
+  );
+
+
+  // =========================================================
+  // JOUR SÉLECTIONNÉ
+  // =========================================================
+
+  const selectedEvents = useMemo(
+    () =>
+      planning
+        .filter(
+          (item) =>
+            item.date
+            === selectedDate
+        )
+        .sort(
+          (a, b) =>
+            String(
+              a.heure_debut
+              || ""
+            ).localeCompare(
+              String(
+                b.heure_debut
+                || ""
+              )
+            )
+        ),
+    [
+      planning,
+      selectedDate,
+    ]
+  );
+
+
+  const selectedDateObject = useMemo(
+    () =>
+      new Date(
+        `${selectedDate}T12:00:00`
+      ),
+    [selectedDate]
+  );
+
+
+  // =========================================================
+  // STATISTIQUES SEMAINE
+  // =========================================================
+
+  const totalHours = useMemo(
+    () =>
+      weekPlanning.reduce(
+        (
+          total,
+          item
+        ) =>
+          total
+          + calculateHours(
+            item
+          ),
+        0
+      ),
+    [weekPlanning]
+  );
+
+
+  const workingDays = useMemo(
+    () =>
+      new Set(
+        weekPlanning
+          .filter(
+            (item) =>
+              normalizeType(
+                item.type_journee
+              )
+              !== "ABSENCE"
+          )
+          .map(
+            (item) =>
+              item.date
+          )
+      ).size,
+    [weekPlanning]
+  );
+
+
+  const remoteDays = useMemo(
+    () =>
+      new Set(
+        weekPlanning
+          .filter(
+            (item) =>
+              normalizeType(
+                item.type_journee
+              )
+              === "TELETRAVAIL"
+          )
+          .map(
+            (item) =>
+              item.date
+          )
+      ).size,
+    [weekPlanning]
+  );
+
+
+  const absenceDays = useMemo(
+    () =>
+      new Set(
+        weekPlanning
+          .filter(
+            (item) =>
+              normalizeType(
+                item.type_journee
+              )
+              === "ABSENCE"
+          )
+          .map(
+            (item) =>
+              item.date
+          )
+      ).size,
+    [weekPlanning]
+  );
+
+
+  // =========================================================
+  // NAVIGATION
+  // =========================================================
 
   const goToPreviousWeek = () => {
-    setCurrentWeekStart((currentDate) =>
-      addDays(currentDate, -7)
+
+    const previous =
+      addDays(
+        currentWeekStart,
+        -7
+      );
+
+    setCurrentWeekStart(
+      previous
     );
+
+    setSelectedDate(
+      toApiDate(
+        previous
+      )
+    );
+
   };
+
 
   const goToNextWeek = () => {
-    setCurrentWeekStart((currentDate) =>
-      addDays(currentDate, 7)
+
+    const next =
+      addDays(
+        currentWeekStart,
+        7
+      );
+
+    setCurrentWeekStart(
+      next
     );
+
+    setSelectedDate(
+      toApiDate(
+        next
+      )
+    );
+
   };
+
 
   const goToCurrentWeek = () => {
-    const today = new Date();
 
-    setCurrentWeekStart(getMonday(today));
-    setSelectedDay(today.getDay());
+    const today =
+      new Date();
+
+    setCurrentWeekStart(
+      getMonday(
+        today
+      )
+    );
+
+    setSelectedDate(
+      toApiDate(
+        today
+      )
+    );
+
   };
+
+
+  // =========================================================
+  // EXPORT CSV
+  // =========================================================
+
+  const exportPlanning = () => {
+
+    if (
+      weekPlanning.length
+      === 0
+    ) {
+      return;
+    }
+
+
+    const headers = [
+      "Date",
+      "Type",
+      "Début",
+      "Fin",
+      "Durée",
+      "Commentaire",
+    ];
+
+
+    const rows =
+      weekPlanning.map(
+        (item) => [
+          item.date || "",
+          item.type_journee_display
+          || item.type_journee
+          || "",
+          item.heure_debut || "",
+          item.heure_fin || "",
+          formatHours(
+            calculateHours(
+              item
+            )
+          ),
+          (
+            item.commentaire
+            || ""
+          ).replaceAll(
+            '"',
+            '""'
+          ),
+        ]
+      );
+
+
+    const csv = [
+      headers,
+      ...rows,
+    ]
+      .map(
+        (row) =>
+          row
+            .map(
+              (value) =>
+                `"${value}"`
+            )
+            .join(";")
+      )
+      .join("\n");
+
+
+    const blob =
+      new Blob(
+        [
+          "\uFEFF",
+          csv,
+        ],
+        {
+          type:
+            "text/csv;charset=utf-8;",
+        }
+      );
+
+
+    const url =
+      URL.createObjectURL(
+        blob
+      );
+
+
+    const link =
+      document.createElement(
+        "a"
+      );
+
+
+    link.href = url;
+
+    link.download =
+      `planning_${weekStartApi}_${weekEndApi}.csv`;
+
+    document.body.appendChild(
+      link
+    );
+
+    link.click();
+
+    document.body.removeChild(
+      link
+    );
+
+    URL.revokeObjectURL(
+      url
+    );
+
+  };
+
+
+  // =========================================================
+  // LOADING
+  // =========================================================
+
+  if (loading) {
+
+    return (
+      <div className="planning-page">
+
+        <div className="planning-loading">
+
+          <Loader2
+            size={30}
+            className="planning-spin"
+          />
+
+          <span>
+            Chargement du planning...
+          </span>
+
+        </div>
+
+      </div>
+    );
+
+  }
+
+
+  // =========================================================
+  // RENDER
+  // =========================================================
 
   return (
     <div className="planning-page">
+
+
+      {/* ===================================================
+          HEADER
+      =================================================== */}
+
       <section className="planning-heading">
+
         <div>
-          <h1>Mon planning</h1>
+
+          <span className="planning-eyebrow">
+            Activité
+          </span>
+
+          <h1>
+            Mon planning
+          </h1>
+
           <p>
-            Consultez vos horaires, réunions et événements de la semaine.
+            Consultez vos horaires
+            et l'organisation de votre semaine.
           </p>
+
         </div>
 
-        <button
-          type="button"
-          className="planning-primary-button"
-        >
-          Télécharger le planning
-        </button>
+
+        <div className="planning-heading-actions">
+
+          <button
+            type="button"
+            className="planning-refresh-button"
+            onClick={() =>
+              fetchPlanning(
+                true
+              )
+            }
+            disabled={
+              refreshing
+            }
+          >
+
+            <RefreshCw
+              size={17}
+              className={
+                refreshing
+                  ? "planning-spin"
+                  : ""
+              }
+            />
+
+            Actualiser
+
+          </button>
+
+
+          <button
+            type="button"
+            className="planning-primary-button"
+            onClick={
+              exportPlanning
+            }
+            disabled={
+              weekPlanning.length
+              === 0
+            }
+          >
+
+            <Download
+              size={17}
+            />
+
+            Exporter
+
+          </button>
+
+        </div>
+
       </section>
+
+
+      {/* ===================================================
+          ERROR
+      =================================================== */}
+
+      {error && (
+
+        <div className="planning-error">
+          {error}
+        </div>
+
+      )}
+
+
+      {/* ===================================================
+          SUMMARY
+      =================================================== */}
 
       <section className="planning-summary-grid">
-        <article className="planning-summary-card">
-          <span className="planning-summary-icon planning-icon-blue">
-            ◷
-          </span>
 
-          <div>
-            <strong>35h</strong>
-            <p>Heures prévues</p>
-          </div>
-        </article>
 
-        <article className="planning-summary-card">
-          <span className="planning-summary-icon planning-icon-green">
-            ✓
-          </span>
+        <SummaryCard
+          icon={
+            <Clock3
+              size={22}
+            />
+          }
+          value={
+            formatHours(
+              totalHours
+            )
+          }
+          label="Heures prévues"
+          type="blue"
+        />
 
-          <div>
-            <strong>5</strong>
-            <p>Jours travaillés</p>
-          </div>
-        </article>
 
-        <article className="planning-summary-card">
-          <span className="planning-summary-icon planning-icon-purple">
-            ⌂
-          </span>
+        <SummaryCard
+          icon={
+            <CalendarDays
+              size={22}
+            />
+          }
+          value={
+            String(
+              workingDays
+            )
+          }
+          label="Jours planifiés"
+          type="green"
+        />
 
-          <div>
-            <strong>1 jour</strong>
-            <p>Télétravail</p>
-          </div>
-        </article>
 
-        <article className="planning-summary-card">
-          <span className="planning-summary-icon planning-icon-orange">
-            ▣
-          </span>
+        <SummaryCard
+          icon={
+            <Home
+              size={22}
+            />
+          }
+          value={
+            String(
+              remoteDays
+            )
+          }
+          label="Télétravail"
+          type="purple"
+        />
 
-          <div>
-            <strong>2</strong>
-            <p>Événements</p>
-          </div>
-        </article>
+
+        <SummaryCard
+          icon={
+            <Umbrella
+              size={22}
+            />
+          }
+          value={
+            String(
+              absenceDays
+            )
+          }
+          label="Absences"
+          type="orange"
+        />
+
       </section>
 
+
+      {/* ===================================================
+          SEMAINE
+      =================================================== */}
+
       <section className="planning-card">
+
+
         <div className="planning-toolbar">
+
+
           <div className="planning-navigation">
+
             <button
               type="button"
-              onClick={goToPreviousWeek}
+              onClick={
+                goToPreviousWeek
+              }
               aria-label="Semaine précédente"
             >
-              ←
+
+              <ChevronLeft
+                size={18}
+              />
+
             </button>
+
 
             <button
               type="button"
               className="planning-today-button"
-              onClick={goToCurrentWeek}
+              onClick={
+                goToCurrentWeek
+              }
             >
-              Aujourd’hui
+
+              Aujourd'hui
+
             </button>
+
 
             <button
               type="button"
-              onClick={goToNextWeek}
+              onClick={
+                goToNextWeek
+              }
               aria-label="Semaine suivante"
             >
-              →
+
+              <ChevronRight
+                size={18}
+              />
+
             </button>
+
           </div>
+
 
           <h2>
-            {formatLongDate(currentWeekStart)} —{" "}
-            {formatLongDate(addDays(currentWeekStart, 6))}
+
+            {
+              formatLongDate(
+                currentWeekStart
+              )
+            }
+
+            {" — "}
+
+            {
+              formatLongDate(
+                addDays(
+                  currentWeekStart,
+                  6
+                )
+              )
+            }
+
           </h2>
+
         </div>
+
 
         <div className="planning-week">
-          {weekDays.map((date) => {
-            const dayNumber = date.getDay();
-            const isSelected = selectedDay === dayNumber;
-            const isToday =
-              date.toDateString() === new Date().toDateString();
 
-            return (
-              <button
-                type="button"
-                key={date.toISOString()}
-                className={`planning-day ${
-                  isSelected ? "planning-day-active" : ""
-                } ${isToday ? "planning-day-today" : ""}`}
-                onClick={() => setSelectedDay(dayNumber)}
-              >
-                <span>{DAY_LABELS[dayNumber].slice(0, 3)}</span>
-                <strong>{date.getDate()}</strong>
-                <small>{formatDate(date)}</small>
-              </button>
-            );
-          })}
-        </div>
-      </section>
+          {weekDays.map(
+            (date) => {
 
-      <section className="planning-content-grid">
-        <article className="planning-card planning-day-card">
-          <div className="planning-card-heading">
-            <div>
-              <h2>{DAY_LABELS[selectedDay]}</h2>
-              <p>Programme détaillé de la journée</p>
-            </div>
+              const apiDate =
+                toApiDate(
+                  date
+                );
 
-            <span>{selectedEvents.length} événement(s)</span>
-          </div>
+              const isSelected =
+                selectedDate
+                === apiDate;
 
-          {selectedEvents.length > 0 ? (
-            <div className="planning-timeline">
-              {selectedEvents.map((event) => (
-                <div
-                  className="planning-event"
-                  key={event.id}
+              const isToday =
+                apiDate
+                === toApiDate(
+                  new Date()
+                );
+
+              const dayEvents =
+                planning.filter(
+                  (item) =>
+                    item.date
+                    === apiDate
+                );
+
+              return (
+
+                <button
+                  type="button"
+                  key={
+                    apiDate
+                  }
+                  className={
+                    `planning-day ${
+                      isSelected
+                        ? "planning-day-active"
+                        : ""
+                    } ${
+                      isToday
+                        ? "planning-day-today"
+                        : ""
+                    }`
+                  }
+                  onClick={() =>
+                    setSelectedDate(
+                      apiDate
+                    )
+                  }
                 >
-                  <div className="planning-event-time">
-                    <strong>{event.start}</strong>
-                    <span>{event.end}</span>
-                  </div>
 
-                  <div
-                    className={`planning-event-line planning-event-${event.type}`}
-                  />
+                  <span>
+                    {
+                      formatShortDay(
+                        date
+                      )
+                    }
+                  </span>
 
-                  <div className="planning-event-content">
-                    <div className="planning-event-title">
-                      <h3>{event.title}</h3>
+                  <strong>
+                    {
+                      date.getDate()
+                    }
+                  </strong>
 
-                      <span
-                        className={`planning-event-badge planning-badge-${event.type}`}
-                      >
-                        {event.type === "work" && "Présentiel"}
-                        {event.type === "remote" && "Télétravail"}
-                        {event.type === "meeting" && "Réunion"}
-                        {event.type === "training" && "Formation"}
-                        {event.type === "break" && "Pause"}
-                      </span>
+                  <small>
+                    {
+                      dayEvents.length > 0
+                        ? `${dayEvents.length} élément${
+                            dayEvents.length > 1
+                              ? "s"
+                              : ""
+                          }`
+                        : "Libre"
+                    }
+                  </small>
+
+                  {dayEvents.length > 0 && (
+
+                    <div className="planning-day-indicators">
+
+                      {dayEvents
+                        .slice(
+                          0,
+                          3
+                        )
+                        .map(
+                          (event) => (
+
+                            <i
+                              key={
+                                event.id
+                              }
+                              className={
+                                `planning-day-dot planning-day-dot-${getTypeClass(
+                                  event.type_journee
+                                )}`
+                              }
+                            />
+
+                          )
+                        )}
+
                     </div>
 
-                    <p>{event.location}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="planning-empty">
-              <span>☀</span>
-              <h3>Aucun événement prévu</h3>
-              <p>
-                Vous n’avez aucun horaire planifié pour cette journée.
-              </p>
-            </div>
+                  )}
+
+                </button>
+
+              );
+
+            }
           )}
+
+        </div>
+
+      </section>
+
+
+      {/* ===================================================
+          CONTENT
+      =================================================== */}
+
+      <section className="planning-content-grid">
+
+
+        {/* =================================================
+            JOUR
+        ================================================= */}
+
+        <article className="planning-card planning-day-card">
+
+
+          <div className="planning-card-heading">
+
+            <div>
+
+              <h2>
+                {
+                  capitalize(
+                    formatDayName(
+                      selectedDateObject
+                    )
+                  )
+                }
+              </h2>
+
+              <p>
+                {
+                  formatLongDate(
+                    selectedDateObject
+                  )
+                }
+              </p>
+
+            </div>
+
+
+            <span>
+              {
+                selectedEvents.length
+              } élément
+              {
+                selectedEvents.length
+                > 1
+                  ? "s"
+                  : ""
+              }
+            </span>
+
+          </div>
+
+
+          {selectedEvents.length > 0 ? (
+
+            <div className="planning-timeline">
+
+              {selectedEvents.map(
+                (event) => {
+
+                  const typeClass =
+                    getTypeClass(
+                      event.type_journee
+                    );
+
+                  return (
+
+                    <div
+                      className="planning-event"
+                      key={
+                        event.id
+                      }
+                    >
+
+
+                      <div className="planning-event-time">
+
+                        <strong>
+                          {
+                            formatTime(
+                              event
+                                .heure_debut
+                            )
+                          }
+                        </strong>
+
+                        <span>
+                          {
+                            formatTime(
+                              event
+                                .heure_fin
+                            )
+                          }
+                        </span>
+
+                      </div>
+
+
+                      <div
+                        className={
+                          `planning-event-line planning-event-${typeClass}`
+                        }
+                      />
+
+
+                      <div className="planning-event-content">
+
+
+                        <div className="planning-event-title">
+
+                          <div>
+
+                            <h3>
+                              {
+                                event
+                                  .type_journee_display
+                                || event
+                                  .type_journee
+                                || "Planning"
+                              }
+                            </h3>
+
+                            {
+                              event.heure_debut
+                              &&
+                              event.heure_fin
+                              && (
+
+                                <small className="planning-event-duration">
+
+                                  {
+                                    formatHours(
+                                      calculateHours(
+                                        event
+                                      )
+                                    )
+                                  }
+
+                                </small>
+
+                              )
+                            }
+
+                          </div>
+
+
+                          <span
+                            className={
+                              `planning-event-badge planning-badge-${typeClass}`
+                            }
+                          >
+
+                            {
+                              event
+                                .type_journee_display
+                              || event
+                                .type_journee
+                              || "Planning"
+                            }
+
+                          </span>
+
+                        </div>
+
+
+                        <p>
+
+                          <MapPin
+                            size={14}
+                          />
+
+                          {
+                            event.commentaire
+                            || getDefaultDescription(
+                              event
+                                .type_journee
+                            )
+                          }
+
+                        </p>
+
+                      </div>
+
+                    </div>
+
+                  );
+
+                }
+              )}
+
+            </div>
+
+          ) : (
+
+            <div className="planning-empty">
+
+              <CalendarDays
+                size={40}
+              />
+
+              <h3>
+                Aucun planning
+              </h3>
+
+              <p>
+                Aucun horaire n'est prévu
+                pour cette journée.
+              </p>
+
+            </div>
+
+          )}
+
         </article>
 
+
+        {/* =================================================
+            INFORMATIONS
+        ================================================= */}
+
         <aside className="planning-card planning-information-card">
+
+
           <div className="planning-card-heading">
+
             <div>
-              <h2>Informations</h2>
-              <p>Résumé de la semaine</p>
+
+              <h2>
+                Informations
+              </h2>
+
+              <p>
+                Résumé de la semaine
+              </p>
+
             </div>
+
           </div>
+
 
           <div className="planning-information-list">
-            <div>
-              <span className="planning-information-dot dot-blue" />
 
-              <div>
-                <strong>Horaires habituels</strong>
-                <p>08:30 – 17:00</p>
-              </div>
-            </div>
 
-            <div>
-              <span className="planning-information-dot dot-green" />
+            <InformationItem
+              color="blue"
+              title="Heures prévues"
+              value={
+                formatHours(
+                  totalHours
+                )
+              }
+            />
 
-              <div>
-                <strong>Pause journalière</strong>
-                <p>12:00 – 13:00</p>
-              </div>
-            </div>
 
-            <div>
-              <span className="planning-information-dot dot-purple" />
+            <InformationItem
+              color="green"
+              title="Jours planifiés"
+              value={
+                `${workingDays} jour${
+                  workingDays > 1
+                    ? "s"
+                    : ""
+                }`
+              }
+            />
 
-              <div>
-                <strong>Télétravail</strong>
-                <p>Mercredi</p>
-              </div>
-            </div>
 
-            <div>
-              <span className="planning-information-dot dot-orange" />
+            <InformationItem
+              color="purple"
+              title="Télétravail"
+              value={
+                `${remoteDays} jour${
+                  remoteDays > 1
+                    ? "s"
+                    : ""
+                }`
+              }
+            />
 
-              <div>
-                <strong>Prochain événement</strong>
-                <p>Formation jeudi à 14:00</p>
-              </div>
-            </div>
+
+            <InformationItem
+              color="orange"
+              title="Absences"
+              value={
+                `${absenceDays} jour${
+                  absenceDays > 1
+                    ? "s"
+                    : ""
+                }`
+              }
+            />
+
           </div>
+
 
           <div className="planning-note">
-            <strong>Besoin d’une modification ?</strong>
+
+            <strong>
+              Besoin d'une modification ?
+            </strong>
+
             <p>
-              Contactez votre responsable ou le service des ressources
-              humaines.
+              Vous pouvez transmettre
+              une demande de modification
+              de calendrier au service RH.
             </p>
+
+            <Link
+              to="/dossiers/demandes/calendrier"
+              className="planning-modification-link"
+            >
+
+              Demander une modification
+
+              <ChevronRight
+                size={15}
+              />
+
+            </Link>
+
           </div>
+
         </aside>
+
       </section>
+
     </div>
+  );
+}
+
+
+// =========================================================
+// SUMMARY CARD
+// =========================================================
+
+function SummaryCard({
+  icon,
+  value,
+  label,
+  type,
+}) {
+
+  return (
+    <article className="planning-summary-card">
+
+      <span
+        className={
+          `planning-summary-icon planning-icon-${type}`
+        }
+      >
+        {icon}
+      </span>
+
+      <div>
+
+        <strong>
+          {value}
+        </strong>
+
+        <p>
+          {label}
+        </p>
+
+      </div>
+
+    </article>
+  );
+
+}
+
+
+// =========================================================
+// INFORMATION
+// =========================================================
+
+function InformationItem({
+  color,
+  title,
+  value,
+}) {
+
+  return (
+    <div>
+
+      <span
+        className={
+          `planning-information-dot dot-${color}`
+        }
+      />
+
+      <div>
+
+        <strong>
+          {title}
+        </strong>
+
+        <p>
+          {value}
+        </p>
+
+      </div>
+
+    </div>
+  );
+
+}
+
+
+// =========================================================
+// DESCRIPTION
+// =========================================================
+
+function getDefaultDescription(
+  type
+) {
+
+  switch (
+    normalizeType(type)
+  ) {
+
+    case "TELETRAVAIL":
+      return "Travail à distance";
+
+    case "ABSENCE":
+      return "Absence enregistrée";
+
+    case "CONGE":
+    case "CONGES":
+      return "Congé";
+
+    case "FORMATION":
+      return "Formation";
+
+    default:
+      return "Journée de travail";
+
+  }
+
+}
+
+
+// =========================================================
+// CAPITALIZE
+// =========================================================
+
+function capitalize(
+  value
+) {
+  if (!value) {
+    return "";
+  }
+
+  return (
+    value.charAt(0)
+      .toUpperCase()
+    + value.slice(1)
   );
 }

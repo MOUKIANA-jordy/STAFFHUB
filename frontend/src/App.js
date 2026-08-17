@@ -60,6 +60,7 @@ import PaiementHSup from "./Pages/Dossiers/Demandes/Paiement_H_Sup";
    DOSSIERS - INFORMATIONS
 ========================================================= */
 
+import Dossiers from "./Pages/Dossiers/Dossiers";
 import EtatCivil from "./Pages/Dossiers/Informations/EtatCivil";
 import Adresse from "./Pages/Dossiers/Informations/Adresse";
 import Famille from "./Pages/Dossiers/Informations/Famille";
@@ -100,7 +101,6 @@ import "./Styles/etatcivil.css";
 import "./Styles/home.css";
 import "./Styles/header.css";
 import "./Styles/sidebar.css";
-import "./Styles/form.css";
 import "./Styles/admin.css";
 
 
@@ -205,7 +205,7 @@ function App() {
 
             <Route
               path="/home/dossiers"
-              element={<Home />}
+              element={<Dossiers />}
             />
 
             <Route
