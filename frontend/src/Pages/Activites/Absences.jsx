@@ -6,17 +6,14 @@ import React, {
 } from "react";
 
 import {
-  Link,
-} from "react-router-dom";
-
-import {
   CalendarDays,
   CheckCircle2,
-  ChevronRight,
   Clock3,
+  FileText,
   Loader2,
+  Plus,
   RefreshCw,
-  Umbrella,
+  Send,
   XCircle,
 } from "lucide-react";
 
@@ -25,9 +22,42 @@ import API from "../../Services/api";
 import "../../Styles/absences.css";
 
 
-// =========================================================
-// DRF
-// =========================================================
+const EMPTY_FORM = {
+  type_absence: "CONGES_PAYES",
+  date_debut: "",
+  date_fin: "",
+  motif: "",
+  document: null,
+};
+
+
+const ABSENCE_TYPES = [
+  {
+    value: "CONGES_PAYES",
+    label: "Congés payés",
+  },
+  {
+    value: "RTT",
+    label: "RTT",
+  },
+  {
+    value: "MALADIE",
+    label: "Maladie",
+  },
+  {
+    value: "SANS_SOLDE",
+    label: "Congé sans solde",
+  },
+  {
+    value: "EVENEMENT_FAMILIAL",
+    label: "Événement familial",
+  },
+  {
+    value: "AUTRE",
+    label: "Autre",
+  },
+];
+
 
 const extractResults = (data) => {
   if (Array.isArray(data)) {
@@ -45,161 +75,31 @@ const extractResults = (data) => {
 };
 
 
-// =========================================================
-// HELPERS
-// =========================================================
-
-function normalize(value) {
-  return String(
-    value || ""
-  ).toUpperCase();
-}
-
-
-function parseDate(value) {
-  if (!value) {
-    return null;
-  }
-
-  const date = new Date(
-    `${value}T12:00:00`
-  );
-
-  return Number.isNaN(
-    date.getTime()
-  )
-    ? null
-    : date;
-}
-
-
-function formatDate(value) {
-  const date =
-    parseDate(value);
-
-  if (!date) {
-    return "—";
-  }
-
-  return date.toLocaleDateString(
-    "fr-FR",
-    {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    }
-  );
-}
-
-
-function formatLongDate(value) {
-  const date =
-    parseDate(value);
-
-  if (!date) {
-    return "—";
-  }
-
-  return date.toLocaleDateString(
-    "fr-FR",
-    {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    }
-  );
-}
-
-
-function formatTime(value) {
-  if (!value) {
-    return "Journée";
-  }
-
-  return String(value)
-    .slice(
-      0,
-      5
-    );
-}
-
-
-function isAbsencePlanning(item) {
-  return (
-    normalize(
-      item?.type_journee
-    )
-    === "ABSENCE"
-  );
-}
-
-
-function isAbsenceRequest(item) {
-  return (
-    normalize(
-      item?.type_demande
-    )
-    === "CALENDRIER"
-    &&
-    normalize(
-      item?.details
-        ?.type_journee
-    )
-    === "ABSENCE"
-  );
-}
-
-
-function requestStatus(status) {
-  switch (
-    normalize(status)
-  ) {
-    case "APPROUVE":
-      return "approved";
-
-    case "REFUSE":
-      return "rejected";
-
-    default:
-      return "pending";
-  }
-}
-
-
-function requestStatusLabel(status) {
-  switch (
-    normalize(status)
-  ) {
-    case "APPROUVE":
-      return "Approuvée";
-
-    case "REFUSE":
-      return "Refusée";
-
-    case "EN_ATTENTE":
-      return "En attente";
-
-    default:
-      return status || "—";
-  }
-}
-
-
-// =========================================================
-// PAGE
-// =========================================================
-
 export default function Absences() {
-  const [
-    planning,
-    setPlanning,
-  ] = useState([]);
-
   const [
     demandes,
     setDemandes,
   ] = useState([]);
+
+  const [
+    plannings,
+    setPlannings,
+  ] = useState([]);
+
+  const [
+    formData,
+    setFormData,
+  ] = useState(EMPTY_FORM);
+
+  const [
+    isFormOpen,
+    setIsFormOpen,
+  ] = useState(false);
+
+  const [
+    filter,
+    setFilter,
+  ] = useState("all");
 
   const [
     loading,
@@ -212,21 +112,24 @@ export default function Absences() {
   ] = useState(false);
 
   const [
-    error,
-    setError,
-  ] = useState("");
+    submitting,
+    setSubmitting,
+  ] = useState(false);
 
   const [
-    filter,
-    setFilter,
-  ] = useState("all");
+    message,
+    setMessage,
+  ] = useState({
+    type: "",
+    text: "",
+  });
 
 
   // =========================================================
-  // API
+  // CHARGEMENT API
   // =========================================================
 
-  const fetchAbsences = useCallback(
+  const fetchData = useCallback(
     async (refresh = false) => {
       if (refresh) {
         setRefreshing(true);
@@ -234,33 +137,37 @@ export default function Absences() {
         setLoading(true);
       }
 
-      setError("");
+      setMessage({
+        type: "",
+        text: "",
+      });
 
       try {
         const [
-          planningResponse,
           demandesResponse,
+          planningResponse,
         ] = await Promise.all([
-          API.get(
-            "/api/planning/"
-          ),
-
           API.get(
             "/api/demandes/",
             {
               params: {
-                ordering:
-                  "-date_demande",
+                type_demande: "ABSENCE",
+                ordering: "-date_demande",
+              },
+            }
+          ),
+
+          API.get(
+            "/api/planning/",
+            {
+              params: {
+                type_journee: "ABSENCE",
+                ordering: "date",
               },
             }
           ),
         ]);
 
-        setPlanning(
-          extractResults(
-            planningResponse.data
-          )
-        );
 
         setDemandes(
           extractResults(
@@ -268,19 +175,25 @@ export default function Absences() {
           )
         );
 
-      } catch (err) {
+
+        setPlannings(
+          extractResults(
+            planningResponse.data
+          )
+        );
+
+      } catch (error) {
         console.error(
-          "ABSENCES ERROR",
-          err
+          "ABSENCES GET ERROR :",
+          error
         );
 
-        setError(
-          err.response?.data?.detail
-          || "Impossible de charger vos absences."
-        );
-
-        setPlanning([]);
-        setDemandes([]);
+        setMessage({
+          type: "error",
+          text:
+            error.response?.data?.detail
+            || "Impossible de charger vos absences.",
+        });
 
       } finally {
         setLoading(false);
@@ -292,189 +205,428 @@ export default function Absences() {
 
 
   useEffect(() => {
-    fetchAbsences();
-  }, [fetchAbsences]);
+    fetchData();
+  }, [fetchData]);
 
 
   // =========================================================
-  // ABSENCES RÉELLES
+  // CHANGEMENT FORMULAIRE
   // =========================================================
 
-  const absences = useMemo(
-    () =>
-      planning
-        .filter(
-          isAbsencePlanning
-        )
-        .sort(
-          (a, b) =>
-            String(
-              b.date || ""
-            ).localeCompare(
-              String(
-                a.date || ""
-              )
-            )
+  const handleChange = (
+    event
+  ) => {
+    const {
+      name,
+      value,
+      files,
+    } = event.target;
+
+    setFormData(
+      (current) => ({
+        ...current,
+
+        [name]:
+          files
+            ? files[0] || null
+            : value,
+      })
+    );
+  };
+
+
+  // =========================================================
+  // DURÉE
+  // =========================================================
+
+  const duration =
+    useMemo(
+      () =>
+        calculateDuration(
+          formData.date_debut,
+          formData.date_fin
         ),
-    [planning]
-  );
+      [
+        formData.date_debut,
+        formData.date_fin,
+      ]
+    );
 
 
   // =========================================================
-  // DEMANDES D'ABSENCE
+  // ENVOI DEMANDE
   // =========================================================
 
-  const absenceRequests = useMemo(
-    () =>
-      demandes
-        .filter(
-          isAbsenceRequest
-        ),
-    [demandes]
-  );
+  const handleSubmit = async (
+    event
+  ) => {
+    event.preventDefault();
+
+    setMessage({
+      type: "",
+      text: "",
+    });
 
 
-  const filteredRequests = useMemo(
-    () => {
-      if (
-        filter === "all"
-      ) {
-        return absenceRequests;
+    // ---------------------------------------------------------
+    // VALIDATION
+    // ---------------------------------------------------------
+
+    if (
+      !formData.date_debut
+      || !formData.date_fin
+    ) {
+      setMessage({
+        type: "error",
+        text:
+          "Veuillez renseigner les dates de début et de fin.",
+      });
+
+      return;
+    }
+
+
+    const debut =
+      new Date(
+        `${formData.date_debut}T12:00:00`
+      );
+
+    const fin =
+      new Date(
+        `${formData.date_fin}T12:00:00`
+      );
+
+
+    if (fin < debut) {
+      setMessage({
+        type: "error",
+        text:
+          "La date de fin ne peut pas être antérieure à la date de début.",
+      });
+
+      return;
+    }
+
+
+    if (
+      !formData.motif.trim()
+    ) {
+      setMessage({
+        type: "error",
+        text:
+          "Veuillez renseigner le motif de votre absence.",
+      });
+
+      return;
+    }
+
+
+    if (
+      formData.document
+      && formData.document.size
+        > 5 * 1024 * 1024
+    ) {
+      setMessage({
+        type: "error",
+        text:
+          "Le justificatif ne doit pas dépasser 5 Mo.",
+      });
+
+      return;
+    }
+
+
+    setSubmitting(true);
+
+
+    try {
+      const details = {
+        date_debut:
+          formData.date_debut,
+
+        date_fin:
+          formData.date_fin,
+
+        motif:
+          formData.motif.trim(),
+
+        type_absence:
+          formData.type_absence,
+      };
+
+
+      // -------------------------------------------------------
+      // AVEC DOCUMENT
+      // -------------------------------------------------------
+
+      if (formData.document) {
+        const payload =
+          new FormData();
+
+
+        payload.append(
+          "type_demande",
+          "ABSENCE"
+        );
+
+
+        payload.append(
+          "details",
+          JSON.stringify(
+            details
+          )
+        );
+
+
+        payload.append(
+          "document",
+          formData.document
+        );
+
+
+        await API.post(
+          "/api/demandes/",
+          payload
+        );
+
+      } else {
+
+        // -----------------------------------------------------
+        // SANS DOCUMENT
+        // -----------------------------------------------------
+
+        await API.post(
+          "/api/demandes/",
+          {
+            type_demande:
+              "ABSENCE",
+
+            details,
+          }
+        );
       }
 
-      return absenceRequests.filter(
-        (request) =>
-          requestStatus(
-            request.statut
-          )
-          === filter
+
+      setMessage({
+        type: "success",
+        text:
+          "Votre demande d'absence a bien été envoyée.",
+      });
+
+
+      setFormData(
+        EMPTY_FORM
       );
-    },
-    [
-      absenceRequests,
-      filter,
-    ]
-  );
+
+
+      setIsFormOpen(
+        false
+      );
+
+
+      const fileInput =
+        document.getElementById(
+          "absence-document"
+        );
+
+      if (fileInput) {
+        fileInput.value = "";
+      }
+
+
+      await fetchData();
+
+    } catch (error) {
+      console.error(
+        "ABSENCE POST ERROR :",
+        error
+      );
+
+
+      setMessage({
+        type: "error",
+        text:
+          getApiError(
+            error,
+            "Impossible d'envoyer la demande d'absence."
+          ),
+      });
+
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+
+  // =========================================================
+  // FILTRAGE
+  // =========================================================
+
+  const filteredDemandes =
+    useMemo(
+      () => {
+        if (
+          filter === "all"
+        ) {
+          return demandes;
+        }
+
+
+        const statusMap = {
+          pending:
+            "EN_ATTENTE",
+
+          approved:
+            "APPROUVE",
+
+          rejected:
+            "REFUSE",
+        };
+
+
+        return demandes.filter(
+          (demande) =>
+            demande.statut
+            === statusMap[filter]
+        );
+      },
+      [
+        demandes,
+        filter,
+      ]
+    );
 
 
   // =========================================================
   // STATS
   // =========================================================
 
-  const pendingCount = useMemo(
-    () =>
-      absenceRequests.filter(
-        (item) =>
-          normalize(
-            item.statut
-          )
-          === "EN_ATTENTE"
-      ).length,
-    [absenceRequests]
-  );
+  const stats =
+    useMemo(
+      () => {
+        const pending =
+          demandes.filter(
+            (item) =>
+              item.statut
+              === "EN_ATTENTE"
+          ).length;
 
 
-  const approvedCount = useMemo(
-    () =>
-      absenceRequests.filter(
-        (item) =>
-          normalize(
-            item.statut
-          )
-          === "APPROUVE"
-      ).length,
-    [absenceRequests]
-  );
+        const approved =
+          demandes.filter(
+            (item) =>
+              item.statut
+              === "APPROUVE"
+          ).length;
 
 
-  const rejectedCount = useMemo(
-    () =>
-      absenceRequests.filter(
-        (item) =>
-          normalize(
-            item.statut
-          )
-          === "REFUSE"
-      ).length,
-    [absenceRequests]
-  );
+        const rejected =
+          demandes.filter(
+            (item) =>
+              item.statut
+              === "REFUSE"
+          ).length;
 
 
-  const currentYear =
-    new Date()
-      .getFullYear();
+        const currentYear =
+          new Date().getFullYear();
 
 
-  const absenceDaysThisYear = useMemo(
-    () =>
-      absences.filter(
-        (item) => {
-          const date =
-            parseDate(
-              item.date
-            );
+        const plannedDays =
+          plannings.filter(
+            (planning) => {
+              if (!planning.date) {
+                return false;
+              }
 
-          return (
-            date
-            && date.getFullYear()
-              === currentYear
-          );
-        }
-      ).length,
-    [
-      absences,
-      currentYear,
-    ]
-  );
+              const date =
+                new Date(
+                  `${planning.date}T12:00:00`
+                );
 
-
-  // =========================================================
-  // PROCHAINES ABSENCES
-  // =========================================================
-
-  const upcomingAbsences = useMemo(
-    () => {
-      const now =
-        new Date();
-
-      now.setHours(
-        0,
-        0,
-        0,
-        0
-      );
-
-      return absences
-        .filter(
-          (item) => {
-            const date =
-              parseDate(
-                item.date
+              return (
+                !Number.isNaN(
+                  date.getTime()
+                )
+                &&
+                date.getFullYear()
+                === currentYear
               );
+            }
+          ).length;
 
-            return (
-              date
-              && date >= now
-            );
-          }
-        )
-        .sort(
-          (a, b) =>
-            String(
-              a.date
-            ).localeCompare(
-              String(
-                b.date
-              )
-            )
-        )
-        .slice(
+
+        return {
+          total:
+            demandes.length,
+
+          pending,
+
+          approved,
+
+          rejected,
+
+          plannedDays,
+        };
+      },
+      [
+        demandes,
+        plannings,
+      ]
+    );
+
+
+  // =========================================================
+  // ABSENCES À VENIR
+  // =========================================================
+
+  const upcomingAbsences =
+    useMemo(
+      () => {
+        const today =
+          new Date();
+
+        today.setHours(
           0,
-          5
+          0,
+          0,
+          0
         );
-    },
-    [absences]
-  );
+
+
+        return plannings
+          .filter(
+            (planning) => {
+              if (!planning.date) {
+                return false;
+              }
+
+              const date =
+                new Date(
+                  `${planning.date}T12:00:00`
+                );
+
+              return (
+                !Number.isNaN(
+                  date.getTime()
+                )
+                &&
+                date >= today
+              );
+            }
+          )
+          .sort(
+            (a, b) =>
+              new Date(a.date)
+              - new Date(b.date)
+          )
+          .slice(
+            0,
+            5
+          );
+      },
+      [plannings]
+    );
 
 
   // =========================================================
@@ -493,7 +645,7 @@ export default function Absences() {
           />
 
           <span>
-            Chargement des absences...
+            Chargement de vos absences...
           </span>
 
         </div>
@@ -510,25 +662,21 @@ export default function Absences() {
   return (
     <div className="absences-page">
 
-      {/* ===================================================
+      {/* =====================================================
           HEADER
-      =================================================== */}
+      ===================================================== */}
 
       <section className="absences-heading">
 
         <div>
-
-          <span className="absences-eyebrow">
-            Activité
-          </span>
 
           <h1>
             Mes absences
           </h1>
 
           <p>
-            Consultez vos absences planifiées
-            et suivez vos demandes.
+            Consultez vos demandes et effectuez
+            une nouvelle demande d'absence.
           </p>
 
         </div>
@@ -539,18 +687,16 @@ export default function Absences() {
           <button
             type="button"
             className="absences-secondary-button"
-            onClick={() =>
-              fetchAbsences(
-                true
-              )
-            }
             disabled={
               refreshing
+            }
+            onClick={() =>
+              fetchData(true)
             }
           >
 
             <RefreshCw
-              size={17}
+              size={16}
               className={
                 refreshing
                   ? "absences-spin"
@@ -563,114 +709,432 @@ export default function Absences() {
           </button>
 
 
-          <Link
-            to="/dossiers/demandes/calendrier"
+          <button
+            type="button"
             className="absences-primary-button"
+            onClick={() => {
+              setMessage({
+                type: "",
+                text: "",
+              });
+
+              setIsFormOpen(
+                (current) =>
+                  !current
+              );
+            }}
           >
 
-            <CalendarDays
+            <Plus
               size={17}
             />
 
-            Nouvelle demande
+            {
+              isFormOpen
+                ? "Fermer"
+                : "Nouvelle demande"
+            }
 
-          </Link>
+          </button>
 
         </div>
 
       </section>
 
 
-      {/* ===================================================
-          ERROR
-      =================================================== */}
+      {/* =====================================================
+          MESSAGE
+      ===================================================== */}
 
-      {error && (
-        <div className="absences-message absences-message-error">
-          {error}
-        </div>
-      )}
+      {
+        message.text
+        && (
+          <div
+            className={
+              `absences-message ${
+                message.type
+                === "success"
+                  ? "absences-message-success"
+                  : "absences-message-error"
+              }`
+            }
+          >
+            {
+              message.type
+              === "success"
+                ? (
+                  <CheckCircle2
+                    size={17}
+                  />
+                )
+                : (
+                  <XCircle
+                    size={17}
+                  />
+                )
+            }
+
+            {message.text}
+          </div>
+        )
+      }
 
 
-      {/* ===================================================
-          SUMMARY
-      =================================================== */}
+      {/* =====================================================
+          STATS
+      ===================================================== */}
 
       <section className="absences-summary-grid">
 
         <SummaryCard
           value={
-            String(
-              absenceDaysThisYear
-            )
+            stats.total
           }
-          label="Absences enregistrées"
-          detail={
-            `Année ${currentYear}`
-          }
+          label="Demandes"
+          detail="Total"
           type="blue"
           icon={
-            <Umbrella size={22} />
+            <FileText
+              size={21}
+            />
           }
         />
 
 
         <SummaryCard
           value={
-            String(
-              pendingCount
-            )
+            stats.pending
           }
           label="En attente"
-          detail="Demandes à traiter"
+          detail="Demandes en cours"
           type="orange"
           icon={
-            <Clock3 size={22} />
+            <Clock3
+              size={21}
+            />
           }
         />
 
 
         <SummaryCard
           value={
-            String(
-              approvedCount
-            )
+            stats.approved
           }
-          label="Approuvées"
-          detail="Demandes validées"
+          label="Validées"
+          detail="Demandes approuvées"
           type="green"
           icon={
-            <CheckCircle2 size={22} />
+            <CheckCircle2
+              size={21}
+            />
           }
         />
 
 
         <SummaryCard
           value={
-            String(
-              rejectedCount
-            )
+            stats.plannedDays
           }
-          label="Refusées"
-          detail="Demandes refusées"
+          label="Jours d'absence"
+          detail="Planifiés cette année"
           type="purple"
           icon={
-            <XCircle size={22} />
+            <CalendarDays
+              size={21}
+            />
           }
         />
 
       </section>
 
 
-      {/* ===================================================
+      {/* =====================================================
+          FORMULAIRE
+      ===================================================== */}
+
+      {
+        isFormOpen
+        && (
+          <section className="absences-form-card">
+
+            <div className="absences-card-heading">
+
+              <div>
+
+                <h2>
+                  Nouvelle demande d'absence
+                </h2>
+
+                <p>
+                  Complétez les informations
+                  avant l'envoi au service RH.
+                </p>
+
+              </div>
+
+
+              <span className="absences-card-icon">
+
+                <Plus
+                  size={21}
+                />
+
+              </span>
+
+            </div>
+
+
+            <form
+              onSubmit={
+                handleSubmit
+              }
+            >
+
+              <div className="absences-form-grid">
+
+                {/* TYPE */}
+
+                <div className="absences-field">
+
+                  <label htmlFor="type_absence">
+                    Type d'absence
+                  </label>
+
+                  <select
+                    id="type_absence"
+                    name="type_absence"
+                    value={
+                      formData.type_absence
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    required
+                  >
+
+                    {
+                      ABSENCE_TYPES.map(
+                        (type) => (
+                          <option
+                            key={
+                              type.value
+                            }
+                            value={
+                              type.value
+                            }
+                          >
+                            {type.label}
+                          </option>
+                        )
+                      )
+                    }
+
+                  </select>
+
+                </div>
+
+
+                {/* DURÉE */}
+
+                <div className="absences-field">
+
+                  <label>
+                    Durée calculée
+                  </label>
+
+                  <div className="absences-duration">
+                    {
+                      duration
+                      || "À définir"
+                    }
+                  </div>
+
+                </div>
+
+
+                {/* DATE DEBUT */}
+
+                <div className="absences-field">
+
+                  <label htmlFor="date_debut">
+                    Date de début
+                  </label>
+
+                  <input
+                    id="date_debut"
+                    name="date_debut"
+                    type="date"
+                    value={
+                      formData.date_debut
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    required
+                  />
+
+                </div>
+
+
+                {/* DATE FIN */}
+
+                <div className="absences-field">
+
+                  <label htmlFor="date_fin">
+                    Date de fin
+                  </label>
+
+                  <input
+                    id="date_fin"
+                    name="date_fin"
+                    type="date"
+                    value={
+                      formData.date_fin
+                    }
+                    min={
+                      formData.date_debut
+                      || undefined
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    required
+                  />
+
+                </div>
+
+
+                {/* MOTIF */}
+
+                <div className="absences-field absences-field-full">
+
+                  <label htmlFor="motif">
+                    Motif ou commentaire
+                  </label>
+
+                  <textarea
+                    id="motif"
+                    name="motif"
+                    rows="4"
+                    value={
+                      formData.motif
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    placeholder="Précisez le motif de votre absence..."
+                    required
+                  />
+
+                </div>
+
+
+                {/* JUSTIFICATIF */}
+
+                <div className="absences-field absences-field-full">
+
+                  <label htmlFor="absence-document">
+                    Justificatif
+                  </label>
+
+                  <input
+                    id="absence-document"
+                    name="document"
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={
+                      handleChange
+                    }
+                  />
+
+                  <small>
+                    Facultatif — PDF, JPG ou PNG,
+                    5 Mo maximum.
+                  </small>
+
+                </div>
+
+              </div>
+
+
+              <div className="absences-form-actions">
+
+                <button
+                  type="button"
+                  className="absences-secondary-button"
+                  disabled={
+                    submitting
+                  }
+                  onClick={() => {
+                    setIsFormOpen(
+                      false
+                    );
+
+                    setFormData(
+                      EMPTY_FORM
+                    );
+
+                    setMessage({
+                      type: "",
+                      text: "",
+                    });
+                  }}
+                >
+                  Annuler
+                </button>
+
+
+                <button
+                  type="submit"
+                  className="absences-primary-button"
+                  disabled={
+                    submitting
+                  }
+                >
+
+                  {
+                    submitting
+                      ? (
+                        <>
+                          <Loader2
+                            size={17}
+                            className="absences-spin"
+                          />
+
+                          Envoi...
+                        </>
+                      )
+                      : (
+                        <>
+                          <Send
+                            size={17}
+                          />
+
+                          Envoyer la demande
+                        </>
+                      )
+                  }
+
+                </button>
+
+              </div>
+
+            </form>
+
+          </section>
+        )
+      }
+
+
+      {/* =====================================================
           CONTENT
-      =================================================== */}
+      ===================================================== */}
 
       <section className="absences-content-grid">
 
-        {/* =================================================
+        {/* ===================================================
             HISTORIQUE
-        ================================================= */}
+        =================================================== */}
 
         <article className="absences-card">
 
@@ -679,12 +1143,11 @@ export default function Absences() {
             <div>
 
               <h2>
-                Demandes d'absence
+                Historique des demandes
               </h2>
 
               <p>
-                Suivez les demandes envoyées
-                au service RH.
+                Suivez l'état de vos demandes d'absence.
               </p>
 
             </div>
@@ -702,13 +1165,12 @@ export default function Absences() {
                   )
               }
             >
-
               <option value="all">
                 Toutes
               </option>
 
               <option value="approved">
-                Approuvées
+                Validées
               </option>
 
               <option value="pending">
@@ -718,155 +1180,138 @@ export default function Absences() {
               <option value="rejected">
                 Refusées
               </option>
-
             </select>
 
           </div>
 
 
-          {filteredRequests.length > 0 ? (
+          <div className="absences-table-wrapper">
 
-            <div className="absences-table-wrapper">
+            <table className="absences-table">
 
-              <table className="absences-table">
-
-                <thead>
-
-                  <tr>
-                    <th>Date</th>
-                    <th>Type</th>
-                    <th>Horaire</th>
-                    <th>Motif</th>
-                    <th>Statut</th>
-                  </tr>
-
-                </thead>
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Période</th>
+                  <th>Durée</th>
+                  <th>Motif</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
 
 
-                <tbody>
+              <tbody>
 
-                  {filteredRequests.map(
-                    (request) => {
-
+                {
+                  filteredDemandes.map(
+                    (demande) => {
                       const details =
-                        request.details
+                        demande.details
                         || {};
 
+
                       return (
-                        <tr key={request.id}>
+                        <tr
+                          key={
+                            demande.id
+                          }
+                        >
 
                           <td>
-
                             <strong>
                               {
-                                formatDate(
-                                  details.date
+                                getAbsenceTypeLabel(
+                                  details.type_absence
                                 )
                               }
                             </strong>
+                          </td>
 
-                            <small>
-                              Demandée le{" "}
+
+                          <td>
+
+                            <span>
                               {
-                                request.date_demande
-                                  ? new Date(
-                                      request.date_demande
-                                    )
-                                      .toLocaleDateString(
-                                        "fr-FR"
-                                      )
-                                  : "—"
+                                formatDate(
+                                  details.date_debut
+                                )
                               }
-                            </small>
-
-                          </td>
-
-
-                          <td>
-                            Absence
-                          </td>
-
-
-                          <td>
+                            </span>
 
                             {
-                              details.heure_debut
-                              || details.heure_fin
-                                ? `${formatTime(
-                                    details.heure_debut
-                                  )} – ${formatTime(
-                                    details.heure_fin
-                                  )}`
-                                : "Journée"
+                              details.date_fin
+                              && (
+                                <small>
+                                  au{" "}
+                                  {
+                                    formatDate(
+                                      details.date_fin
+                                    )
+                                  }
+                                </small>
+                              )
                             }
 
                           </td>
 
 
                           <td>
-
-                            <span className="absences-reason">
-
-                              {
-                                details.motif
-                                || details.commentaire
-                                || "—"
-                              }
-
-                            </span>
-
+                            {
+                              calculateDuration(
+                                details.date_debut,
+                                details.date_fin
+                              )
+                              || "—"
+                            }
                           </td>
 
 
                           <td>
+                            {
+                              details.motif
+                              || "—"
+                            }
+                          </td>
 
+
+                          <td>
                             <StatusBadge
                               status={
-                                request.statut
+                                demande.statut
                               }
                             />
-
                           </td>
 
                         </tr>
                       );
-
                     }
-                  )}
+                  )
+                }
 
-                </tbody>
+              </tbody>
 
-              </table>
+            </table>
 
-            </div>
 
-          ) : (
+            {
+              filteredDemandes.length
+              === 0
+              && (
+                <div className="absences-empty">
+                  Aucune demande ne correspond
+                  à ce filtre.
+                </div>
+              )
+            }
 
-            <div className="absences-empty">
-
-              <CalendarDays
-                size={36}
-              />
-
-              <strong>
-                Aucune demande
-              </strong>
-
-              <span>
-                Aucune demande d'absence ne
-                correspond au filtre sélectionné.
-              </span>
-
-            </div>
-
-          )}
+          </div>
 
         </article>
 
 
-        {/* =================================================
-            PROCHAINES ABSENCES
-        ================================================= */}
+        {/* ===================================================
+            ABSENCES PLANIFIÉES
+        =================================================== */}
 
         <aside className="absences-card absences-calendar-card">
 
@@ -879,7 +1324,7 @@ export default function Absences() {
               </h2>
 
               <p>
-                Absences validées et présentes
+                Journées déjà validées
                 dans votre planning.
               </p>
 
@@ -888,206 +1333,63 @@ export default function Absences() {
           </div>
 
 
-          {upcomingAbsences.length > 0 ? (
+          {
+            upcomingAbsences.length > 0
+              ? (
+                <div className="absences-upcoming-list">
 
-            <div className="absences-upcoming-list">
+                  {
+                    upcomingAbsences.map(
+                      (
+                        planning,
+                        index
+                      ) => (
+                        <UpcomingAbsence
+                          key={
+                            planning.id
+                          }
+                          planning={
+                            planning
+                          }
+                          type={
+                            [
+                              "blue",
+                              "green",
+                              "purple",
+                            ][
+                              index % 3
+                            ]
+                          }
+                        />
+                      )
+                    )
+                  }
 
-              {upcomingAbsences.map(
-                (
-                  absence,
-                  index
-                ) => (
-
-                  <UpcomingAbsence
-                    key={
-                      absence.id
-                    }
-                    absence={
-                      absence
-                    }
-                    type={
-                      [
-                        "blue",
-                        "green",
-                        "purple",
-                      ][
-                        index % 3
-                      ]
-                    }
-                  />
-
-                )
-              )}
-
-            </div>
-
-          ) : (
-
-            <div className="absences-side-empty">
-
-              <Umbrella
-                size={30}
-              />
-
-              <strong>
-                Aucune absence à venir
-              </strong>
-
-              <span>
-                Votre planning ne contient
-                aucune absence future.
-              </span>
-
-            </div>
-
-          )}
+                </div>
+              )
+              : (
+                <div className="absences-empty">
+                  Aucune absence à venir.
+                </div>
+              )
+          }
 
 
           <div className="absences-information">
 
             <strong>
-              Besoin de signaler une absence ?
+              Fonctionnement
             </strong>
 
             <p>
-              Utilisez la demande de modification
-              de calendrier. Après validation RH,
-              l'absence apparaîtra automatiquement
-              dans votre planning.
+              Une demande apparaît dans le planning
+              uniquement après validation par
+              le service RH.
             </p>
-
-            <Link
-              to="/dossiers/demandes/calendrier"
-              className="absences-information-link"
-            >
-
-              Faire une demande
-
-              <ChevronRight
-                size={15}
-              />
-
-            </Link>
 
           </div>
 
         </aside>
-
-      </section>
-
-
-      {/* ===================================================
-          PLANNING ABSENCES
-      =================================================== */}
-
-      <section className="absences-card absences-planning-card">
-
-        <div className="absences-card-heading">
-
-          <div>
-
-            <h2>
-              Historique des absences enregistrées
-            </h2>
-
-            <p>
-              Ces données proviennent directement
-              de votre planning.
-            </p>
-
-          </div>
-
-
-          <span className="absences-count-badge">
-            {absences.length}
-          </span>
-
-        </div>
-
-
-        {absences.length > 0 ? (
-
-          <div className="absences-planning-list">
-
-            {absences.map(
-              (absence) => (
-
-                <div
-                  className="absences-planning-item"
-                  key={absence.id}
-                >
-
-                  <div className="absences-planning-date">
-
-                    <CalendarDays
-                      size={18}
-                    />
-
-                  </div>
-
-
-                  <div className="absences-planning-content">
-
-                    <strong>
-                      {
-                        formatLongDate(
-                          absence.date
-                        )
-                      }
-                    </strong>
-
-                    <p>
-                      {
-                        absence.commentaire
-                        || "Absence enregistrée"
-                      }
-                    </p>
-
-                  </div>
-
-
-                  <div className="absences-planning-hours">
-
-                    {
-                      absence.heure_debut
-                      || absence.heure_fin
-                        ? `${formatTime(
-                            absence.heure_debut
-                          )} – ${formatTime(
-                            absence.heure_fin
-                          )}`
-                        : "Journée"
-                    }
-
-                  </div>
-
-                </div>
-
-              )
-            )}
-
-          </div>
-
-        ) : (
-
-          <div className="absences-empty">
-
-            <Umbrella
-              size={36}
-            />
-
-            <strong>
-              Aucune absence enregistrée
-            </strong>
-
-            <span>
-              Aucune entrée ABSENCE n'existe
-              actuellement dans votre planning.
-            </span>
-
-          </div>
-
-        )}
 
       </section>
 
@@ -1096,9 +1398,9 @@ export default function Absences() {
 }
 
 
-// =========================================================
+// ===========================================================
 // SUMMARY CARD
-// =========================================================
+// ===========================================================
 
 function SummaryCard({
   value,
@@ -1140,71 +1442,109 @@ function SummaryCard({
 }
 
 
-// =========================================================
+// ===========================================================
 // STATUS
-// =========================================================
+// ===========================================================
 
 function StatusBadge({
   status,
 }) {
-  const normalized =
-    requestStatus(
-      status
-    );
+  const config = {
+    EN_ATTENTE: {
+      label:
+        "En attente",
+
+      css:
+        "pending",
+    },
+
+    APPROUVE: {
+      label:
+        "Validée",
+
+      css:
+        "approved",
+    },
+
+    REFUSE: {
+      label:
+        "Refusée",
+
+      css:
+        "rejected",
+    },
+  };
+
+
+  const current =
+    config[status]
+    || {
+      label:
+        status || "—",
+
+      css:
+        "pending",
+    };
+
 
   return (
     <span
       className={
-        `absences-status absences-status-${normalized}`
+        `absences-status absences-status-${current.css}`
       }
     >
-      {
-        requestStatusLabel(
-          status
-        )
-      }
+      {current.label}
     </span>
   );
 }
 
 
-// =========================================================
-// UPCOMING
-// =========================================================
+// ===========================================================
+// PROCHAINE ABSENCE
+// ===========================================================
 
 function UpcomingAbsence({
-  absence,
+  planning,
   type,
 }) {
   const date =
-    parseDate(
-      absence.date
+    new Date(
+      `${planning.date}T12:00:00`
     );
 
-  if (!date) {
-    return null;
-  }
 
   const day =
-    String(
-      date.getDate()
-    ).padStart(
-      2,
-      "0"
-    );
+    Number.isNaN(
+      date.getTime()
+    )
+      ? "--"
+      : date
+          .getDate()
+          .toString()
+          .padStart(
+            2,
+            "0"
+          );
+
 
   const month =
-    date
-      .toLocaleDateString(
-        "fr-FR",
-        {
-          month: "short",
-        }
-      )
-      .replace(
-        ".",
-        ""
-      );
+    Number.isNaN(
+      date.getTime()
+    )
+      ? "---"
+      : date
+          .toLocaleDateString(
+            "fr-FR",
+            {
+              month:
+                "short",
+            }
+          )
+          .replace(
+            ".",
+            ""
+          );
+
 
   return (
     <div className="absences-upcoming-item">
@@ -1234,9 +1574,9 @@ function UpcomingAbsence({
 
         <p>
           {
-            absence.commentaire
-            || formatLongDate(
-              absence.date
+            planning.commentaire
+            || formatDate(
+              planning.date
             )
           }
         </p>
@@ -1245,4 +1585,252 @@ function UpcomingAbsence({
 
     </div>
   );
+}
+
+
+// ===========================================================
+// TYPE ABSENCE
+// ===========================================================
+
+function getAbsenceTypeLabel(
+  value
+) {
+  const labels = {
+    CONGES_PAYES:
+      "Congés payés",
+
+    RTT:
+      "RTT",
+
+    MALADIE:
+      "Maladie",
+
+    SANS_SOLDE:
+      "Congé sans solde",
+
+    EVENEMENT_FAMILIAL:
+      "Événement familial",
+
+    AUTRE:
+      "Autre",
+  };
+
+
+  return (
+    labels[value]
+    || "Absence"
+  );
+}
+
+
+// ===========================================================
+// DURÉE
+// ===========================================================
+
+function calculateDuration(
+  startDate,
+  endDate
+) {
+  if (
+    !startDate
+    || !endDate
+  ) {
+    return "";
+  }
+
+
+  const start =
+    new Date(
+      `${startDate}T12:00:00`
+    );
+
+
+  const end =
+    new Date(
+      `${endDate}T12:00:00`
+    );
+
+
+  if (
+    Number.isNaN(
+      start.getTime()
+    )
+    || Number.isNaN(
+      end.getTime()
+    )
+    || end < start
+  ) {
+    return "";
+  }
+
+
+  const millisecondsPerDay =
+    1000
+    * 60
+    * 60
+    * 24;
+
+
+  const numberOfDays =
+    Math.floor(
+      (
+        end.getTime()
+        - start.getTime()
+      )
+      / millisecondsPerDay
+    )
+    + 1;
+
+
+  return (
+    `${numberOfDays} jour${
+      numberOfDays > 1
+        ? "s"
+        : ""
+    }`
+  );
+}
+
+
+// ===========================================================
+// DATE
+// ===========================================================
+
+function formatDate(
+  value
+) {
+  if (!value) {
+    return "—";
+  }
+
+
+  const date =
+    new Date(
+      `${value}T12:00:00`
+    );
+
+
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+    return value;
+  }
+
+
+  return date.toLocaleDateString(
+    "fr-FR",
+    {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }
+  );
+}
+
+
+// ===========================================================
+// API ERROR
+// ===========================================================
+
+function getApiError(
+  error,
+  fallback
+) {
+  const data =
+    error.response?.data;
+
+
+  if (
+    typeof data
+    === "string"
+  ) {
+    return data;
+  }
+
+
+  if (
+    data?.detail
+  ) {
+    return data.detail;
+  }
+
+
+  if (
+    data
+    && typeof data
+      === "object"
+  ) {
+    const message =
+      extractNestedError(
+        data
+      );
+
+    if (message) {
+      return message;
+    }
+  }
+
+
+  return fallback;
+}
+
+
+function extractNestedError(
+  value
+) {
+  if (
+    typeof value
+    === "string"
+  ) {
+    return value;
+  }
+
+
+  if (
+    Array.isArray(value)
+  ) {
+    for (
+      const item
+      of value
+    ) {
+      const result =
+        extractNestedError(
+          item
+        );
+
+      if (result) {
+        return result;
+      }
+    }
+
+    return "";
+  }
+
+
+  if (
+    value
+    && typeof value
+      === "object"
+  ) {
+    for (
+      const item
+      of Object.values(
+        value
+      )
+    ) {
+      const result =
+        extractNestedError(
+          item
+        );
+
+      if (result) {
+        return result;
+      }
+    }
+  }
+
+
+  return "";
 }

@@ -1,12 +1,16 @@
 /* =========================================================
-   RH MANAGER
+   STAFFHUB
    ABSENCES
+========================================================= */
+
+
+/* =========================================================
+   PAGE
 ========================================================= */
 
 .absences-page {
   width: 100%;
   min-height: 100%;
-
   padding: 30px;
 
   background:
@@ -31,25 +35,8 @@
   justify-content: space-between;
 
   gap: 24px;
-
   margin-bottom: 24px;
 }
-
-
-.absences-eyebrow {
-  display: block;
-
-  margin-bottom: 7px;
-
-  color: var(--rh-blue);
-
-  font-size: 11px;
-  font-weight: 750;
-
-  text-transform: uppercase;
-  letter-spacing: 0.09em;
-}
-
 
 .absences-heading h1 {
   margin: 0;
@@ -58,32 +45,33 @@
 
   font-size: 30px;
   font-weight: 760;
-
   letter-spacing: -0.035em;
 }
 
-
 .absences-heading p {
+  max-width: 680px;
+
   margin: 7px 0 0;
 
   color: var(--rh-text-secondary);
 
   font-size: 13.5px;
-  line-height: 1.5;
+  line-height: 1.55;
 }
-
-
-/* =========================================================
-   ACTIONS
-========================================================= */
 
 .absences-heading-actions {
   display: flex;
   align-items: center;
 
   gap: 9px;
+
+  flex-shrink: 0;
 }
 
+
+/* =========================================================
+   BOUTONS
+========================================================= */
 
 .absences-primary-button,
 .absences-secondary-button {
@@ -101,7 +89,7 @@
 
   font: inherit;
 
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 650;
 
   text-decoration: none;
@@ -112,15 +100,15 @@
     transform 0.16s ease,
     border-color 0.16s ease,
     background 0.16s ease,
-    box-shadow 0.16s ease;
+    color 0.16s ease,
+    box-shadow 0.16s ease,
+    opacity 0.16s ease;
 }
 
-
 .absences-primary-button {
-  border: none;
+  border: 0;
 
-  background:
-    var(--rh-gradient-blue);
+  background: var(--rh-gradient-blue);
 
   color: #ffffff;
 
@@ -129,8 +117,7 @@
     rgba(8, 124, 240, 0.18);
 }
 
-
-.absences-primary-button:hover {
+.absences-primary-button:hover:not(:disabled) {
   transform: translateY(-1px);
 
   box-shadow:
@@ -138,34 +125,29 @@
     rgba(8, 124, 240, 0.25);
 }
 
-
 .absences-secondary-button {
-  border:
-    1px solid var(--rh-border);
+  border: 1px solid var(--rh-border);
 
   background: #ffffff;
 
-  color:
-    var(--rh-text-secondary);
+  color: var(--rh-text-secondary);
 }
-
 
 .absences-secondary-button:hover:not(:disabled) {
-  color:
-    var(--rh-blue);
-
   border-color:
-    rgba(8, 124, 240, 0.25);
+    rgba(8, 124, 240, 0.28);
 
   background:
-    rgba(8, 124, 240, 0.03);
+    rgba(8, 124, 240, 0.035);
+
+  color: var(--rh-blue);
 }
 
-
+.absences-primary-button:disabled,
 .absences-secondary-button:disabled {
   opacity: 0.5;
-
   cursor: not-allowed;
+  transform: none;
 }
 
 
@@ -174,15 +156,30 @@
 ========================================================= */
 
 .absences-message {
-  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
 
+  gap: 9px;
+
+  margin-bottom: 20px;
   padding: 12px 15px;
 
   border-radius: 10px;
 
-  font-size: 12.5px;
+  font-size: 12px;
+  line-height: 1.45;
 }
 
+.absences-message-success {
+  border:
+    1px solid
+    rgba(22, 163, 106, 0.18);
+
+  background:
+    rgba(22, 163, 106, 0.07);
+
+  color: var(--rh-success);
+}
 
 .absences-message-error {
   border: 1px solid #fecaca;
@@ -194,28 +191,25 @@
 
 
 /* =========================================================
-   SUMMARY
+   CARTES STATISTIQUES
 ========================================================= */
 
 .absences-summary-grid {
   display: grid;
 
   grid-template-columns:
-    repeat(
-      4,
-      minmax(0, 1fr)
-    );
+    repeat(4, minmax(0, 1fr));
 
   gap: 17px;
 
   margin-bottom: 20px;
 }
 
-
 .absences-summary-card,
 .absences-card {
   border:
-    1px solid var(--rh-border-light);
+    1px solid
+    var(--rh-border-light);
 
   border-radius:
     var(--rh-radius);
@@ -227,7 +221,6 @@
     var(--rh-shadow-sm);
 }
 
-
 .absences-summary-card {
   min-height: 110px;
 
@@ -238,7 +231,6 @@
 
   padding: 18px;
 }
-
 
 .absences-summary-icon {
   width: 46px;
@@ -253,99 +245,88 @@
   border-radius: 11px;
 }
 
-
 .absences-summary-icon-blue {
   background:
     rgba(8, 124, 240, 0.09);
 
-  color:
-    var(--rh-blue);
+  color: var(--rh-blue);
 }
-
 
 .absences-summary-icon-green {
   background:
     rgba(22, 163, 106, 0.09);
 
-  color:
-    var(--rh-success);
+  color: var(--rh-success);
 }
-
 
 .absences-summary-icon-orange {
   background:
     rgba(233, 162, 59, 0.1);
 
-  color:
-    var(--rh-warning);
+  color: var(--rh-warning);
 }
-
 
 .absences-summary-icon-purple {
   background:
     rgba(84, 55, 245, 0.09);
 
-  color:
-    var(--rh-purple);
+  color: var(--rh-purple);
 }
 
-
 .absences-summary-card strong {
-  color:
-    var(--rh-text);
+  display: block;
+
+  color: var(--rh-text);
 
   font-size: 22px;
   font-weight: 740;
 }
 
-
 .absences-summary-card p {
   margin: 5px 0 0;
 
-  color:
-    var(--rh-text-secondary);
+  color: var(--rh-text-secondary);
 
   font-size: 11px;
   font-weight: 600;
 }
-
 
 .absences-summary-card small {
   display: block;
 
   margin-top: 5px;
 
-  color:
-    var(--rh-text-muted);
+  color: var(--rh-text-muted);
 
   font-size: 9.5px;
 }
 
+
 /* =========================================================
-   NOUVELLE DEMANDE D'ABSENCE
+   NOUVELLE DEMANDE
 ========================================================= */
 
 .absences-form-card {
   position: relative;
+
   margin-bottom: 22px;
-  padding: 0;
 
   overflow: hidden;
 
   border:
-    1px solid var(--rh-border-light);
+    1px solid
+    var(--rh-border-light);
 
   border-radius: 14px;
 
   background: #ffffff;
 
   box-shadow:
-    0 10px 30px rgba(15, 23, 42, 0.055),
-    0 1px 2px rgba(15, 23, 42, 0.04);
+    0 10px 30px
+    rgba(15, 23, 42, 0.055),
+    0 1px 2px
+    rgba(15, 23, 42, 0.04);
 }
-
-
-/* barre supérieure corporate */
 
 .absences-form-card::before {
   content: "";
@@ -369,7 +350,7 @@
 
 
 /* =========================================================
-   HEADER DU FORMULAIRE
+   HEADER FORMULAIRE
 ========================================================= */
 
 .absences-form-card
@@ -377,12 +358,11 @@
   margin: 0;
 
   padding:
-    22px
-    24px
-    18px;
+    22px 24px 18px;
 
   border-bottom:
-    1px solid var(--rh-border-light);
+    1px solid
+    var(--rh-border-light);
 
   background:
     linear-gradient(
@@ -392,55 +372,30 @@
     );
 }
 
-
 .absences-form-card
 .absences-card-heading h2 {
-  margin: 0;
-
-  color:
-    var(--rh-text);
-
   font-size: 17px;
-  font-weight: 720;
-
-  letter-spacing:
-    -0.015em;
+  letter-spacing: -0.015em;
 }
-
 
 .absences-form-card
 .absences-card-heading p {
   max-width: 620px;
 
-  margin:
-    6px
-    0
-    0;
-
   color:
     var(--rh-text-secondary);
 
   font-size: 11.5px;
-
   line-height: 1.55;
 }
 
-
-/* icône "+" */
-
-.absences-form-card
 .absences-card-icon {
   width: 42px;
   height: 42px;
 
-  display:
-    inline-flex;
-
-  align-items:
-    center;
-
-  justify-content:
-    center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 
   flex: 0 0 42px;
 
@@ -457,88 +412,54 @@
       rgba(84, 55, 245, 0.06)
     );
 
-  color:
-    var(--rh-blue);
-
-  box-shadow:
-    inset 0 1px 0
-    rgba(255, 255, 255, 0.7);
+  color: var(--rh-blue);
 }
 
 
 /* =========================================================
-   FORM
+   FORMULAIRE
 ========================================================= */
 
 .absences-form-card form {
   padding:
-    23px
-    24px
-    22px;
+    23px 24px 22px;
 }
-
 
 .absences-form-grid {
   display: grid;
 
   grid-template-columns:
-    repeat(
-      2,
-      minmax(0, 1fr)
-    );
+    repeat(2, minmax(0, 1fr));
 
   gap:
-    20px
-    22px;
+    20px 22px;
 }
-
-
-/* =========================================================
-   FIELD
-========================================================= */
 
 .absences-field {
   min-width: 0;
 
   display: flex;
-
   flex-direction: column;
 
   gap: 7px;
 }
 
-
 .absences-field-full {
-  grid-column:
-    1 / -1;
+  grid-column: 1 / -1;
 }
-
-
-/* =========================================================
-   LABEL
-========================================================= */
 
 .absences-field label {
-  display: flex;
-
-  align-items: center;
-
-  gap: 5px;
-
-  color:
-    #334155;
+  color: #334155;
 
   font-size: 11px;
-
   font-weight: 650;
 
-  letter-spacing:
-    0.005em;
+  letter-spacing: 0.005em;
 }
 
 
 /* =========================================================
-   INPUTS
+   INPUT / SELECT / TEXTAREA
 ========================================================= */
 
 .absences-field input,
@@ -553,14 +474,11 @@
 
   outline: none;
 
-  background:
-    #ffffff;
+  background: #ffffff;
 
-  color:
-    #172033;
+  color: #172033;
 
   font-family: inherit;
-
   font-size: 12px;
 
   transition:
@@ -569,54 +487,39 @@
     background 0.16s ease;
 }
 
-
-/* input/select */
-
 .absences-field input,
 .absences-field select {
   min-height: 44px;
 
   padding:
-    0
-    13px;
+    0 13px;
 }
 
-
-/* textarea */
+.absences-field select {
+  cursor: pointer;
+}
 
 .absences-field textarea {
   min-height: 108px;
 
   padding:
-    12px
-    13px;
+    12px 13px;
 
   resize: vertical;
 
   line-height: 1.55;
 }
 
-
-/* placeholder */
-
 .absences-field input::placeholder,
 .absences-field textarea::placeholder {
-  color:
-    #9ba8b8;
+  color: #9ba8b8;
 }
-
-
-/* hover */
 
 .absences-field input:hover,
 .absences-field select:hover,
 .absences-field textarea:hover {
-  border-color:
-    #c3d0df;
+  border-color: #c3d0df;
 }
-
-
-/* focus */
 
 .absences-field input:focus,
 .absences-field select:focus,
@@ -624,66 +527,44 @@
   border-color:
     rgba(8, 124, 240, 0.62);
 
-  background:
-    #ffffff;
+  background: #ffffff;
 
   box-shadow:
     0 0 0 3px
     rgba(8, 124, 240, 0.075);
 }
 
-
-/* =========================================================
-   SELECT
-========================================================= */
-
-.absences-field select {
-  appearance: auto;
-
+.absences-field input[type="date"] {
   cursor: pointer;
-}
-
-
-/* =========================================================
-   DATE
-========================================================= */
-
-.absences-field
-input[type="date"] {
-  cursor: pointer;
-
   color-scheme: light;
 }
 
 
 /* =========================================================
-   FILE
+   UPLOAD
 ========================================================= */
 
 .absences-field
 input[type="file"] {
   min-height: 48px;
 
-  padding:
-    6px;
+  padding: 6px;
 
-  background:
-    #f8fafc;
+  background: #f8fafc;
+
+  color: var(--rh-text-secondary);
 
   cursor: pointer;
 }
-
 
 .absences-field
 input[type="file"]::file-selector-button {
   min-height: 34px;
 
-  margin-right:
-    11px;
+  margin-right: 11px;
 
   padding:
-    0
-    13px;
+    0 13px;
 
   border:
     1px solid
@@ -694,13 +575,10 @@ input[type="file"]::file-selector-button {
   background:
     rgba(8, 124, 240, 0.07);
 
-  color:
-    var(--rh-blue);
+  color: var(--rh-blue);
 
   font-family: inherit;
-
   font-size: 10px;
-
   font-weight: 650;
 
   cursor: pointer;
@@ -709,24 +587,16 @@ input[type="file"]::file-selector-button {
     background 0.15s ease;
 }
 
-
 .absences-field
 input[type="file"]::file-selector-button:hover {
   background:
     rgba(8, 124, 240, 0.12);
 }
 
-
-/* texte aide */
-
 .absences-field small {
-  margin-top: 1px;
-
-  color:
-    var(--rh-text-muted);
+  color: var(--rh-text-muted);
 
   font-size: 9.5px;
-
   line-height: 1.45;
 }
 
@@ -739,12 +609,10 @@ input[type="file"]::file-selector-button:hover {
   min-height: 44px;
 
   display: flex;
-
   align-items: center;
 
   padding:
-    0
-    13px;
+    0 13px;
 
   border:
     1px solid
@@ -759,30 +627,25 @@ input[type="file"]::file-selector-button:hover {
       rgba(84, 55, 245, 0.025)
     );
 
-  color:
-    var(--rh-blue);
+  color: var(--rh-blue);
 
   font-size: 11px;
-
   font-weight: 650;
 }
 
 
 /* =========================================================
-   ACTIONS
+   ACTIONS FORMULAIRE
 ========================================================= */
 
 .absences-form-actions {
   display: flex;
-
   align-items: center;
-
   justify-content: flex-end;
 
   gap: 10px;
 
   margin-top: 24px;
-
   padding-top: 18px;
 
   border-top:
@@ -790,143 +653,16 @@ input[type="file"]::file-selector-button:hover {
     var(--rh-border-light);
 }
 
-
-/* uniquement dans le formulaire */
-
 .absences-form-actions
-.absences-secondary-button,
-.absences-form-actions
-.absences-primary-button {
-  min-width: 138px;
-
-  min-height: 42px;
-
-  border-radius: 8px;
-
-  font-size: 11px;
-
-  font-weight: 650;
-}
-
-
-/* annuler */
-
+.absences-primary-button,
 .absences-form-actions
 .absences-secondary-button {
-  border:
-    1px solid #d8e0ea;
-
-  background:
-    #ffffff;
-
-  color:
-    #536174;
-
-  box-shadow:
-    0 1px 2px
-    rgba(15, 23, 42, 0.03);
-}
-
-
-/* envoyer */
-
-.absences-form-actions
-.absences-primary-button {
-  border: none;
-
-  background:
-    linear-gradient(
-      135deg,
-      #087cf0,
-      #245bea
-    );
-
-  color:
-    #ffffff;
-
-  box-shadow:
-    0 7px 18px
-    rgba(8, 124, 240, 0.2);
-}
-
-
-.absences-form-actions
-.absences-primary-button:hover:not(:disabled) {
-  transform:
-    translateY(-1px);
-
-  box-shadow:
-    0 10px 23px
-    rgba(8, 124, 240, 0.26);
-}
-
-
-.absences-form-actions
-button:disabled {
-  opacity:
-    0.55;
-
-  cursor:
-    not-allowed;
-
-  transform:
-    none;
+  min-width: 138px;
 }
 
 
 /* =========================================================
-   RESPONSIVE
-========================================================= */
-
-@media (max-width: 700px) {
-
-  .absences-form-card
-  .absences-card-heading {
-    padding:
-      20px
-      18px
-      16px;
-  }
-
-
-  .absences-form-card form {
-    padding:
-      20px
-      18px;
-  }
-
-
-  .absences-form-grid {
-    grid-template-columns:
-      1fr;
-
-    gap:
-      16px;
-  }
-
-
-  .absences-field-full {
-    grid-column:
-      auto;
-  }
-
-
-  .absences-form-actions {
-    flex-direction:
-      column-reverse;
-  }
-
-
-  .absences-form-actions
-  button {
-    width: 100%;
-  }
-
-}
-
-
-/* =========================================================
-   CONTENT
+   CONTENU PRINCIPAL
 ========================================================= */
 
 .absences-content-grid {
@@ -941,14 +677,13 @@ button:disabled {
   margin-bottom: 20px;
 }
 
-
 .absences-card {
   padding: 21px;
 }
 
 
 /* =========================================================
-   CARD HEADING
+   TITRE DE CARTE
 ========================================================= */
 
 .absences-card-heading {
@@ -961,39 +696,38 @@ button:disabled {
   margin-bottom: 20px;
 }
 
-
 .absences-card-heading h2 {
   margin: 0;
 
-  color:
-    var(--rh-text);
+  color: var(--rh-text);
 
   font-size: 16px;
   font-weight: 700;
 }
 
-
 .absences-card-heading p {
   margin: 5px 0 0;
 
-  color:
-    var(--rh-text-muted);
+  color: var(--rh-text-muted);
 
   font-size: 10.5px;
+  line-height: 1.5;
 }
 
 
 /* =========================================================
-   FILTER
+   FILTRE
 ========================================================= */
 
 .absences-filter {
   min-height: 36px;
 
-  padding: 0 10px;
+  padding:
+    0 10px;
 
   border:
-    1px solid var(--rh-border);
+    1px solid
+    var(--rh-border);
 
   border-radius: 8px;
 
@@ -1004,29 +738,38 @@ button:disabled {
   color:
     var(--rh-text-secondary);
 
+  font-family: inherit;
   font-size: 10.5px;
 
   cursor: pointer;
 }
 
+.absences-filter:focus {
+  border-color:
+    rgba(8, 124, 240, 0.45);
+
+  box-shadow:
+    0 0 0 3px
+    rgba(8, 124, 240, 0.06);
+}
+
 
 /* =========================================================
-   TABLE
+   TABLEAU
 ========================================================= */
 
 .absences-table-wrapper {
   overflow-x: auto;
 
   border:
-    1px solid var(--rh-border-light);
+    1px solid
+    var(--rh-border-light);
 
   border-radius: 11px;
 }
 
-
 .absences-table {
   width: 100%;
-
   min-width: 780px;
 
   border-collapse: collapse;
@@ -1034,23 +777,23 @@ button:disabled {
   background: #ffffff;
 }
 
-
 .absences-table thead {
   background:
     var(--rh-surface-secondary);
 }
 
-
 .absences-table th,
 .absences-table td {
-  padding: 13px 12px;
+  padding:
+    13px 12px;
 
   border-bottom:
-    1px solid var(--rh-border-light);
+    1px solid
+    var(--rh-border-light);
 
   text-align: left;
+  vertical-align: middle;
 }
-
 
 .absences-table th {
   color:
@@ -1059,36 +802,40 @@ button:disabled {
   font-size: 9.5px;
   font-weight: 700;
 
-  letter-spacing: 0.045em;
+  letter-spacing:
+    0.045em;
 
-  text-transform: uppercase;
+  text-transform:
+    uppercase;
 }
-
 
 .absences-table td {
   color:
     var(--rh-text-secondary);
 
-  font-size: 11.5px;
+  font-size: 11px;
 }
 
-
-.absences-table tbody tr:last-child td {
-  border-bottom: 0;
+.absences-table tbody tr {
+  transition:
+    background 0.15s ease;
 }
-
 
 .absences-table tbody tr:hover {
   background:
     rgba(8, 124, 240, 0.025);
 }
 
+.absences-table tbody tr:last-child td {
+  border-bottom: 0;
+}
 
 .absences-table td strong {
   color:
     var(--rh-text);
-}
 
+  font-weight: 650;
+}
 
 .absences-table td small {
   display: block;
@@ -1102,35 +849,25 @@ button:disabled {
 }
 
 
-.absences-reason {
-  display: block;
-
-  max-width: 240px;
-
-  overflow: hidden;
-
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-
 /* =========================================================
-   STATUS
+   STATUT
 ========================================================= */
 
 .absences-status {
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
 
   padding:
-    5px
-    8px;
+    5px 8px;
 
   border-radius: 999px;
 
   font-size: 9.5px;
   font-weight: 650;
-}
 
+  white-space: nowrap;
+}
 
 .absences-status-approved {
   background:
@@ -1140,15 +877,12 @@ button:disabled {
     var(--rh-success);
 }
 
-
 .absences-status-pending {
   background:
     rgba(233, 162, 59, 0.11);
 
-  color:
-    #c77d18;
+  color: #c77d18;
 }
-
 
 .absences-status-rejected {
   background:
@@ -1160,8 +894,12 @@ button:disabled {
 
 
 /* =========================================================
-   UPCOMING
+   PROCHAINES ABSENCES
 ========================================================= */
+
+.absences-calendar-card {
+  min-width: 0;
+}
 
 .absences-upcoming-list {
   display: flex;
@@ -1169,7 +907,6 @@ button:disabled {
 
   gap: 13px;
 }
-
 
 .absences-upcoming-item {
   display: flex;
@@ -1180,14 +917,15 @@ button:disabled {
   padding-bottom: 13px;
 
   border-bottom:
-    1px solid var(--rh-border-light);
+    1px solid
+    var(--rh-border-light);
 }
-
 
 .absences-upcoming-item:last-child {
+  padding-bottom: 0;
+
   border-bottom: 0;
 }
-
 
 .absences-upcoming-date {
   width: 50px;
@@ -1204,12 +942,10 @@ button:disabled {
   border-radius: 10px;
 }
 
-
 .absences-upcoming-date strong {
   font-size: 17px;
   font-weight: 750;
 }
-
 
 .absences-upcoming-date span {
   margin-top: 2px;
@@ -1219,7 +955,6 @@ button:disabled {
   text-transform: uppercase;
 }
 
-
 .absences-upcoming-date-blue {
   background:
     rgba(8, 124, 240, 0.09);
@@ -1227,7 +962,6 @@ button:disabled {
   color:
     var(--rh-blue);
 }
-
 
 .absences-upcoming-date-green {
   background:
@@ -1237,7 +971,6 @@ button:disabled {
     var(--rh-success);
 }
 
-
 .absences-upcoming-date-purple {
   background:
     rgba(84, 55, 245, 0.09);
@@ -1245,7 +978,6 @@ button:disabled {
   color:
     var(--rh-purple);
 }
-
 
 .absences-upcoming-item h3 {
   margin: 0;
@@ -1256,7 +988,6 @@ button:disabled {
   font-size: 11.5px;
   font-weight: 650;
 }
-
 
 .absences-upcoming-item p {
   margin: 4px 0 0;
@@ -1288,14 +1019,12 @@ button:disabled {
     rgba(8, 124, 240, 0.04);
 }
 
-
 .absences-information strong {
   color:
     var(--rh-text);
 
   font-size: 11px;
 }
-
 
 .absences-information p {
   margin: 6px 0 0;
@@ -1308,197 +1037,32 @@ button:disabled {
 }
 
 
-.absences-information-link {
-  display: inline-flex;
-  align-items: center;
-
-  gap: 4px;
-
-  margin-top: 11px;
-
-  color:
-    var(--rh-blue);
-
-  font-size: 10px;
-  font-weight: 650;
-
-  text-decoration: none;
-}
-
-
-/* =========================================================
-   PLANNING HISTORY
-========================================================= */
-
-.absences-planning-card {
-  margin-bottom: 20px;
-}
-
-
-.absences-count-badge {
-  min-width: 28px;
-  height: 28px;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 0 8px;
-
-  border-radius: 999px;
-
-  background:
-    rgba(8, 124, 240, 0.08);
-
-  color:
-    var(--rh-blue);
-
-  font-size: 10px;
-  font-weight: 700;
-}
-
-
-.absences-planning-list {
-  display: flex;
-  flex-direction: column;
-}
-
-
-.absences-planning-item {
-  display: grid;
-
-  grid-template-columns:
-    38px
-    minmax(0, 1fr)
-    auto;
-
-  align-items: center;
-
-  gap: 12px;
-
-  min-height: 72px;
-
-  padding: 10px 0;
-
-  border-bottom:
-    1px solid var(--rh-border-light);
-}
-
-
-.absences-planning-item:last-child {
-  border-bottom: 0;
-}
-
-
-.absences-planning-date {
-  width: 36px;
-  height: 36px;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 9px;
-
-  background:
-    rgba(8, 124, 240, 0.08);
-
-  color:
-    var(--rh-blue);
-}
-
-
-.absences-planning-content {
-  min-width: 0;
-}
-
-
-.absences-planning-content strong {
-  color:
-    var(--rh-text);
-
-  font-size: 11.5px;
-  font-weight: 650;
-
-  text-transform: capitalize;
-}
-
-
-.absences-planning-content p {
-  margin: 4px 0 0;
-
-  overflow: hidden;
-
-  color:
-    var(--rh-text-muted);
-
-  font-size: 9.5px;
-
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-
-.absences-planning-hours {
-  color:
-    var(--rh-text-secondary);
-
-  font-size: 10.5px;
-  font-weight: 600;
-}
-
-
 /* =========================================================
    EMPTY
 ========================================================= */
 
-.absences-empty,
-.absences-side-empty {
-  min-height: 200px;
+.absences-empty {
+  min-height: 180px;
 
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 
-  text-align: center;
+  padding: 24px;
 
   color:
     var(--rh-text-muted);
-}
 
-
-.absences-side-empty {
-  min-height: 160px;
-}
-
-
-.absences-empty svg,
-.absences-side-empty svg {
-  margin-bottom: 10px;
-
-  color:
-    #b8c5d3;
-}
-
-
-.absences-empty strong,
-.absences-side-empty strong {
-  color:
-    var(--rh-text);
-
-  font-size: 12px;
-}
-
-
-.absences-empty span,
-.absences-side-empty span {
-  max-width: 310px;
-
-  margin-top: 5px;
-
-  font-size: 10px;
+  font-size: 10.5px;
   line-height: 1.5;
+
+  text-align: center;
+}
+
+.absences-table-wrapper
+> .absences-empty {
+  border: 0;
 }
 
 
@@ -1519,9 +1083,8 @@ button:disabled {
   color:
     var(--rh-text-secondary);
 
-  font-size: 12.5px;
+  font-size: 12px;
 }
-
 
 .absences-spin {
   animation:
@@ -1531,75 +1094,116 @@ button:disabled {
     infinite;
 }
 
-
 @keyframes absences-spin {
   to {
-    transform:
-      rotate(360deg);
+    transform: rotate(360deg);
   }
 }
 
 
 /* =========================================================
-   RESPONSIVE
+   TABLET
 ========================================================= */
 
 @media (max-width: 1150px) {
-
   .absences-summary-grid {
     grid-template-columns:
-      repeat(
-        2,
-        minmax(0, 1fr)
-      );
+      repeat(2, minmax(0, 1fr));
   }
-
 
   .absences-content-grid {
     grid-template-columns: 1fr;
   }
-
 }
 
 
-@media (max-width: 700px) {
+/* =========================================================
+   MOBILE
+========================================================= */
 
+@media (max-width: 700px) {
   .absences-page {
     padding:
-      20px
-      14px;
+      20px 14px 80px;
   }
-
 
   .absences-heading {
     flex-direction: column;
   }
 
-
   .absences-heading-actions {
     width: 100%;
   }
-
 
   .absences-heading-actions > * {
     flex: 1;
   }
 
-
   .absences-summary-grid {
     grid-template-columns: 1fr;
   }
 
-
-  .absences-planning-item {
-    grid-template-columns:
-      38px
-      minmax(0, 1fr);
+  .absences-form-card
+  .absences-card-heading {
+    padding:
+      20px 18px 16px;
   }
 
-
-  .absences-planning-hours {
-    grid-column: 2;
+  .absences-form-card form {
+    padding:
+      20px 18px;
   }
 
+  .absences-form-grid {
+    grid-template-columns: 1fr;
+
+    gap: 16px;
+  }
+
+  .absences-field-full {
+    grid-column: auto;
+  }
+
+  .absences-form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .absences-form-actions button {
+    width: 100%;
+  }
+
+  .absences-card-heading {
+    gap: 12px;
+  }
+}
+
+
+/* =========================================================
+   PETIT MOBILE
+========================================================= */
+
+@media (max-width: 480px) {
+  .absences-heading h1 {
+    font-size: 25px;
+  }
+
+  .absences-heading-actions {
+    flex-direction: column;
+  }
+
+  .absences-heading-actions button {
+    width: 100%;
+  }
+
+  .absences-summary-card {
+    min-height: 96px;
+  }
+
+  .absences-form-card {
+    border-radius: 12px;
+  }
+
+  .absences-card {
+    padding: 17px;
+  }
 }
