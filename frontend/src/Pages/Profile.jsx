@@ -1,942 +1,351 @@
 import React, {
   useEffect,
+  useMemo,
+  useRef,
   useState,
 } from "react";
 
-import API from "../Services/api";
+import {
+  AlertTriangle,
+  BriefcaseBusiness,
+  CheckCircle2,
+  FileText,
+  Mail,
+  MapPin,
+  Pencil,
+  Phone,
+  UserRound,
+  UsersRound,
+} from "lucide-react";
 
+import API from "../Services/api";
 import "../Styles/profile.css";
 
+const TABS = [
+  { id: "personal", label: "Informations personnelles" },
+  { id: "work", label: "Emploi" },
+  { id: "contact", label: "Coordonnées" },
+  { id: "documents", label: "Documents" },
+];
+
+const EMPTY_FORM = {
+  nom: "",
+  prenom: "",
+  email_personnel: "",
+  telephone: "",
+  date_naissance: "",
+};
 
 export default function Profile() {
-
-  // =========================================================
-  // STATES
-  // =========================================================
-
   const [profile, setProfile] = useState(null);
-
-  const [formData, setFormData] = useState({
-    nom: "",
-    prenom: "",
-    email_personnel: "",
-    telephone: "",
-    date_naissance: "",
-  });
-
+  const [formData, setFormData] = useState(EMPTY_FORM);
+  const [activeTab, setActiveTab] = useState("personal");
   const [isEditing, setIsEditing] = useState(false);
-
   const [loading, setLoading] = useState(true);
-
   const [saving, setSaving] = useState(false);
-
   const [message, setMessage] = useState("");
-
   const [error, setError] = useState("");
-
-
-  // =========================================================
-  // CHARGEMENT DU PROFIL
-  // =========================================================
+  const photoInputRef = useRef(null);
 
   useEffect(() => {
-
     const fetchProfile = async () => {
-
       setLoading(true);
       setError("");
-
       try {
-
-        const response = await API.get(
-          "/api/me/"
-        );
-
-        const data = response.data;
-
+        const response = await API.get("/api/me/");
+        const data = response.data?.data || response.data;
         setProfile(data);
-
-        setFormData({
-          nom:
-            data.nom || "",
-
-          prenom:
-            data.prenom || "",
-
-          email_personnel:
-            data.email_personnel || "",
-
-          telephone:
-            data.telephone || "",
-
-          date_naissance:
-            data.date_naissance || "",
-        });
-
+        setFormData(toFormData(data));
       } catch (err) {
-
-        console.error(
-          "PROFILE ERROR",
-          err
-        );
-
-        setError(
-          err.response?.data?.detail
-          || "Impossible de charger votre profil."
-        );
-
+        console.error("PROFILE ERROR", err);
+        setError(err.response?.data?.detail || "Impossible de charger votre profil.");
       } finally {
-
         setLoading(false);
-
       }
-
     };
-
     fetchProfile();
-
   }, []);
 
-
-  // =========================================================
-  // CHANGEMENT DES CHAMPS
-  // =========================================================
+  const completion = useMemo(() => {
+    if (!profile) return 0;
+    const values = [
+      profile.nom,
+      profile.prenom,
+      profile.date_naissance,
+      profile.email_personnel,
+      profile.telephone,
+      profile.poste,
+      profile.etablissement,
+      profile.matricule,
+    ];
+    return Math.round((values.filter(Boolean).length / values.length) * 100);
+  }, [profile]);
 
   const handleChange = (event) => {
-
-    const {
-      name,
-      value,
-    } = event.target;
-
-    setFormData((previousData) => ({
-      ...previousData,
-      [name]: value,
-    }));
-
+    const { name, value } = event.target;
+    setFormData((previous) => ({ ...previous, [name]: value }));
   };
-
-
-  // =========================================================
-  // ANNULER
-  // =========================================================
 
   const handleCancel = () => {
-
-    if (!profile) {
-      return;
-    }
-
-    setFormData({
-      nom:
-        profile.nom || "",
-
-      prenom:
-        profile.prenom || "",
-
-      email_personnel:
-        profile.email_personnel || "",
-
-      telephone:
-        profile.telephone || "",
-
-      date_naissance:
-        profile.date_naissance || "",
-    });
-
+    setFormData(toFormData(profile));
     setMessage("");
     setError("");
-
     setIsEditing(false);
-
   };
 
-
-  // =========================================================
-  // ENREGISTRER
-  // =========================================================
-
   const handleSubmit = async (event) => {
-
     event.preventDefault();
-
     setSaving(true);
     setMessage("");
     setError("");
-
     try {
-
-      const response = await API.patch(
-        "/api/me/",
-        {
-          nom:
-            formData.nom,
-
-          prenom:
-            formData.prenom,
-
-          email_personnel:
-            formData.email_personnel,
-
-          telephone:
-            formData.telephone,
-
-          date_naissance:
-            formData.date_naissance || null,
-        }
-      );
-
-      const updatedProfile = (
-        response.data?.data
-        || response.data
-      );
-
-      setProfile(updatedProfile);
-
-      setFormData({
-        nom:
-          updatedProfile.nom || "",
-
-        prenom:
-          updatedProfile.prenom || "",
-
-        email_personnel:
-          updatedProfile.email_personnel || "",
-
-        telephone:
-          updatedProfile.telephone || "",
-
-        date_naissance:
-          updatedProfile.date_naissance || "",
+      const response = await API.patch("/api/me/", {
+        ...formData,
+        date_naissance: formData.date_naissance || null,
       });
-
-      setMessage(
-        response.data?.message
-        || "Profil mis à jour avec succès."
-      );
-
+      const updated = response.data?.data || response.data;
+      setProfile(updated);
+      setFormData(toFormData(updated));
+      setMessage(response.data?.message || "Profil mis à jour avec succès.");
       setIsEditing(false);
-
     } catch (err) {
-
-      console.error(
-        "PROFILE UPDATE ERROR",
-        err
-      );
-
-      const data = (
-        err.response?.data
-      );
-
-      if (
-        data
-        && typeof data === "object"
-      ) {
-
-        const firstError = Object.values(
-          data
-        )[0];
-
-        if (Array.isArray(firstError)) {
-
-          setError(
-            firstError[0]
-          );
-
-        } else if (
-          typeof firstError === "string"
-        ) {
-
-          setError(
-            firstError
-          );
-
-        } else {
-
-          setError(
-            "Impossible de modifier le profil."
-          );
-
-        }
-
-      } else {
-
-        setError(
-          "Impossible de modifier le profil."
-        );
-
-      }
-
+      console.error("PROFILE UPDATE ERROR", err);
+      setError(readApiError(err.response?.data));
     } finally {
-
       setSaving(false);
-
     }
-
   };
-
-
-  // =========================================================
-  // NOM COMPLET
-  // =========================================================
-
-  const fullName = profile
-    ? `${profile.prenom || ""} ${profile.nom || ""}`.trim()
-    : "";
-
-
-  // =========================================================
-  // INITIALES
-  // =========================================================
-
-  const initials = profile
-    ? (
-        `${profile.prenom?.charAt(0) || ""}`
-        + `${profile.nom?.charAt(0) || ""}`
-      ).toUpperCase()
-    : "U";
-
-
-  // =========================================================
-  // AFFICHAGE DU RÔLE
-  // =========================================================
-
-  const getRoleDisplay = (role) => {
-
-    const roles = {
-      SALARIE:
-        "Salarié",
-
-      RH:
-        "Ressources humaines",
-
-      ADMIN:
-        "Administrateur",
-    };
-
-    return (
-      roles[role]
-      || role
-      || "Salarié"
-    );
-
-  };
-
-
-  // =========================================================
-  // TYPE CONTRAT
-  // =========================================================
-
-  const getContratDisplay = (typeContrat) => {
-
-    const contrats = {
-      CDI:
-        "CDI",
-
-      CDD:
-        "CDD",
-
-      VACATAIRE:
-        "Vacataire",
-
-      STAGIAIRE:
-        "Stagiaire",
-
-      ALTERNANT:
-        "Alternant",
-    };
-
-    return (
-      contrats[typeContrat]
-      || typeContrat
-      || "—"
-    );
-
-  };
-
-
-  // =========================================================
-  // FORMAT DATE
-  // =========================================================
-
-  const formatDate = (dateValue) => {
-
-    if (!dateValue) {
-      return "Non renseignée";
-    }
-
-    return new Date(
-      `${dateValue}T00:00:00`
-    ).toLocaleDateString(
-      "fr-FR"
-    );
-
-  };
-
-
-  // =========================================================
-  // CHARGEMENT
-  // =========================================================
 
   if (loading) {
-
-    return (
-      <div className="profile-loading">
-        Chargement du profil...
-      </div>
-    );
-
+    return <div className="profile-loading">Chargement du profil...</div>;
   }
 
-
-  // =========================================================
-  // ERREUR SANS PROFIL
-  // =========================================================
-
   if (!profile) {
-
     return (
       <div className="profile-page">
-
         <div className="profile-message profile-message-error">
           {error || "Profil introuvable."}
         </div>
-
       </div>
     );
-
   }
 
-
-  // =========================================================
-  // RENDER
-  // =========================================================
+  const fullName = `${profile.prenom || ""} ${profile.nom || ""}`.trim();
+  const initials = `${profile.prenom?.[0] || ""}${profile.nom?.[0] || ""}`.toUpperCase() || "U";
+  const photo = profile.photo || profile.photo_profil || profile.avatar;
+  const active = profile.actif !== false && profile.is_active !== false;
 
   return (
     <div className="profile-page">
-
-
-      {/* ===================================================
-          TITRE
-      =================================================== */}
-
-      <section className="profile-page-heading">
-
+      <header className="profile-page-heading">
         <div>
-
-          <h1>
-            Mon profil
-          </h1>
-
-          <p>
-            Consultez et modifiez vos informations personnelles.
-          </p>
-
+          <h1>Mon profil</h1>
+          <p>Consultez et mettez à jour vos informations personnelles</p>
         </div>
-
-
-        {!isEditing && (
-
-          <button
-            type="button"
-            className="profile-primary-button"
-            onClick={() => {
-
-              setMessage("");
-              setError("");
-              setIsEditing(true);
-
-            }}
-          >
-            Modifier le profil
-          </button>
-
-        )}
-
-      </section>
-
-
-      {/* ===================================================
-          MESSAGE SUCCÈS
-      =================================================== */}
-
-      {message && (
-
-        <div className="profile-message profile-message-success">
-          {message}
-        </div>
-
-      )}
-
-
-      {/* ===================================================
-          MESSAGE ERREUR
-      =================================================== */}
-
-      {error && (
-
-        <div className="profile-message profile-message-error">
-          {error}
-        </div>
-
-      )}
-
-
-      {/* ===================================================
-          LAYOUT
-      =================================================== */}
-
-      <section className="profile-layout">
-
-
-        {/* =================================================
-            CARTE PROFIL
-        ================================================= */}
-
-        <aside className="profile-summary-card">
-
-          <div className="profile-cover" />
-
-
-          <div className="profile-summary-content">
-
-
-            {/* AVATAR */}
-
-            <div className="profile-avatar">
-
-              <span>
-                {initials}
-              </span>
-
-            </div>
-
-
-            {/* NOM */}
-
-            <h2>
-              {fullName || profile.username}
-            </h2>
-
-
-            {/* RÔLE */}
-
-            <p className="profile-role">
-
-              {getRoleDisplay(
-                profile.role
-              )}
-
-            </p>
-
-
-            {/* STATUT */}
-
-            <span className="profile-status">
-
-              <span />
-
-              Compte actif
-
-            </span>
-
-
-            {/* INFORMATIONS RAPIDES */}
-
-            <div className="profile-summary-list">
-
-
-              {/* EMAIL PRO */}
-
-              <div>
-
-                <span>
-                  Email professionnel
-                </span>
-
-                <strong>
-                  {
-                    profile.email_pro
-                    || "Non renseigné"
-                  }
-                </strong>
-
-              </div>
-
-
-              {/* EMAIL PERSONNEL */}
-
-              <div>
-
-                <span>
-                  Email personnel
-                </span>
-
-                <strong>
-                  {
-                    profile.email_personnel
-                    || "Non renseigné"
-                  }
-                </strong>
-
-              </div>
-
-
-              {/* TÉLÉPHONE */}
-
-              <div>
-
-                <span>
-                  Téléphone
-                </span>
-
-                <strong>
-                  {
-                    profile.telephone
-                    || "Non renseigné"
-                  }
-                </strong>
-
-              </div>
-
-
-              {/* IDENTIFIANT */}
-
-              <div>
-
-                <span>
-                  Identifiant
-                </span>
-
-                <strong>
-                  {
-                    profile.username
-                    || "Non renseigné"
-                  }
-                </strong>
-
-              </div>
-
-
-            </div>
-
+      </header>
+
+      {message && <div className="profile-message profile-message-success">{message}</div>}
+      {error && <div className="profile-message profile-message-error">{error}</div>}
+
+      <section className="profile-identity-card">
+        <div className="profile-avatar">
+  {photo ? (
+    <img
+      src={photo}
+      alt={fullName}
+    />
+  ) : (
+    <span>{initials}</span>
+  )}
+
+  <button
+    type="button"
+    className="profile-photo-button"
+    title="Modifier la photo de profil"
+    onClick={() => photoInputRef.current?.click()}
+  >
+    <Camera size={17} />
+  </button>
+
+  <input
+    ref={photoInputRef}
+    className="profile-photo-input"
+    type="file"
+    accept="image/jpeg,image/png,image/webp"
+    onChange={handlePhotoChange}
+  />
+</div>
+          <div className="profile-key-data">
+            <div><span>Numéro employé</span><strong>{profile.matricule || "Non renseigné"}</strong></div>
+            <div><span>Établissement</span><strong>{profile.etablissement || "Non renseigné"}</strong></div>
           </div>
-
-        </aside>
-
-
-        {/* =================================================
-            CONTENU
-        ================================================= */}
-
-        <main className="profile-content">
-
-          <form
-            onSubmit={handleSubmit}
-          >
-
-
-            {/* ===============================================
-                INFORMATIONS PERSONNELLES
-            =============================================== */}
-
-            <article className="profile-card">
-
-              <div className="profile-card-heading">
-
-                <div>
-
-                  <h2>
-                    Informations personnelles
-                  </h2>
-
-                  <p>
-                    Informations principales associées à votre compte.
-                  </p>
-
-                </div>
-
-                <span className="profile-card-icon">
-                  👤
-                </span>
-
-              </div>
-
-
-              <div className="profile-form-grid">
-
-
-                <ProfileField
-                  label="Prénom"
-                  name="prenom"
-                  value={formData.prenom}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                />
-
-
-                <ProfileField
-                  label="Nom"
-                  name="nom"
-                  value={formData.nom}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                />
-
-
-                <ProfileField
-                  label="Email personnel"
-                  name="email_personnel"
-                  type="email"
-                  value={formData.email_personnel}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                />
-
-
-                <ProfileField
-                  label="Téléphone"
-                  name="telephone"
-                  type="tel"
-                  value={formData.telephone}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                />
-
-
-                <ProfileField
-                  label="Date de naissance"
-                  name="date_naissance"
-                  type="date"
-                  value={formData.date_naissance}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                />
-
-
-                <ProfileField
-                  label="Email professionnel"
-                  name="email_pro"
-                  type="email"
-                  value={
-                    profile.email_pro || ""
-                  }
-                  disabled
-                />
-
-
-              </div>
-
-            </article>
-
-
-            {/* ===============================================
-                INFORMATIONS PROFESSIONNELLES
-            =============================================== */}
-
-            <article className="profile-card">
-
-              <div className="profile-card-heading">
-
-                <div>
-
-                  <h2>
-                    Informations professionnelles
-                  </h2>
-
-                  <p>
-                    Informations liées à votre emploi dans StaffHub.
-                  </p>
-
-                </div>
-
-                <span className="profile-card-icon">
-                  💼
-                </span>
-
-              </div>
-
-
-              <div className="profile-form-grid">
-
-
-                <ProfileField
-                  label="Poste"
-                  name="poste"
-                  value={
-                    profile.poste || ""
-                  }
-                  disabled
-                />
-
-
-                <ProfileField
-                  label="Établissement"
-                  name="etablissement"
-                  value={
-                    profile.etablissement || ""
-                  }
-                  disabled
-                />
-
-
-                <ProfileField
-                  label="Rôle"
-                  name="role"
-                  value={
-                    getRoleDisplay(
-                      profile.role
-                    )
-                  }
-                  disabled
-                />
-
-
-                <ProfileField
-                  label="Matricule"
-                  name="matricule"
-                  value={
-                    profile.matricule || ""
-                  }
-                  disabled
-                />
-
-
-                <ProfileField
-                  label="Type de contrat"
-                  name="type_contrat"
-                  value={
-                    getContratDisplay(
-                      profile.type_contrat
-                    )
-                  }
-                  disabled
-                />
-
-
-                <ProfileField
-                  label="Date de début du contrat"
-                  name="date_debut_contrat"
-                  value={
-                    formatDate(
-                      profile.date_debut_contrat
-                    )
-                  }
-                  disabled
-                />
-
-
-                <ProfileField
-                  label="Date de fin du contrat"
-                  name="date_fin_contrat"
-                  value={
-                    profile.date_fin_contrat
-                      ? formatDate(
-                          profile.date_fin_contrat
-                        )
-                      : "Aucune"
-                  }
-                  disabled
-                />
-
-
-                <ProfileField
-                  label="Nom d'utilisateur"
-                  name="username"
-                  value={
-                    profile.username || ""
-                  }
-                  disabled
-                />
-
-
-              </div>
-
-            </article>
-
-
-            {/* ===============================================
-                ACTIONS
-            =============================================== */}
-
-            {isEditing && (
-
-              <div className="profile-form-actions">
-
-
-                <button
-                  type="button"
-                  className="profile-secondary-button"
-                  onClick={handleCancel}
-                  disabled={saving}
-                >
-                  Annuler
-                </button>
-
-
-                <button
-                  type="submit"
-                  className="profile-primary-button"
-                  disabled={saving}
-                >
-
-                  {
-                    saving
-                      ? "Enregistrement..."
-                      : "Enregistrer les modifications"
-                  }
-
-                </button>
-
-
-              </div>
-
-            )}
-
-
-          </form>
-
-        </main>
-
-
+        </div>
+
+        <div className="profile-completion">
+          <div className="profile-completion-heading">
+            <strong>Dossier complété à {completion} %</strong>
+            <CheckCircle2 size={18} />
+          </div>
+          <div className="profile-progress" aria-label={`Dossier complété à ${completion} %`}>
+            <span style={{ width: `${completion}%` }} />
+          </div>
+          {!isEditing && (
+            <button className="profile-primary-button" type="button" onClick={() => setIsEditing(true)}>
+              <Pencil size={17} /> Modifier mes informations
+            </button>
+          )}
+        </div>
       </section>
 
+      <section className="profile-details-card">
+        <nav className="profile-tabs" aria-label="Rubriques du profil">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              className={activeTab === tab.id ? "is-active" : ""}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+
+        <form onSubmit={handleSubmit}>
+          {activeTab === "personal" && (
+            <div className="profile-card-grid">
+              <InfoCard icon={UserRound} title="État civil">
+                <EditableRow label="Nom" name="nom" value={formData.nom} editing={isEditing} onChange={handleChange} />
+                <EditableRow label="Prénom" name="prenom" value={formData.prenom} editing={isEditing} onChange={handleChange} />
+                <EditableRow label="Date de naissance" name="date_naissance" type="date" value={formData.date_naissance} display={formatDate(profile.date_naissance)} editing={isEditing} onChange={handleChange} />
+                <DataRow label="Nationalité" value={profile.nationalite} />
+              </InfoCard>
+
+              <InfoCard icon={Mail} title="Coordonnées">
+                <EditableRow label="Adresse e-mail" name="email_personnel" type="email" value={formData.email_personnel} editing={isEditing} onChange={handleChange} />
+                <EditableRow label="Téléphone" name="telephone" type="tel" value={formData.telephone} editing={isEditing} onChange={handleChange} />
+                <DataRow label="Adresse" value={addressLabel(profile)} />
+              </InfoCard>
+
+              <InfoCard icon={Phone} title="Contact d’urgence">
+                <DataRow label="Nom" value={emergencyValue(profile, "nom")} />
+                <DataRow label="Lien" value={emergencyValue(profile, "lien")} />
+                <DataRow label="Téléphone" value={emergencyValue(profile, "telephone")} />
+              </InfoCard>
+
+              <DocumentAlert profile={profile} />
+            </div>
+          )}
+
+          {activeTab === "work" && (
+            <div className="profile-card-grid">
+              <InfoCard icon={BriefcaseBusiness} title="Informations professionnelles">
+                <DataRow label="Poste" value={profile.poste} />
+                <DataRow label="Rôle" value={roleLabel(profile.role)} />
+                <DataRow label="Type de contrat" value={contractLabel(profile.type_contrat)} />
+                <DataRow label="Établissement" value={profile.etablissement} />
+              </InfoCard>
+              <InfoCard icon={CalendarIcon} title="Contrat">
+                <DataRow label="Date de début" value={formatDate(profile.date_debut_contrat)} />
+                <DataRow label="Date de fin" value={profile.date_fin_contrat ? formatDate(profile.date_fin_contrat) : "Aucune"} />
+                <DataRow label="Matricule" value={profile.matricule} />
+                <DataRow label="Identifiant" value={profile.username} />
+              </InfoCard>
+            </div>
+          )}
+
+          {activeTab === "contact" && (
+            <div className="profile-card-grid">
+              <InfoCard icon={MapPin} title="Adresse et communication">
+                <DataRow label="Adresse" value={addressLabel(profile)} />
+                <DataRow label="E-mail professionnel" value={profile.email_pro} />
+                <EditableRow label="E-mail personnel" name="email_personnel" type="email" value={formData.email_personnel} editing={isEditing} onChange={handleChange} />
+                <EditableRow label="Téléphone" name="telephone" type="tel" value={formData.telephone} editing={isEditing} onChange={handleChange} />
+              </InfoCard>
+              <InfoCard icon={UsersRound} title="Contact d’urgence">
+                <DataRow label="Nom" value={emergencyValue(profile, "nom")} />
+                <DataRow label="Lien" value={emergencyValue(profile, "lien")} />
+                <DataRow label="Téléphone" value={emergencyValue(profile, "telephone")} />
+              </InfoCard>
+            </div>
+          )}
+
+          {activeTab === "documents" && (
+            <div className="profile-card-grid">
+              <InfoCard icon={FileText} title="Documents administratifs">
+                <DataRow label="Pièce d’identité" value={profile.piece_identite_statut || "Non renseignée"} />
+                <DataRow label="Titre de séjour" value={profile.titre_sejour_statut || "Non renseigné"} />
+                <DataRow label="RIB / IBAN" value={profile.iban ? "Enregistré" : "Non renseigné"} />
+              </InfoCard>
+              <DocumentAlert profile={profile} />
+            </div>
+          )}
+
+          {isEditing && (
+            <div className="profile-form-actions">
+              <button type="button" className="profile-secondary-button" onClick={handleCancel} disabled={saving}>Annuler</button>
+              <button type="submit" className="profile-primary-button" disabled={saving}>
+                {saving ? "Enregistrement..." : "Enregistrer les modifications"}
+              </button>
+            </div>
+          )}
+        </form>
+      </section>
     </div>
   );
 }
 
+function InfoCard({ icon: Icon, title, children }) {
+  return <article className="profile-info-card"><header><span><Icon size={22} /></span><h3>{title}</h3></header><div>{children}</div></article>;
+}
 
-// ===========================================================
-// CHAMP PROFIL
-// ===========================================================
+function DataRow({ label, value }) {
+  return <div className="profile-data-row"><span>{label}</span><strong>{value || "Non renseigné"}</strong></div>;
+}
 
-function ProfileField({
-  label,
-  name,
-  type = "text",
-  value,
-  onChange,
-  disabled,
-}) {
+function EditableRow({ label, name, type = "text", value, display, editing, onChange }) {
+  if (!editing) return <DataRow label={label} value={display || value} />;
+  return <label className="profile-edit-row"><span>{label}</span><input name={name} type={type} value={value || ""} onChange={onChange} /></label>;
+}
 
-  return (
-    <div className="profile-field">
+function DocumentAlert({ profile }) {
+  const days = profile.titre_sejour_jours_restants ?? profile.document_jours_restants;
+  const text = days != null ? `Titre de séjour — expire dans ${days} jours` : "Aucun document arrivant à expiration";
+  return <article className={`profile-document-alert ${days == null ? "is-clear" : ""}`}><header><AlertTriangle size={25} /><h3>{days == null ? "Documents à jour" : "Document à renouveler"}</h3></header><p>{text}</p></article>;
+}
 
-      <label htmlFor={name}>
-        {label}
-      </label>
+function CalendarIcon(props) { return <FileText {...props} />; }
 
+function toFormData(data = {}) {
+  return { nom: data.nom || "", prenom: data.prenom || "", email_personnel: data.email_personnel || "", telephone: data.telephone || "", date_naissance: data.date_naissance || "" };
+}
 
-      <input
-        id={name}
-        name={name}
-        type={type}
-        value={value || ""}
-        onChange={onChange}
-        disabled={disabled}
-        placeholder={`${label}...`}
-      />
+function readApiError(data) {
+  if (!data || typeof data !== "object") return "Impossible de modifier le profil.";
+  const first = Object.values(data)[0];
+  return Array.isArray(first) ? first[0] : typeof first === "string" ? first : "Impossible de modifier le profil.";
+}
 
-    </div>
-  );
+function formatDate(value) {
+  if (!value) return "Non renseignée";
+  const date = new Date(`${value}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? "Non renseignée" : date.toLocaleDateString("fr-FR");
+}
+
+function contractLabel(value) {
+  return ({ CDI: "CDI", CDD: "CDD", VACATAIRE: "Vacataire", STAGIAIRE: "Stagiaire", ALTERNANT: "Alternant" })[value] || value || "Contrat non renseigné";
+}
+
+function roleLabel(value) {
+  return ({ SALARIE: "Salarié", RH: "Ressources humaines", ADMIN: "Administrateur" })[value] || value || "Salarié";
+}
+
+function addressLabel(profile) {
+  if (profile.adresse_complete) return profile.adresse_complete;
+  const parts = [profile.adresse, profile.code_postal, profile.ville].filter(Boolean);
+  return parts.join(", ") || "Non renseignée";
+}
+
+function emergencyValue(profile, key) {
+  return profile.contact_urgence?.[key] || profile[`urgence_${key}`] || profile[`contact_urgence_${key}`] || "Non renseigné";
 }
