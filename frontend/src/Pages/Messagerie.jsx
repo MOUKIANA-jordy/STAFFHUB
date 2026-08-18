@@ -20,6 +20,10 @@ import {
   MessageCircle,
   FileText,
   Loader2,
+  Inbox,
+  MessagesSquare,
+  Archive,
+  SlidersHorizontal,
 } from "lucide-react";
 
 import API from "../Services/api";
@@ -65,6 +69,8 @@ export default function Messagerie() {
   const [newMessage, setNewMessage] = useState("");
 
   const [search, setSearch] = useState("");
+
+  const [activeFolder, setActiveFolder] = useState("TOUTES");
 
   const [selectedFile, setSelectedFile] = useState(null);
 
@@ -474,12 +480,34 @@ export default function Messagerie() {
       .toLowerCase()
     );
 
-    if (!normalizedSearch) {
-      return conversations;
-    }
-
     return conversations.filter(
       (conversation) => {
+
+        const matchesFolder = (
+          activeFolder === "TOUTES"
+          || (
+            activeFolder === "PRIVEES"
+            && conversation.type_conversation === "PRIVE"
+            && conversation.active
+          )
+          || (
+            activeFolder === "GROUPES"
+            && conversation.type_conversation === "GROUPE"
+            && conversation.active
+          )
+          || (
+            activeFolder === "ARCHIVEES"
+            && !conversation.active
+          )
+        );
+
+        if (!matchesFolder) {
+          return false;
+        }
+
+        if (!normalizedSearch) {
+          return true;
+        }
 
         const name = (
           getConversationName(
@@ -507,7 +535,7 @@ export default function Messagerie() {
       }
     );
 
-  }, [conversations, search]);
+  }, [conversations, search, activeFolder]);
 
 
   // =========================================================
@@ -1038,8 +1066,109 @@ export default function Messagerie() {
   // RENDER
   // =========================================================
 
+  const privateCount = conversations.filter(
+    (conversation) => (
+      conversation.type_conversation === "PRIVE"
+      && conversation.active
+    )
+  ).length;
+
+  const groupCount = conversations.filter(
+    (conversation) => (
+      conversation.type_conversation === "GROUPE"
+      && conversation.active
+    )
+  ).length;
+
+  const archivedCount = conversations.filter(
+    (conversation) => !conversation.active
+  ).length;
+
+
   return (
-    <section className="messaging-page">
+    <main className="messaging-workspace">
+
+      <header className="messaging-page-heading">
+        <div>
+          <span className="messaging-eyebrow">
+            Espace collaboratif
+          </span>
+
+          <h1>Boîte de réception</h1>
+
+          <p>
+            Échangez avec les salariés et les équipes RH.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          className="messaging-compose-button"
+          onClick={openNewConversation}
+        >
+          <Plus size={18} />
+          Nouveau message
+        </button>
+      </header>
+
+      <section className="messaging-page">
+
+        <nav
+          className="mailbox-navigation"
+          aria-label="Dossiers de messagerie"
+        >
+          <div className="mailbox-navigation-title">
+            <MessagesSquare size={20} />
+            <strong>Messagerie</strong>
+          </div>
+
+          <button
+            type="button"
+            className={activeFolder === "TOUTES" ? "is-active" : ""}
+            onClick={() => setActiveFolder("TOUTES")}
+          >
+            <Inbox size={18} />
+            <span>Réception</span>
+            <small>{conversations.length}</small>
+          </button>
+
+          <button
+            type="button"
+            className={activeFolder === "PRIVEES" ? "is-active" : ""}
+            onClick={() => setActiveFolder("PRIVEES")}
+          >
+            <UserRound size={18} />
+            <span>Messages privés</span>
+            <small>{privateCount}</small>
+          </button>
+
+          <button
+            type="button"
+            className={activeFolder === "GROUPES" ? "is-active" : ""}
+            onClick={() => setActiveFolder("GROUPES")}
+          >
+            <Users size={18} />
+            <span>Groupes</span>
+            <small>{groupCount}</small>
+          </button>
+
+          <button
+            type="button"
+            className={activeFolder === "ARCHIVEES" ? "is-active" : ""}
+            onClick={() => setActiveFolder("ARCHIVEES")}
+          >
+            <Archive size={18} />
+            <span>Archivées</span>
+            <small>{archivedCount}</small>
+          </button>
+
+          <div className="mailbox-navigation-note">
+            <SlidersHorizontal size={17} />
+            <p>
+              Les conversations sont synchronisées avec votre compte StaffHub.
+            </p>
+          </div>
+        </nav>
 
 
       {/* ===================================================
@@ -1067,16 +1196,9 @@ export default function Messagerie() {
           </div>
 
 
-          <button
-            type="button"
-            className="new-conversation-button"
-            onClick={openNewConversation}
-            title="Nouvelle conversation"
-          >
-
-            <Plus size={20} />
-
-          </button>
+          <span className="conversation-list-status">
+            {filteredConversations.length}
+          </span>
 
         </div>
 
@@ -1972,6 +2094,7 @@ export default function Messagerie() {
       )}
 
 
-    </section>
+      </section>
+    </main>
   );
 }
