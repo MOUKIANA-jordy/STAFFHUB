@@ -84,6 +84,14 @@ class SalarieSerializer(serializers.ModelSerializer):
             "telephone",
             "date_naissance",
             "type_contrat",
+            "nationalite",
+            "adresse",
+            "code_postal",
+            "ville",
+            "contact_urgence_nom",
+            "contact_urgence_lien",
+            "contact_urgence_telephone",
+            "photo",
             "role",
             "date_debut_contrat",
             "date_fin_contrat",
@@ -260,6 +268,14 @@ class CurrentUserSerializer(serializers.ModelSerializer):
             "email_personnel",
             "telephone",
             "date_naissance",
+            "nationalite",
+            "adresse",
+            "code_postal",
+            "ville",
+            "contact_urgence_nom",
+            "contact_urgence_lien",
+            "contact_urgence_telephone",
+            "photo",
             "type_contrat",
             "role",
             "date_debut_contrat",
@@ -282,6 +298,27 @@ class CurrentUserSerializer(serializers.ModelSerializer):
             "etablissement",
             "must_change_password",
         ]
+
+    def validate_photo(self, value):
+        if value.size > 5 * 1024 * 1024:
+            raise serializers.ValidationError(
+                "La photo ne doit pas dépasser 5 Mo."
+            )
+
+        allowed_types = {
+            "image/jpeg",
+            "image/png",
+            "image/webp",
+        }
+
+        content_type = getattr(value, "content_type", "")
+        if content_type not in allowed_types:
+            raise serializers.ValidationError(
+                "Utilisez une image JPG, PNG ou WebP."
+            )
+
+        return value
+
 
     def update(self, instance, validated_data):
         instance = super().update(instance, validated_data)

@@ -61,6 +61,33 @@ class Salarie(models.Model):
         null=True,
         blank=True,
     )
+    
+    nationalite = models.CharField(max_length=100, blank=True, default="")
+    adresse = models.CharField(max_length=255, blank=True, default="")
+    code_postal = models.CharField(max_length=20, blank=True, default="")
+    ville = models.CharField(max_length=100, blank=True, default="")
+
+    contact_urgence_nom = models.CharField(
+        max_length=150,
+        blank=True,
+        default="",
+    )
+    contact_urgence_lien = models.CharField(
+        max_length=100,
+        blank=True,
+        default="",
+    )
+    contact_urgence_telephone = models.CharField(
+        max_length=20,
+        blank=True,
+        default="",
+    )
+
+    photo = models.ImageField(
+        upload_to="profils/%Y/%m/",
+        null=True,
+        blank=True,
+    )
 
     type_contrat = models.CharField(
         max_length=30,

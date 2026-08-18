@@ -6,20 +6,16 @@ from django.core.mail import send_mail
 from django.utils.http import urlsafe_base64_decode
 
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.decorators import parser_classes
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 
 from rest_framework import filters, status, viewsets
 from rest_framework import serializers as drf_serializers
-from rest_framework.decorators import (
-    api_view,
-    permission_classes,
-)
+from rest_framework.decorators import (api_view, permission_classes)
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from drf_spectacular.utils import (
-    extend_schema,
-    inline_serializer,
-)
+from drf_spectacular.utils import (extend_schema, inline_serializer)
 
 from apps.demandes.models import Demande
 from apps.paie.models import Paie
@@ -27,15 +23,8 @@ from apps.planning.models import Planning
 from apps.pointage.models import Pointage
 
 from .models import Salarie
-from .permissions import (
-    IsAdminOrRH,
-    IsOwnerOrRH,
-    IsRHOrAdmin,
-)
-from .serializers import (
-    CurrentUserSerializer,
-    SalarieSerializer,
-)
+from .permissions import (IsAdminOrRH, IsOwnerOrRH, IsRHOrAdmin)
+from .serializers import (CurrentUserSerializer, SalarieSerializer)
 
 
 User = get_user_model()
