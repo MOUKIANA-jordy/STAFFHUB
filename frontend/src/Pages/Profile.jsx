@@ -1,10 +1,4 @@
-import React, {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-
+import React, { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   BriefcaseBusiness,
@@ -45,7 +39,6 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const photoInputRef = useRef(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -149,32 +142,18 @@ export default function Profile() {
 
       <section className="profile-identity-card">
         <div className="profile-avatar">
-  {photo ? (
-    <img
-      src={photo}
-      alt={fullName}
-    />
-  ) : (
-    <span>{initials}</span>
-  )}
+          {photo ? <img src={photo} alt={fullName} /> : <span>{initials}</span>}
+        </div>
 
-  <button
-    type="button"
-    className="profile-photo-button"
-    title="Modifier la photo de profil"
-    onClick={() => photoInputRef.current?.click()}
-  >
-    <Camera size={17} />
-  </button>
-
-  <input
-    ref={photoInputRef}
-    className="profile-photo-input"
-    type="file"
-    accept="image/jpeg,image/png,image/webp"
-    onChange={handlePhotoChange}
-  />
-</div>
+        <div className="profile-identity-main">
+          <h2>{fullName || profile.username}</h2>
+          <p>{profile.poste || "Poste non renseigné"}</p>
+          <div className="profile-badges">
+            <span className="profile-contract-badge">{contractLabel(profile.type_contrat)}</span>
+            <span className={`profile-active-badge ${!active ? "is-inactive" : ""}`}>
+              <i />{active ? "Actif" : "Inactif"}
+            </span>
+          </div>
           <div className="profile-key-data">
             <div><span>Numéro employé</span><strong>{profile.matricule || "Non renseigné"}</strong></div>
             <div><span>Établissement</span><strong>{profile.etablissement || "Non renseigné"}</strong></div>

@@ -7,18 +7,33 @@ export default function Users() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // 🔥 LOAD USERS
   useEffect(() => {
-    API.get("/api/salaries/")
-      .then(res => {
-        setUsers(res.data);
-      })
-      .catch(err => {
-        console.error(err);
-        alert("Erreur chargement salariés");
-      })
-      .finally(() => setLoading(false));
-  }, []);
+  const loadUsers = async () => {
+    setLoading(true);
+
+    try {
+      const response = await API.get("/api/salaries/");
+
+      const employeeList = Array.isArray(response.data)
+        ? response.data
+        : Array.isArray(response.data?.results)
+          ? response.data.results
+          : Array.isArray(response.data?.data)
+            ? response.data.data
+            : [];
+
+      setUsers(employeeList);
+    } catch (error) {
+      console.error("Chargement des salariés :", error);
+      alert("Erreur lors du chargement des salariés.");
+      setUsers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  loadUsers();
+}, []);
 
   // 🔥 DELETE
   const handleDelete = async (id) => {
@@ -26,7 +41,9 @@ export default function Users() {
 
     try {
       await API.delete(`/api/salaries/${id}/`);
-      setUsers(users.filter(u => u.id !== id));
+      setUsers((currentUsers) =>
+  currentUsers.filter((user) => user.id !== id)
+);
     } catch (err) {
       console.error(err);
       alert("Erreur suppression");
@@ -67,7 +84,7 @@ export default function Users() {
             </thead>
 
             <tbody>
-              {users.map((u) => (
+              {Array.isArray(users) && users.map((u) => (
                 <tr 
                   key={u.id}
                   className="clickable-row"

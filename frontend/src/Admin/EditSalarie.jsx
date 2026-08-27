@@ -1,11 +1,10 @@
-import React, { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   BriefcaseBusiness,
   CheckCircle2,
   Loader2,
-  Mail,
   Save,
   ShieldCheck,
   UserRound,
@@ -15,7 +14,7 @@ import API from "../Services/api";
 import "../Styles/create-salarie.css";
 
 
-const INITIAL_FORM = {
+const EMPTY_FORM = {
   nom: "",
   prenom: "",
   email_personnel: "",
@@ -28,15 +27,6 @@ const INITIAL_FORM = {
   date_debut_contrat: "",
   date_fin_contrat: "",
   role: "SALARIE",
-  username: "",
-  password: "",
-};
-
-
-const ROLE_LABELS = {
-  SALARIE: "Salarié",
-  RH: "Ressources humaines",
-  ADMIN: "Administrateur",
 };
 
 
@@ -44,7 +34,7 @@ function getApiError(error) {
   const responseData = error?.response?.data;
 
   if (!responseData) {
-    return "Impossible de joindre le serveur. Vérifiez que Django est démarré.";
+    return "Impossible de joindre le serveur.";
   }
 
   if (typeof responseData === "string") {
@@ -64,6 +54,24 @@ function getApiError(error) {
       return `${field} : ${content}`;
     })
     .join(" • ");
+}
+
+
+function normalizeSalarie(salarie) {
+  return {
+    nom: salarie.nom || "",
+    prenom: salarie.prenom || "",
+    email_personnel: salarie.email_personnel || "",
+    telephone: salarie.telephone || "",
+    date_naissance: salarie.date_naissance || "",
+    nationalite: salarie.nationalite || "",
+    poste: salarie.poste || "",
+    etablissement: salarie.etablissement || "",
+    type_contrat: salarie.type_contrat || "CDI",
+    date_debut_contrat: salarie.date_debut_contrat || "",
+    date_fin_contrat: salarie.date_fin_contrat || "",
+    role: salarie.role || "SALARIE",
+  };
 }
 
 
@@ -90,33 +98,63 @@ function Field({
         />
       )}
 
-      {hint && (
-        <small>
-          {hint}
-        </small>
-      )}
+      {hint && <small>{hint}</small>}
     </label>
   );
 }
 
 
-export default function CreateSalarie() {
+export default function EditSalarie() {
+  const { id } = useParams();
   const navigate = useNavigate();
-  const [form, setForm] = useState(INITIAL_FORM);
+
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [employee, setEmployee] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [created, setCreated] = useState(null);
+  const [success, setSuccess] = useState("");
 
   const isPermanentContract = form.type_contrat === "CDI";
 
-  const employeePreview = useMemo(() => {
-    return `${form.prenom} ${form.nom}`.trim() || "Nouveau salarié";
-  }, [form.nom, form.prenom]);
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadEmployee = async () => {
+      setLoading(true);
+      setError("");
+
+      try {
+        const response = await API.get(`/api/salaries/${id}/`);
+        const salarie = response.data?.data || response.data;
+
+        if (isMounted) {
+          setEmployee(salarie);
+          setForm(normalizeSalarie(salarie));
+        }
+      } catch (requestError) {
+        if (isMounted) {
+          setError(getApiError(requestError));
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadEmployee();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
 
     setError("");
+    setSuccess("");
     setForm((current) => ({
       ...current,
       [name]: value,
@@ -136,8 +174,8 @@ export default function CreateSalarie() {
       ["date_debut_contrat", "La date de début du contrat"],
     ];
 
-    const missingField = requiredFields.find(([name]) => {
-      return !String(form[name] || "").trim();
+    const missingField = requiredFields.find(([field]) => {
+      return !String(form[field] || "").trim();
     });
 
     if (missingField) {
@@ -151,15 +189,11 @@ export default function CreateSalarie() {
       return "La date de fin ne peut pas être antérieure à la date de début.";
     }
 
-    if (form.password && form.password.length < 8) {
-      return "Le mot de passe doit contenir au moins 8 caractères.";
-    }
-
     return "";
   };
 
   const buildPayload = () => {
-    const payload = {
+    return {
       nom: form.nom.trim(),
       prenom: form.prenom.trim(),
       email_personnel: form.email_personnel.trim().toLowerCase(),
@@ -175,16 +209,6 @@ export default function CreateSalarie() {
         : form.date_fin_contrat || null,
       role: form.role,
     };
-
-    if (form.username.trim()) {
-      payload.username = form.username.trim();
-    }
-
-    if (form.password) {
-      payload.password = form.password;
-    }
-
-    return payload;
   };
 
   const handleSubmit = async (event) => {
@@ -199,106 +223,64 @@ export default function CreateSalarie() {
 
     setSaving(true);
     setError("");
+    setSuccess("");
 
     try {
-      const response = await API.post(
-        "/api/salaries/",
+      const response = await API.patch(
+        `/api/salaries/${id}/`,
         buildPayload(),
       );
 
-      const responseData = response.data || {};
-      const salarie = responseData.data || responseData;
+      const updatedEmployee = response.data?.data || response.data;
 
-      setCreated({
-        salarie,
-        message: responseData.message || "Le salarié a bien été créé.",
-        emailSent: responseData.email_envoye,
+      setEmployee((current) => ({
+        ...current,
+        ...updatedEmployee,
+      }));
+      setForm(normalizeSalarie(updatedEmployee));
+      setSuccess("Les informations du salarié ont été enregistrées.");
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
       });
     } catch (requestError) {
-      console.error("Création du salarié :", requestError);
+      console.error("Modification du salarié :", requestError);
       setError(getApiError(requestError));
     } finally {
       setSaving(false);
     }
   };
 
-  const createAnotherEmployee = () => {
-    setForm(INITIAL_FORM);
-    setCreated(null);
-    setError("");
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
-
-  if (created) {
-    const salarie = created.salarie || {};
-    const fullName = `${salarie.prenom || form.prenom} ${salarie.nom || form.nom}`.trim();
-
+  if (loading) {
     return (
       <main className="create-salarie-page">
-        <section className="create-salarie-success">
-          <span className="create-salarie-success-icon">
-            <CheckCircle2 size={38} />
-          </span>
+        <div className="create-salarie-loading">
+          <Loader2
+            className="create-salarie-spinner"
+            size={28}
+          />
+          <span>Chargement du salarié...</span>
+        </div>
+      </main>
+    );
+  }
 
-          <p className="create-salarie-eyebrow">
-            Création terminée
-          </p>
+  if (!employee) {
+    return (
+      <main className="create-salarie-page">
+        <div className="create-salarie-error" role="alert">
+          {error || "Salarié introuvable."}
+        </div>
 
-          <h1>
-            {fullName}
-          </h1>
-
-          <p className="create-salarie-success-message">
-            {created.message}
-          </p>
-
-          <div className="create-salarie-result-grid">
-            <div>
-              <span>Matricule</span>
-              <strong>{salarie.matricule || "Généré par le serveur"}</strong>
-            </div>
-
-            <div>
-              <span>E-mail professionnel</span>
-              <strong>{salarie.email_pro || "Généré par le serveur"}</strong>
-            </div>
-
-            <div>
-              <span>Rôle</span>
-              <strong>{ROLE_LABELS[salarie.role || form.role]}</strong>
-            </div>
-
-            <div>
-              <span>Invitation</span>
-              <strong>
-                {created.emailSent === false
-                  ? "Compte créé, e-mail non envoyé"
-                  : "E-mail de connexion envoyé"}
-              </strong>
-            </div>
-          </div>
-
-          <div className="create-salarie-success-actions">
-            <button
-              type="button"
-              className="create-salarie-secondary-button"
-              onClick={createAnotherEmployee}
-            >
-              Créer un autre salarié
-            </button>
-
-            <button
-              type="button"
-              className="create-salarie-primary-button"
-              onClick={() => navigate("/admin/users")}
-            >
-              Voir les salariés
-            </button>
-          </div>
-        </section>
+        <div className="create-salarie-empty-action">
+          <button
+            type="button"
+            className="create-salarie-secondary-button"
+            onClick={() => navigate("/admin/users")}
+          >
+            Retour aux salariés
+          </button>
+        </div>
       </main>
     );
   }
@@ -320,18 +302,28 @@ export default function CreateSalarie() {
             Administration des salariés
           </span>
 
-          <h1>Créer un salarié</h1>
+          <h1>Modifier le salarié</h1>
 
           <p>
-            Créez son dossier principal et son compte de connexion.
+            {employee.prenom} {employee.nom} · {employee.matricule}
           </p>
         </div>
 
         <div className="create-salarie-preview">
           <UserRound size={19} />
-          <span>{employeePreview}</span>
+          <span>{form.prenom} {form.nom}</span>
         </div>
       </header>
+
+      {success && (
+        <div
+          className="create-salarie-success-message-bar"
+          role="status"
+        >
+          <CheckCircle2 size={18} />
+          {success}
+        </div>
+      )}
 
       {error && (
         <div
@@ -348,13 +340,10 @@ export default function CreateSalarie() {
       >
         <section className="create-salarie-card">
           <header className="create-salarie-card-heading">
-            <span>
-              <UserRound size={21} />
-            </span>
-
+            <span><UserRound size={21} /></span>
             <div>
               <h2>Identité et coordonnées</h2>
-              <p>Informations personnelles principales du salarié.</p>
+              <p>Informations personnelles modifiables.</p>
             </div>
           </header>
 
@@ -364,8 +353,6 @@ export default function CreateSalarie() {
               name="nom"
               value={form.nom}
               onChange={handleChange}
-              autoComplete="family-name"
-              placeholder="Ex. Moúkiana"
               required
             />
 
@@ -374,8 +361,6 @@ export default function CreateSalarie() {
               name="prenom"
               value={form.prenom}
               onChange={handleChange}
-              autoComplete="given-name"
-              placeholder="Ex. Jordy"
               required
             />
 
@@ -385,8 +370,6 @@ export default function CreateSalarie() {
               type="email"
               value={form.email_personnel}
               onChange={handleChange}
-              autoComplete="email"
-              placeholder="prenom.nom@email.com"
               required
             />
 
@@ -396,8 +379,6 @@ export default function CreateSalarie() {
               type="tel"
               value={form.telephone}
               onChange={handleChange}
-              autoComplete="tel"
-              placeholder="06 00 00 00 00"
             />
 
             <Field
@@ -413,20 +394,16 @@ export default function CreateSalarie() {
               name="nationalite"
               value={form.nationalite}
               onChange={handleChange}
-              placeholder="Ex. Congolaise"
             />
           </div>
         </section>
 
         <section className="create-salarie-card">
           <header className="create-salarie-card-heading">
-            <span>
-              <BriefcaseBusiness size={21} />
-            </span>
-
+            <span><BriefcaseBusiness size={21} /></span>
             <div>
               <h2>Emploi et contrat</h2>
-              <p>Affectation, droits applicatifs et durée du contrat.</p>
+              <p>Affectation et durée du contrat.</p>
             </div>
           </header>
 
@@ -436,7 +413,6 @@ export default function CreateSalarie() {
               name="poste"
               value={form.poste}
               onChange={handleChange}
-              placeholder="Ex. Comptable"
               required
             />
 
@@ -445,7 +421,6 @@ export default function CreateSalarie() {
               name="etablissement"
               value={form.etablissement}
               onChange={handleChange}
-              placeholder="Ex. Siège social"
               required
             />
 
@@ -460,18 +435,6 @@ export default function CreateSalarie() {
                 <option value="VACATAIRE">Vacataire</option>
                 <option value="STAGIAIRE">Stagiaire</option>
                 <option value="ALTERNANT">Alternant</option>
-              </select>
-            </Field>
-
-            <Field label="Rôle applicatif" required>
-              <select
-                name="role"
-                value={form.role}
-                onChange={handleChange}
-              >
-                <option value="SALARIE">Salarié</option>
-                <option value="RH">Ressources humaines</option>
-                <option value="ADMIN">Administrateur</option>
               </select>
             </Field>
 
@@ -499,45 +462,39 @@ export default function CreateSalarie() {
 
         <section className="create-salarie-card">
           <header className="create-salarie-card-heading">
-            <span>
-              <ShieldCheck size={21} />
-            </span>
-
+            <span><ShieldCheck size={21} /></span>
             <div>
-              <h2>Compte de connexion</h2>
-              <p>Ces deux champs sont facultatifs : le serveur peut les générer.</p>
+              <h2>Rôle et compte</h2>
+              <p>Le matricule et l’e-mail professionnel sont protégés.</p>
             </div>
           </header>
 
           <div className="create-salarie-grid">
+            <Field label="Rôle applicatif" required>
+              <select
+                name="role"
+                value={form.role}
+                onChange={handleChange}
+              >
+                <option value="SALARIE">Salarié</option>
+                <option value="RH">Ressources humaines</option>
+                <option value="ADMIN">Administrateur</option>
+              </select>
+            </Field>
+
             <Field
-              label="Nom d’utilisateur"
-              name="username"
-              value={form.username}
-              onChange={handleChange}
-              autoComplete="off"
-              placeholder="Laisser vide pour utiliser le matricule"
-              hint="Par défaut, le matricule généré devient le nom d’utilisateur."
+              label="Matricule"
+              value={employee.matricule || ""}
+              disabled
+              hint="Le matricule ne peut pas être modifié ici."
             />
 
             <Field
-              label="Mot de passe temporaire"
-              name="password"
-              type="password"
-              value={form.password}
-              onChange={handleChange}
-              autoComplete="new-password"
-              placeholder="Laisser vide pour une génération automatique"
-              hint="Minimum 8 caractères si tu le renseignes."
+              label="E-mail professionnel"
+              value={employee.email_pro || ""}
+              disabled
+              hint="Cette adresse est gérée par le compte utilisateur."
             />
-          </div>
-
-          <div className="create-salarie-account-note">
-            <Mail size={18} />
-            <p>
-              L’e-mail professionnel et le matricule ne sont pas saisis ici :
-              ils sont générés par Django lors de la création.
-            </p>
           </div>
         </section>
 
@@ -545,7 +502,7 @@ export default function CreateSalarie() {
           <button
             type="button"
             className="create-salarie-secondary-button"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate(`/admin/salarie/${id}`)}
             disabled={saving}
           >
             Annuler
@@ -562,12 +519,12 @@ export default function CreateSalarie() {
                   className="create-salarie-spinner"
                   size={18}
                 />
-                Création en cours...
+                Enregistrement...
               </>
             ) : (
               <>
                 <Save size={18} />
-                Créer le salarié
+                Enregistrer les modifications
               </>
             )}
           </button>

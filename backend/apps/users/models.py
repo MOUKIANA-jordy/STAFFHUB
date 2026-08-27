@@ -61,22 +61,25 @@ class Salarie(models.Model):
         null=True,
         blank=True,
     )
-    
-    nationalite = models.CharField(max_length=100, blank=True, default="")
-    adresse = models.CharField(max_length=255, blank=True, default="")
-    code_postal = models.CharField(max_length=20, blank=True, default="")
-    ville = models.CharField(max_length=100, blank=True, default="")
+
+    nationalite = models.CharField(
+        max_length=100,
+        blank=True,
+        default="",
+    )
 
     contact_urgence_nom = models.CharField(
         max_length=150,
         blank=True,
         default="",
     )
+
     contact_urgence_lien = models.CharField(
         max_length=100,
         blank=True,
         default="",
     )
+
     contact_urgence_telephone = models.CharField(
         max_length=20,
         blank=True,
@@ -157,8 +160,7 @@ class Salarie(models.Model):
         if (
             self.date_fin_contrat
             and self.date_debut_contrat
-            and self.date_fin_contrat
-            < self.date_debut_contrat
+            and self.date_fin_contrat < self.date_debut_contrat
         ):
             errors["date_fin_contrat"] = (
                 "La date de fin du contrat ne peut pas être "
@@ -166,8 +168,7 @@ class Salarie(models.Model):
             )
 
         if (
-            self.type_contrat
-            == self.TypeContrat.CDI
+            self.type_contrat == self.TypeContrat.CDI
             and self.date_fin_contrat
         ):
             errors["date_fin_contrat"] = (

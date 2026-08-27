@@ -91,6 +91,8 @@ import Settings from "./Admin/Settings";
 import AdminPanel from "./Admin/AdminPanel";
 import CreateSalarie from "./Admin/CreateSalarie";
 import DemandeDetail from "./Admin/DemandeDetail";
+import SalarieDetail from "./Admin/SalarieDetail";
+import EditSalarie from "./Admin/EditSalarie";
 
 
 /* =========================================================
@@ -352,6 +354,16 @@ function App() {
 	    <Route
   	      path="/admin/demandes/:id"
   	      element={<DemandeDetail />}
+            />
+
+	    <Route
+  	      path="/admin/salarie/:id"
+              element={<SalarieDetail />}
+            />
+
+            <Route
+              path="/admin/salarie/edit/:id"
+              element={<EditSalarie />}
             />
 
 

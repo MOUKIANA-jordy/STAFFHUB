@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.log
+venv/
+.venv/
+
+# Django
+backend/db.sqlite3
+backend/db.sqlite3.*
+backend/media/
+backend/staticfiles/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# React
+frontend/node_modules/
+frontend/build/
+frontend/.env
+frontend/.expo/
+
+# Expo
+mobile/node_modules/
+mobile/.expo/
+
+# Editors
+*.sw?
+.vscode/
+.idea/
+
+# System
+.DS_Store
+Thumbs.db

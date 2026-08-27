@@ -5,8 +5,8 @@ import API from "../Services/api";
 import EtatCivil from "../Pages/Dossiers/Informations/EtatCivil";
 import Adresse from "../Pages/Dossiers/Informations/Adresse";
 import Iban from "../Pages/Dossiers/Informations/Iban";
-import FamilleContact from "../Pages/Dossiers/Informations/FamilleContact";
-import DocumentsOfficiels from "../Pages/Dossiers/Informations/DocumentsOfficiels";
+import Famille from "../Pages/Dossiers/Informations/Famille";
+import Documents from "../Pages/Dossiers/Informations/Documents";
 
 export default function SalarieDetail() {
 
@@ -98,8 +98,8 @@ export default function SalarieDetail() {
         {tab === "etat" && <EtatCivil salarieId={id} />}
         {tab === "adresse" && <Adresse salarieId={id} />}
         {tab === "iban" && <Iban salarieId={id} />}
-        {tab === "famille" && <FamilleContact salarieId={id} />}
-        {tab === "docs" && <DocumentsOfficiels salarieId={id} />}
+        {tab === "famille" && <Famille salarieId={id} />}
+        {tab === "docs" && <Documents salarieId={id} />}
 
       </div>
 
