@@ -1,6 +1,16 @@
-from django.contrib.auth import get_user_model
+from django.contrib.auth import (
+    get_user_model,
+    password_validation,
+)
+from django.contrib.auth.tokens import (
+    default_token_generator,
+)
 from django.db import transaction
 from django.utils.crypto import get_random_string
+from django.utils.encoding import force_str
+from django.utils.http import (
+    urlsafe_base64_decode,
+)
 from django.utils.text import slugify
 
 from rest_framework import serializers
@@ -12,7 +22,9 @@ from apps.dossiers.serializers import (
 )
 
 from apps.documents.models import Document
-from apps.documents.serializers import DocumentSerializer
+from apps.documents.serializers import (
+    DocumentSerializer,
+)
 
 from .models import Salarie
 
@@ -40,12 +52,27 @@ def generate_password():
 # GENERATION EMAIL PROFESSIONNEL
 # ============================================================
 
-def generate_professional_email(prenom, nom):
-    prenom_slug = slugify(prenom)
-    nom_slug = slugify(nom)
+def generate_professional_email(
+    prenom,
+    nom,
+):
+    prenom_slug = slugify(
+        prenom
+    )
 
-    base_email = f"{prenom_slug}.{nom_slug}"
-    email = f"{base_email}@staffhub.com"
+    nom_slug = slugify(
+        nom
+    )
+
+    base_email = (
+        f"{prenom_slug}."
+        f"{nom_slug}"
+    )
+
+    email = (
+        f"{base_email}"
+        "@staffhub.com"
+    )
 
     counter = 2
 
@@ -96,20 +123,8 @@ class SalarieSerializer(
         read_only=True,
     )
 
-    nom_complet = serializers.SerializerMethodField()
-
-    # ========================================================
-    # DONNEES LIEES EN CREATION
-    # ========================================================
-
-    adresse_data = serializers.DictField(
-        write_only=True,
-        required=False,
-    )
-
-    iban_data = serializers.DictField(
-        write_only=True,
-        required=False,
+    nom_complet = (
+        serializers.SerializerMethodField()
     )
 
     class Meta:
@@ -154,9 +169,6 @@ class SalarieSerializer(
 
             "must_change_password",
 
-            "adresse_data",
-            "iban_data",
-
             "created_at",
             "updated_at",
         ]
@@ -188,9 +200,9 @@ class SalarieSerializer(
         obj,
     ):
         return (
-            f"{obj.prenom} {obj.nom}"
-            .strip()
-        )
+            f"{obj.prenom} "
+            f"{obj.nom}"
+        ).strip()
 
     # ========================================================
     # EMAIL PERSONNEL
@@ -207,8 +219,10 @@ class SalarieSerializer(
         )
 
         if self.instance:
-            queryset = queryset.exclude(
-                pk=self.instance.pk
+            queryset = (
+                queryset.exclude(
+                    pk=self.instance.pk
+                )
             )
 
         if queryset.exists():
@@ -217,7 +231,11 @@ class SalarieSerializer(
                 "personnelle est déjà utilisée."
             )
 
-        return value.lower()
+        return (
+            value
+            .strip()
+            .lower()
+        )
 
     # ========================================================
     # VALIDATION GENERALE
@@ -279,72 +297,6 @@ class SalarieSerializer(
                 )
             })
 
-        # ----------------------------------------------------
-        # VALIDATION ADRESSE
-        # ----------------------------------------------------
-
-        adresse_data = attrs.get(
-            "adresse_data"
-        )
-
-        if adresse_data:
-            required_address_fields = [
-                "voie",
-                "code_postal",
-                "commune",
-            ]
-
-            missing = [
-                field
-                for field in required_address_fields
-                if not str(
-                    adresse_data.get(
-                        field,
-                        ""
-                    )
-                ).strip()
-            ]
-
-            if missing:
-                raise serializers.ValidationError({
-                    "adresse_data": (
-                        "Pour enregistrer une adresse, "
-                        "renseignez au minimum la voie, "
-                        "le code postal et la commune."
-                    )
-                })
-
-        # ----------------------------------------------------
-        # VALIDATION IBAN
-        # ----------------------------------------------------
-
-        iban_data = attrs.get(
-            "iban_data"
-        )
-
-        if iban_data:
-            iban_value = str(
-                iban_data.get(
-                    "iban",
-                    ""
-                )
-            ).strip()
-
-            titulaire = str(
-                iban_data.get(
-                    "titulaire",
-                    ""
-                )
-            ).strip()
-
-            if iban_value and not titulaire:
-                raise serializers.ValidationError({
-                    "iban_data": (
-                        "Le titulaire est obligatoire "
-                        "lorsqu'un IBAN est renseigné."
-                    )
-                })
-
         return attrs
 
     # ========================================================
@@ -370,20 +322,6 @@ class SalarieSerializer(
             )
         )
 
-        adresse_data = (
-            validated_data.pop(
-                "adresse_data",
-                None,
-            )
-        )
-
-        iban_data = (
-            validated_data.pop(
-                "iban_data",
-                None,
-            )
-        )
-
         nom = (
             validated_data["nom"]
             .strip()
@@ -401,8 +339,10 @@ class SalarieSerializer(
         # CREATION SALARIE
         # ----------------------------------------------------
 
-        salarie = Salarie.objects.create(
-            **validated_data
+        salarie = (
+            Salarie.objects.create(
+                **validated_data
+            )
         )
 
         username = (
@@ -471,114 +411,6 @@ class SalarieSerializer(
         )
 
         # ----------------------------------------------------
-        # CREATION ADRESSE
-        # ----------------------------------------------------
-
-        if adresse_data:
-            adresse_clean = {
-                "numero": str(
-                    adresse_data.get(
-                        "numero",
-                        ""
-                    )
-                ).strip(),
-
-                "voie": str(
-                    adresse_data.get(
-                        "voie",
-                        ""
-                    )
-                ).strip(),
-
-                "complement": str(
-                    adresse_data.get(
-                        "complement",
-                        ""
-                    )
-                ).strip(),
-
-                "code_postal": str(
-                    adresse_data.get(
-                        "code_postal",
-                        ""
-                    )
-                ).strip(),
-
-                "commune": str(
-                    adresse_data.get(
-                        "commune",
-                        ""
-                    )
-                ).strip(),
-
-                "pays": str(
-                    adresse_data.get(
-                        "pays",
-                        "France"
-                    )
-                ).strip()
-                or "France",
-            }
-
-            has_address = any(
-                adresse_clean.values()
-            )
-
-            if has_address:
-                Adresse.objects.create(
-                    salarie=salarie,
-                    **adresse_clean,
-                )
-
-        # ----------------------------------------------------
-        # CREATION IBAN
-        # ----------------------------------------------------
-
-        if iban_data:
-            iban_value = str(
-                iban_data.get(
-                    "iban",
-                    ""
-                )
-            ).strip()
-
-            if iban_value:
-                iban_serializer = IbanSerializer(
-                    data={
-                        "iban": iban_value,
-
-                        "bic": str(
-                            iban_data.get(
-                                "bic",
-                                ""
-                            )
-                        ).strip(),
-
-                        "titulaire": str(
-                            iban_data.get(
-                                "titulaire",
-                                ""
-                            )
-                        ).strip(),
-
-                        "nom_banque": str(
-                            iban_data.get(
-                                "nom_banque",
-                                ""
-                            )
-                        ).strip(),
-                    }
-                )
-
-                iban_serializer.is_valid(
-                    raise_exception=True
-                )
-
-                iban_serializer.save(
-                    salarie=salarie
-                )
-
-        # ----------------------------------------------------
         # DONNEES TEMPORAIRES EMAIL
         # ----------------------------------------------------
 
@@ -609,16 +441,6 @@ class SalarieSerializer(
 
         validated_data.pop(
             "password",
-            None,
-        )
-
-        validated_data.pop(
-            "adresse_data",
-            None,
-        )
-
-        validated_data.pop(
-            "iban_data",
             None,
         )
 
@@ -672,7 +494,13 @@ class CurrentUserSerializer(
         read_only=True,
     )
 
-    adresse = serializers.SerializerMethodField()
+    # ========================================================
+    # OBJETS LIES
+    # ========================================================
+
+    adresse = (
+        serializers.SerializerMethodField()
+    )
 
     coordonnees_bancaires = (
         serializers.SerializerMethodField()
@@ -706,16 +534,21 @@ class CurrentUserSerializer(
             "date_naissance",
             "nationalite",
 
+            # Contact urgence brut
             "contact_urgence_nom",
             "contact_urgence_lien",
             "contact_urgence_telephone",
 
+            # Contact urgence structuré
             "contact_urgence",
 
+            # Adresse
             "adresse",
 
+            # Banque
             "coordonnees_bancaires",
 
+            # Documents administratifs
             "documents",
 
             "photo",
@@ -927,3 +760,162 @@ class CurrentUserSerializer(
             )
 
         return instance
+
+
+# ============================================================
+# PASSWORD RESET REQUEST SERIALIZER
+# ============================================================
+
+class PasswordResetRequestSerializer(
+    serializers.Serializer
+):
+    email = serializers.EmailField(
+        required=True,
+    )
+
+    def validate_email(
+        self,
+        value,
+    ):
+        return (
+            value
+            .strip()
+            .lower()
+        )
+
+
+# ============================================================
+# PASSWORD RESET CONFIRM SERIALIZER
+# ============================================================
+
+class PasswordResetConfirmSerializer(
+    serializers.Serializer
+):
+    uid = serializers.CharField(
+        required=True,
+    )
+
+    token = serializers.CharField(
+        required=True,
+    )
+
+    password = serializers.CharField(
+        required=True,
+        write_only=True,
+        min_length=8,
+        style={
+            "input_type": "password",
+        },
+    )
+
+    def validate(
+        self,
+        attrs,
+    ):
+        uid = attrs.get(
+            "uid"
+        )
+
+        token = attrs.get(
+            "token"
+        )
+
+        password = attrs.get(
+            "password"
+        )
+
+        # ====================================================
+        # DECODE USER ID
+        # ====================================================
+
+        try:
+            user_id = force_str(
+                urlsafe_base64_decode(
+                    uid
+                )
+            )
+
+            user = User.objects.get(
+                pk=user_id
+            )
+
+        except (
+            TypeError,
+            ValueError,
+            OverflowError,
+            User.DoesNotExist,
+        ):
+            raise serializers.ValidationError({
+                "detail": (
+                    "Le lien de réinitialisation "
+                    "est invalide."
+                )
+            })
+
+        # ====================================================
+        # VALIDATION TOKEN
+        # ====================================================
+
+        if not default_token_generator.check_token(
+            user,
+            token,
+        ):
+            raise serializers.ValidationError({
+                "detail": (
+                    "Le lien de réinitialisation "
+                    "est invalide ou a expiré."
+                )
+            })
+
+        # ====================================================
+        # VALIDATION MOT DE PASSE DJANGO
+        # ====================================================
+
+        try:
+            password_validation.validate_password(
+                password,
+                user=user,
+            )
+
+        except Exception as error:
+            raise serializers.ValidationError({
+                "password": list(
+                    error.messages
+                )
+            })
+
+        attrs["user"] = user
+
+        return attrs
+
+    # ========================================================
+    # SAVE
+    # ========================================================
+
+    def save(
+        self,
+        **kwargs,
+    ):
+        user = (
+            self.validated_data[
+                "user"
+            ]
+        )
+
+        password = (
+            self.validated_data[
+                "password"
+            ]
+        )
+
+        user.set_password(
+            password
+        )
+
+        user.save(
+            update_fields=[
+                "password",
+            ]
+        )
+
+        return user
