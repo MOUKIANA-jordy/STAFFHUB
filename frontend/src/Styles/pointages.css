@@ -3,6 +3,11 @@
    POINTAGES
 ========================================================= */
 
+
+/* =========================================================
+   PAGE
+========================================================= */
+
 .pointages-page {
   width: 100%;
   min-height: 100%;
@@ -35,7 +40,6 @@
   margin-bottom: 24px;
 }
 
-
 .pointages-eyebrow {
   display: block;
 
@@ -47,10 +51,8 @@
   font-weight: 750;
 
   text-transform: uppercase;
-
   letter-spacing: 0.09em;
 }
-
 
 .pointages-heading h1 {
   margin: 0;
@@ -62,7 +64,6 @@
 
   letter-spacing: -0.035em;
 }
-
 
 .pointages-heading p {
   margin: 7px 0 0;
@@ -83,8 +84,9 @@
   align-items: center;
 
   gap: 9px;
-}
 
+  flex-shrink: 0;
+}
 
 .pointages-refresh-button,
 .pointages-export-button {
@@ -111,19 +113,17 @@
     transform 0.16s ease,
     border-color 0.16s ease,
     background 0.16s ease,
-    box-shadow 0.16s ease;
+    box-shadow 0.16s ease,
+    opacity 0.16s ease;
 }
 
-
 .pointages-refresh-button {
-  border:
-    1px solid var(--rh-border);
+  border: 1px solid var(--rh-border);
 
   background: #ffffff;
 
   color: var(--rh-text-secondary);
 }
-
 
 .pointages-refresh-button:hover:not(:disabled) {
   color: var(--rh-blue);
@@ -134,7 +134,6 @@
   background:
     rgba(8, 124, 240, 0.03);
 }
-
 
 .pointages-export-button {
   border: 0;
@@ -149,7 +148,6 @@
     rgba(8, 124, 240, 0.18);
 }
 
-
 .pointages-export-button:hover:not(:disabled) {
   transform: translateY(-1px);
 
@@ -157,7 +155,6 @@
     0 9px 22px
     rgba(8, 124, 240, 0.24);
 }
-
 
 .pointages-refresh-button:disabled,
 .pointages-export-button:disabled {
@@ -212,7 +209,6 @@
     var(--rh-shadow-sm);
 }
 
-
 .pointages-clock-card,
 .pointages-today-card,
 .pointages-history-card {
@@ -251,7 +247,6 @@
   margin-bottom: 20px;
 }
 
-
 .pointages-card-heading h2 {
   margin: 0;
 
@@ -260,7 +255,6 @@
   font-size: 16px;
   font-weight: 700;
 }
-
 
 .pointages-card-heading p {
   margin: 5px 0 0;
@@ -315,7 +309,6 @@
   gap: 15px;
 }
 
-
 .pointages-current-record > div {
   min-height: 105px;
 
@@ -333,14 +326,12 @@
     var(--rh-surface-secondary);
 }
 
-
 .pointages-current-record span {
   color:
     var(--rh-text-muted);
 
   font-size: 11px;
 }
-
 
 .pointages-current-record strong {
   margin-top: 8px;
@@ -371,7 +362,6 @@
     var(--rh-text-muted);
 }
 
-
 .pointages-no-today svg {
   margin-bottom: 11px;
 
@@ -379,14 +369,12 @@
     #b4c2d2;
 }
 
-
 .pointages-no-today strong {
   color:
     var(--rh-text);
 
   font-size: 13px;
 }
-
 
 .pointages-no-today span {
   max-width: 340px;
@@ -414,7 +402,6 @@
   gap: 11px;
 }
 
-
 .pointages-value {
   min-height: 72px;
 
@@ -434,7 +421,6 @@
     var(--rh-surface-secondary);
 }
 
-
 .pointages-value-dot {
   width: 8px;
   height: 8px;
@@ -444,30 +430,25 @@
   border-radius: 50%;
 }
 
-
 .pointages-value-dot-blue {
   background:
     var(--rh-blue);
 }
-
 
 .pointages-value-dot-green {
   background:
     var(--rh-success);
 }
 
-
 .pointages-value-dot-purple {
   background:
     var(--rh-purple);
 }
 
-
 .pointages-value-dot-orange {
   background:
     var(--rh-warning);
 }
-
 
 .pointages-value p {
   margin: 0;
@@ -477,7 +458,6 @@
 
   font-size: 10px;
 }
-
 
 .pointages-value strong {
   display: block;
@@ -510,7 +490,6 @@
   margin-bottom: 20px;
 }
 
-
 .pointages-summary-card {
   min-height: 112px;
 
@@ -521,7 +500,6 @@
 
   padding: 18px;
 }
-
 
 .pointages-summary-icon {
   width: 46px;
@@ -536,7 +514,6 @@
   border-radius: 11px;
 }
 
-
 .pointages-summary-icon-blue {
   background:
     rgba(8, 124, 240, 0.09);
@@ -544,7 +521,6 @@
   color:
     var(--rh-blue);
 }
-
 
 .pointages-summary-icon-purple {
   background:
@@ -554,7 +530,6 @@
     var(--rh-purple);
 }
 
-
 .pointages-summary-icon-green {
   background:
     rgba(22, 163, 106, 0.09);
@@ -562,7 +537,6 @@
   color:
     var(--rh-success);
 }
-
 
 .pointages-summary-icon-orange {
   background:
@@ -572,7 +546,6 @@
     var(--rh-warning);
 }
 
-
 .pointages-summary-card strong {
   color:
     var(--rh-text);
@@ -580,7 +553,6 @@
   font-size: 21px;
   font-weight: 740;
 }
-
 
 .pointages-summary-card p {
   margin: 4px 0 0;
@@ -591,7 +563,6 @@
   font-size: 11px;
   font-weight: 600;
 }
-
 
 .pointages-summary-card small {
   display: block;
@@ -635,9 +606,19 @@
   color:
     var(--rh-text-secondary);
 
+  font-family: inherit;
   font-size: 10.5px;
 
   cursor: pointer;
+}
+
+.pointages-filters select:focus {
+  border-color:
+    rgba(8, 124, 240, 0.45);
+
+  box-shadow:
+    0 0 0 3px
+    rgba(8, 124, 240, 0.06);
 }
 
 
@@ -649,13 +630,33 @@
   width: 100%;
 
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 
   border:
     1px solid var(--rh-border-light);
 
   border-radius: 11px;
+
+  scrollbar-width: thin;
+  scrollbar-color:
+    var(--rh-border)
+    transparent;
 }
 
+.pointages-table-wrapper::-webkit-scrollbar {
+  height: 5px;
+}
+
+.pointages-table-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pointages-table-wrapper::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+
+  background:
+    var(--rh-border);
+}
 
 .pointages-table {
   width: 100%;
@@ -667,12 +668,10 @@
   background: #ffffff;
 }
 
-
 .pointages-table thead {
   background:
     var(--rh-surface-secondary);
 }
-
 
 .pointages-table th,
 .pointages-table td {
@@ -682,8 +681,8 @@
     1px solid var(--rh-border-light);
 
   text-align: left;
+  vertical-align: middle;
 }
-
 
 .pointages-table th {
   color:
@@ -693,10 +692,8 @@
   font-weight: 700;
 
   text-transform: uppercase;
-
   letter-spacing: 0.045em;
 }
-
 
 .pointages-table td {
   color:
@@ -705,18 +702,15 @@
   font-size: 11.5px;
 }
 
-
 .pointages-table tbody tr {
   transition:
     background 0.14s ease;
 }
 
-
 .pointages-table tbody tr:hover {
   background:
     rgba(8, 124, 240, 0.025);
 }
-
 
 .pointages-table tbody tr:last-child td {
   border-bottom: 0;
@@ -734,7 +728,6 @@
   font-weight: 650;
 }
 
-
 .pointages-time-badge {
   display: inline-flex;
 
@@ -748,7 +741,6 @@
   color:
     var(--rh-text);
 }
-
 
 .pointages-overtime {
   display: inline-flex;
@@ -766,7 +758,6 @@
   font-weight: 600;
 }
 
-
 .pointages-overtime-active {
   background:
     rgba(84, 55, 245, 0.08);
@@ -774,7 +765,6 @@
   color:
     var(--rh-purple);
 }
-
 
 .pointages-comment {
   display: block;
@@ -806,7 +796,6 @@
     var(--rh-text-muted);
 }
 
-
 .pointages-empty svg {
   margin-bottom: 10px;
 
@@ -814,14 +803,12 @@
     #b8c5d3;
 }
 
-
 .pointages-empty strong {
   color:
     var(--rh-text);
 
   font-size: 13px;
 }
-
 
 .pointages-empty span {
   margin-top: 5px;
@@ -850,25 +837,24 @@
   font-size: 12.5px;
 }
 
-
 .pointages-spin {
   animation:
-    pointages-spin 0.85s linear infinite;
+    pointages-spin
+    0.85s
+    linear
+    infinite;
 }
 
-
 @keyframes pointages-spin {
-
   to {
     transform:
       rotate(360deg);
   }
-
 }
 
 
 /* =========================================================
-   RESPONSIVE
+   RESPONSIVE - LAPTOP
 ========================================================= */
 
 @media (max-width: 1200px) {
@@ -884,7 +870,15 @@
 }
 
 
+/* =========================================================
+   RESPONSIVE - TABLETTE
+========================================================= */
+
 @media (max-width: 1000px) {
+
+  .pointages-page {
+    padding: 24px 20px;
+  }
 
   .pointages-top-grid {
     grid-template-columns:
@@ -894,46 +888,329 @@
 }
 
 
-@media (max-width: 700px) {
+/* =========================================================
+   RESPONSIVE - PETITE TABLETTE
+========================================================= */
+
+@media (max-width: 760px) {
 
   .pointages-page {
     padding:
       20px
-      14px;
+      16px
+      80px;
   }
-
 
   .pointages-heading {
-    flex-direction:
-      column;
+    flex-direction: column;
+    align-items: stretch;
+
+    gap: 16px;
+
+    margin-bottom: 20px;
   }
 
+  .pointages-heading h1 {
+    font-size: 25px;
+  }
+
+  .pointages-heading p {
+    max-width: 560px;
+
+    font-size: 12px;
+  }
 
   .pointages-heading-actions {
     width: 100%;
   }
 
-
   .pointages-heading-actions button {
     flex: 1;
   }
 
+  .pointages-top-grid {
+    gap: 15px;
+  }
 
-  .pointages-summary-grid,
-  .pointages-today-list,
-  .pointages-current-record {
+  .pointages-clock-card,
+  .pointages-today-card,
+  .pointages-history-card {
+    padding: 18px;
+  }
+
+  .pointages-summary-grid {
     grid-template-columns:
-      1fr;
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+
+    gap: 12px;
+  }
+
+  .pointages-summary-card {
+    min-height: 100px;
+
+    padding: 15px;
+  }
+
+  .pointages-summary-icon {
+    width: 42px;
+    height: 42px;
+
+    flex-basis: 42px;
+  }
+
+  .pointages-summary-card strong {
+    font-size: 20px;
   }
 
 }
 
 
-@media (max-width: 480px) {
+/* =========================================================
+   RESPONSIVE - MOBILE
+========================================================= */
+
+@media (max-width: 560px) {
+
+  .pointages-page {
+    padding:
+      17px
+      12px
+      82px;
+  }
+
+  .pointages-eyebrow {
+    font-size: 10px;
+  }
+
+  .pointages-heading h1 {
+    font-size: 23px;
+
+    letter-spacing:
+      -0.025em;
+  }
+
+  .pointages-heading p {
+    margin-top: 6px;
+
+    font-size: 11.5px;
+
+    line-height: 1.55;
+  }
+
+  .pointages-heading-actions {
+    display: grid;
+
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+
+    gap: 8px;
+  }
+
+  .pointages-refresh-button,
+  .pointages-export-button {
+    width: 100%;
+
+    min-height: 42px;
+
+    padding:
+      0
+      10px;
+
+    font-size: 11px;
+  }
+
+  .pointages-clock-card,
+  .pointages-today-card,
+  .pointages-history-card {
+    padding: 15px;
+
+    border-radius: 12px;
+  }
+
+  .pointages-card-heading {
+    gap: 10px;
+
+    margin-bottom: 16px;
+  }
+
+  .pointages-card-heading h2 {
+    font-size: 14px;
+  }
+
+  .pointages-card-heading p {
+    font-size: 10px;
+  }
+
+  .pointages-card-icon {
+    width: 38px;
+    height: 38px;
+  }
+
+  .pointages-current-record {
+    min-height: auto;
+
+    grid-template-columns: 1fr;
+
+    gap: 10px;
+  }
+
+  .pointages-current-record > div {
+    min-height: 82px;
+  }
+
+  .pointages-current-record strong {
+    margin-top: 5px;
+
+    font-size: 21px;
+  }
+
+  .pointages-today-list {
+    grid-template-columns: 1fr;
+
+    gap: 9px;
+  }
+
+  .pointages-value {
+    min-height: 64px;
+
+    padding: 11px;
+  }
+
+  .pointages-value strong {
+    font-size: 14px;
+  }
 
   .pointages-summary-grid {
-    grid-template-columns:
-      1fr;
+    grid-template-columns: 1fr;
+
+    gap: 10px;
+
+    margin-bottom: 14px;
+  }
+
+  .pointages-summary-card {
+    min-height: 84px;
+
+    gap: 12px;
+
+    padding:
+      13px
+      14px;
+  }
+
+  .pointages-summary-icon {
+    width: 40px;
+    height: 40px;
+
+    flex-basis: 40px;
+
+    border-radius: 10px;
+  }
+
+  .pointages-summary-card strong {
+    font-size: 19px;
+  }
+
+  .pointages-summary-card p {
+    margin-top: 3px;
+
+    font-size: 10.5px;
+  }
+
+  .pointages-summary-card small {
+    font-size: 9px;
+  }
+
+  .pointages-history-card
+  .pointages-card-heading {
+    align-items: stretch;
+
+    flex-direction: column;
+  }
+
+  .pointages-filters {
+    width: 100%;
+  }
+
+  .pointages-filters select {
+    width: 100%;
+
+    min-height: 40px;
+  }
+
+  .pointages-table {
+    min-width: 820px;
+  }
+
+  .pointages-table th,
+  .pointages-table td {
+    padding:
+      11px
+      10px;
+  }
+
+  .pointages-table th {
+    font-size: 8.5px;
+  }
+
+  .pointages-table td {
+    font-size: 10.5px;
+  }
+
+  .pointages-comment {
+    max-width: 170px;
+  }
+
+}
+
+
+/* =========================================================
+   RESPONSIVE - TRÈS PETIT MOBILE
+========================================================= */
+
+@media (max-width: 390px) {
+
+  .pointages-page {
+    padding:
+      15px
+      10px
+      80px;
+  }
+
+  .pointages-heading h1 {
+    font-size: 21px;
+  }
+
+  .pointages-heading-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .pointages-clock-card,
+  .pointages-today-card,
+  .pointages-history-card {
+    padding: 13px;
+  }
+
+  .pointages-summary-card {
+    min-height: 80px;
+  }
+
+  .pointages-current-record > div {
+    min-height: 76px;
+  }
+
+  .pointages-current-record strong {
+    font-size: 20px;
+  }
+
+  .pointages-value {
+    min-height: 60px;
   }
 
 }
