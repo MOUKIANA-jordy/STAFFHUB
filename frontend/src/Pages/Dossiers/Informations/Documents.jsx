@@ -109,7 +109,6 @@ const DEFAULT_FORM = {
 // =========================================================
 
 export default function DocumentsOfficiels() {
-
   const [
     documents,
     setDocuments,
@@ -160,7 +159,6 @@ export default function DocumentsOfficiels() {
 
   const fetchDocuments = useCallback(
     async (refresh = false) => {
-
       if (refresh) {
         setRefreshing(true);
       } else {
@@ -173,7 +171,6 @@ export default function DocumentsOfficiels() {
       });
 
       try {
-
         const response =
           await API.get(
             "/api/documents/"
@@ -186,7 +183,6 @@ export default function DocumentsOfficiels() {
         );
 
       } catch (error) {
-
         console.error(
           "DOCUMENTS ERROR",
           error
@@ -202,12 +198,9 @@ export default function DocumentsOfficiels() {
         setDocuments([]);
 
       } finally {
-
         setLoading(false);
         setRefreshing(false);
-
       }
-
     },
     []
   );
@@ -225,7 +218,6 @@ export default function DocumentsOfficiels() {
   const handleChange = (
     event
   ) => {
-
     const {
       name,
       value,
@@ -242,7 +234,6 @@ export default function DocumentsOfficiels() {
             : value,
       })
     );
-
   };
 
 
@@ -253,7 +244,6 @@ export default function DocumentsOfficiels() {
   const handleSubmit = async (
     event
   ) => {
-
     event.preventDefault();
 
     setMessage({
@@ -265,7 +255,6 @@ export default function DocumentsOfficiels() {
     if (
       !formData.type_document
     ) {
-
       setMessage({
         type: "error",
         text:
@@ -273,14 +262,12 @@ export default function DocumentsOfficiels() {
       });
 
       return;
-
     }
 
 
     if (
       !formData.fichier
     ) {
-
       setMessage({
         type: "error",
         text:
@@ -288,7 +275,6 @@ export default function DocumentsOfficiels() {
       });
 
       return;
-
     }
 
 
@@ -296,7 +282,6 @@ export default function DocumentsOfficiels() {
 
 
     try {
-
       const payload =
         new FormData();
 
@@ -316,72 +301,59 @@ export default function DocumentsOfficiels() {
       if (
         formData.titre
       ) {
-
         payload.append(
           "titre",
           formData.titre
         );
-
       }
 
 
       if (
         formData.numero
       ) {
-
         payload.append(
           "numero",
           formData.numero
         );
-
       }
 
 
       if (
         formData.date_emission
       ) {
-
         payload.append(
           "date_emission",
           formData.date_emission
         );
-
       }
 
 
       if (
         formData.date_expiration
       ) {
-
         payload.append(
           "date_expiration",
           formData.date_expiration
         );
-
       }
 
 
       if (
         formData.description
       ) {
-
         payload.append(
           "description",
           formData.description
         );
-
       }
 
 
+      // IMPORTANT :
+      // on ne force pas Content-Type ici.
+      // Axios / navigateur gère le multipart boundary.
       await API.post(
         "/api/documents/",
-        payload,
-        {
-          headers: {
-            "Content-Type":
-              "multipart/form-data",
-          },
-        }
+        payload
       );
 
 
@@ -406,7 +378,6 @@ export default function DocumentsOfficiels() {
 
 
     } catch (error) {
-
       console.error(
         "DOCUMENT UPLOAD ERROR",
         error
@@ -424,14 +395,12 @@ export default function DocumentsOfficiels() {
       if (
         typeof data === "string"
       ) {
-
         errorMessage =
           data;
 
       } else if (
         data?.detail
       ) {
-
         errorMessage =
           data.detail;
 
@@ -440,7 +409,6 @@ export default function DocumentsOfficiels() {
         && typeof data
           === "object"
       ) {
-
         const firstError =
           Object.values(
             data
@@ -452,21 +420,17 @@ export default function DocumentsOfficiels() {
             firstError
           )
         ) {
-
           errorMessage =
             firstError[0];
 
         } else if (
           firstError
         ) {
-
           errorMessage =
             String(
               firstError
             );
-
         }
-
       }
 
 
@@ -478,13 +442,10 @@ export default function DocumentsOfficiels() {
 
 
     } finally {
-
       setSubmitting(
         false
       );
-
     }
-
   };
 
 
@@ -495,50 +456,41 @@ export default function DocumentsOfficiels() {
   const filteredDocuments =
     useMemo(
       () => {
-
         if (
           filter === "all"
         ) {
-
           return documents;
-
         }
 
 
         if (
           filter === "active"
         ) {
-
           return documents.filter(
             (document) =>
               !document.archive
               && !document.est_expire
           );
-
         }
 
 
         if (
           filter === "expired"
         ) {
-
           return documents.filter(
             (document) =>
               document.est_expire
           );
-
         }
 
 
         if (
           filter === "archived"
         ) {
-
           return documents.filter(
             (document) =>
               document.archive
           );
-
         }
 
 
@@ -547,7 +499,6 @@ export default function DocumentsOfficiels() {
             document.type_document
             === filter
         );
-
       },
       [
         documents,
@@ -599,7 +550,6 @@ export default function DocumentsOfficiels() {
   // =========================================================
 
   if (loading) {
-
     return (
       <div className="documents-page">
 
@@ -618,7 +568,6 @@ export default function DocumentsOfficiels() {
 
       </div>
     );
-
   }
 
 
@@ -688,7 +637,6 @@ export default function DocumentsOfficiels() {
             type="button"
             className="documents-primary-button"
             onClick={() => {
-
               setMessage({
                 type: "",
                 text: "",
@@ -698,7 +646,6 @@ export default function DocumentsOfficiels() {
                 (current) =>
                   !current
               );
-
             }}
           >
 
@@ -732,7 +679,6 @@ export default function DocumentsOfficiels() {
       {
         message.text
         && (
-
           <div
             className={
               `documents-message documents-message-${message.type}`
@@ -755,7 +701,6 @@ export default function DocumentsOfficiels() {
             }
 
           </div>
-
         )
       }
 
@@ -836,7 +781,6 @@ export default function DocumentsOfficiels() {
       {
         formOpen
         && (
-
           <section className="documents-form-card">
 
 
@@ -905,7 +849,6 @@ export default function DocumentsOfficiels() {
                     {
                       DOCUMENT_TYPES.map(
                         (type) => (
-
                           <option
                             value={
                               type.value
@@ -918,7 +861,6 @@ export default function DocumentsOfficiels() {
                               type.label
                             }
                           </option>
-
                         )
                       )
                     }
@@ -1078,7 +1020,6 @@ export default function DocumentsOfficiels() {
                   type="button"
                   className="documents-secondary-button"
                   onClick={() => {
-
                     setFormData(
                       DEFAULT_FORM
                     );
@@ -1086,7 +1027,6 @@ export default function DocumentsOfficiels() {
                     setFormOpen(
                       false
                     );
-
                   }}
                 >
                   Annuler
@@ -1131,7 +1071,6 @@ export default function DocumentsOfficiels() {
             </form>
 
           </section>
-
         )
       }
 
@@ -1215,13 +1154,11 @@ export default function DocumentsOfficiels() {
         {
           filteredDocuments.length > 0
             ? (
-
               <div className="documents-grid">
 
                 {
                   filteredDocuments.map(
                     (document) => (
-
                       <DocumentCard
                         key={
                           document.id
@@ -1230,16 +1167,13 @@ export default function DocumentsOfficiels() {
                           document
                         }
                       />
-
                     )
                   )
                 }
 
               </div>
-
             )
             : (
-
               <div className="documents-empty">
 
                 <File
@@ -1256,7 +1190,6 @@ export default function DocumentsOfficiels() {
                 </span>
 
               </div>
-
             )
         }
 
@@ -1278,7 +1211,6 @@ function SummaryCard({
   detail,
   type,
 }) {
-
   return (
     <article className="documents-summary-card">
 
@@ -1309,7 +1241,6 @@ function SummaryCard({
 
     </article>
   );
-
 }
 
 
@@ -1320,7 +1251,6 @@ function SummaryCard({
 function DocumentCard({
   document,
 }) {
-
   const status =
     document.archive
       ? "archived"
@@ -1390,7 +1320,6 @@ function DocumentCard({
         {
           document.numero
           && (
-
             <div className="document-info">
 
               <span>
@@ -1404,7 +1333,6 @@ function DocumentCard({
               </strong>
 
             </div>
-
           )
         }
 
@@ -1412,7 +1340,6 @@ function DocumentCard({
         {
           document.date_emission
           && (
-
             <div className="document-info">
 
               <span>
@@ -1428,7 +1355,6 @@ function DocumentCard({
               </strong>
 
             </div>
-
           )
         }
 
@@ -1436,7 +1362,6 @@ function DocumentCard({
         {
           document.date_expiration
           && (
-
             <div className="document-info">
 
               <span>
@@ -1452,7 +1377,6 @@ function DocumentCard({
               </strong>
 
             </div>
-
           )
         }
 
@@ -1493,13 +1417,11 @@ function DocumentCard({
         {
           document.description
           && (
-
             <p className="document-description">
               {
                 document.description
               }
             </p>
-
           )
         }
 
@@ -1509,13 +1431,16 @@ function DocumentCard({
       <div className="document-card-footer">
 
         {
-          document.fichier
+          (
+            document.fichier_url
+            || document.fichier
+          )
           && (
-
             <a
               href={
                 getFileUrl(
-                  document.fichier
+                  document.fichier_url
+                  || document.fichier
                 )
               }
               target="_blank"
@@ -1530,7 +1455,6 @@ function DocumentCard({
               Ouvrir
 
             </a>
-
           )
         }
 
@@ -1538,7 +1462,6 @@ function DocumentCard({
 
     </article>
   );
-
 }
 
 
@@ -1549,7 +1472,6 @@ function DocumentCard({
 function getFileUrl(
   value
 ) {
-
   if (!value) {
     return "#";
   }
@@ -1563,16 +1485,13 @@ function getFileUrl(
       "https://"
     )
   ) {
-
     return value;
-
   }
 
 
   return (
     `http://127.0.0.1:8000${value}`
   );
-
 }
 
 
@@ -1583,7 +1502,6 @@ function getFileUrl(
 function formatDate(
   value
 ) {
-
   if (!value) {
     return "—";
   }
@@ -1600,9 +1518,7 @@ function formatDate(
       date.getTime()
     )
   ) {
-
     return value;
-
   }
 
 
@@ -1614,7 +1530,6 @@ function formatDate(
       year: "numeric",
     }
   );
-
 }
 
 
@@ -1625,7 +1540,6 @@ function formatDate(
 function formatFileSize(
   bytes
 ) {
-
   const value =
     Number(bytes);
 
@@ -1634,31 +1548,25 @@ function formatFileSize(
     !Number.isFinite(value)
     || value <= 0
   ) {
-
     return "—";
-
   }
 
 
   if (
     value < 1024
   ) {
-
     return `${value} o`;
-
   }
 
 
   if (
     value < 1024 * 1024
   ) {
-
     return `${
       (
         value / 1024
       ).toFixed(1)
     } Ko`;
-
   }
 
 
@@ -1669,5 +1577,4 @@ function formatFileSize(
       / 1024
     ).toFixed(1)
   } Mo`;
-
 }
