@@ -72,7 +72,7 @@ import DonneesComple from "./Pages/Dossiers/Informations/Donnees_Comple";
 /* =========================================================
    ACTIVITÉS
 ========================================================= */
-
+import Activites from "./Pages/Activites";
 import Absences from "./Pages/Activites/Absences";
 import Planning from "./Pages/Activites/Planning";
 import Pointages from "./Pages/Activites/Pointages";
@@ -284,7 +284,7 @@ function App() {
 
             <Route
               path="/home/activites"
-              element={<Home />}
+              element={<Activites />}
             />
 
             <Route
