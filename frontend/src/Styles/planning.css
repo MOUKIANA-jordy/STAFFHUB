@@ -1112,6 +1112,11 @@
    RESPONSIVE
 ========================================================= */
 
+
+/* =========================================================
+   LAPTOP / PETIT DESKTOP
+========================================================= */
+
 @media (max-width: 1150px) {
 
   .planning-summary-grid {
@@ -1122,16 +1127,168 @@
       );
   }
 
-
   .planning-content-grid {
-    grid-template-columns:
-      1fr;
+    grid-template-columns: 1fr;
   }
 
 }
 
 
-@media (max-width: 850px) {
+/* =========================================================
+   TABLETTE
+========================================================= */
+
+@media (max-width: 900px) {
+
+  .planning-page {
+    padding: 24px 20px;
+  }
+
+  .planning-heading {
+    gap: 18px;
+  }
+
+  .planning-heading h1 {
+    font-size: 27px;
+  }
+
+  .planning-card {
+    padding: 18px;
+  }
+
+  /*
+     Le planning garde ses 7 jours.
+     Sur tablette on autorise le scroll horizontal
+     au lieu d'écraser les cartes.
+  */
+
+  .planning-week {
+    grid-template-columns:
+      repeat(
+        7,
+        minmax(86px, 1fr)
+      );
+
+    overflow-x: auto;
+
+    padding-bottom: 9px;
+
+    scrollbar-width: thin;
+    scrollbar-color:
+      var(--rh-border)
+      transparent;
+  }
+
+  .planning-week::-webkit-scrollbar {
+    height: 5px;
+  }
+
+  .planning-week::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .planning-week::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+
+    background:
+      var(--rh-border);
+  }
+
+  .planning-day {
+    min-width: 86px;
+  }
+
+}
+
+
+/* =========================================================
+   PETITE TABLETTE
+========================================================= */
+
+@media (max-width: 760px) {
+
+  .planning-page {
+    padding: 20px 16px;
+  }
+
+  /* HEADER */
+
+  .planning-heading {
+    flex-direction: column;
+    align-items: stretch;
+
+    gap: 16px;
+
+    margin-bottom: 20px;
+  }
+
+  .planning-heading h1 {
+    font-size: 25px;
+  }
+
+  .planning-heading p {
+    max-width: 560px;
+
+    font-size: 12.5px;
+  }
+
+  /* ACTIONS */
+
+  .planning-heading-actions {
+    width: 100%;
+  }
+
+  .planning-heading-actions button {
+    flex: 1;
+  }
+
+  /* KPI */
+
+  .planning-summary-grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+
+    gap: 12px;
+  }
+
+  .planning-summary-card {
+    min-height: 100px;
+
+    padding: 15px;
+  }
+
+  .planning-summary-icon {
+    width: 42px;
+    height: 42px;
+
+    flex-basis: 42px;
+  }
+
+  .planning-summary-card strong {
+    font-size: 20px;
+  }
+
+  /* TOOLBAR */
+
+  .planning-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+
+    gap: 14px;
+  }
+
+  .planning-toolbar h2 {
+    text-align: center;
+  }
+
+  .planning-navigation {
+    justify-content: center;
+  }
+
+  /* WEEK */
 
   .planning-week {
     grid-template-columns:
@@ -1140,56 +1297,44 @@
         82px
       );
 
+    gap: 7px;
+
     overflow-x: auto;
 
-    padding-bottom: 8px;
+    padding-bottom: 9px;
   }
 
-}
+  .planning-day {
+    min-width: 82px;
+    min-height: 96px;
 
-
-@media (max-width: 700px) {
-
-  .planning-page {
-    padding:
-      20px
-      14px;
+    padding: 9px 5px;
   }
 
-
-  .planning-heading,
-  .planning-toolbar {
-    align-items: stretch;
-
-    flex-direction: column;
+  .planning-day strong {
+    font-size: 19px;
   }
 
+  /* CONTENT */
 
-  .planning-heading-actions {
-    width: 100%;
+  .planning-content-grid {
+    grid-template-columns: 1fr;
+
+    gap: 15px;
+
+    margin-top: 15px;
   }
 
+  /* EVENT */
 
-  .planning-heading-actions button {
-    flex: 1;
-  }
-
-
-  .planning-toolbar h2 {
-    text-align: center;
-  }
-
-
-  .planning-navigation {
-    justify-content: center;
-  }
-
-
-  .planning-summary-grid {
+  .planning-event {
     grid-template-columns:
-      1fr;
-  }
+      52px
+      3px
+      minmax(0, 1fr);
 
+    gap: 11px;
+  }
 
   .planning-event-title {
     flex-direction: column;
@@ -1197,9 +1342,329 @@
     gap: 7px;
   }
 
-
   .planning-event-badge {
     align-self: flex-start;
+  }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 560px) {
+
+  .planning-page {
+    padding: 17px 12px;
+  }
+
+  /* HEADER */
+
+  .planning-eyebrow {
+    margin-bottom: 5px;
+
+    font-size: 10px;
+  }
+
+  .planning-heading h1 {
+    font-size: 23px;
+
+    letter-spacing: -0.025em;
+  }
+
+  .planning-heading p {
+    margin-top: 6px;
+
+    font-size: 12px;
+    line-height: 1.55;
+  }
+
+  /* HEADER BUTTONS */
+
+  .planning-heading-actions {
+    display: grid;
+
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+
+    gap: 8px;
+  }
+
+  .planning-refresh-button,
+  .planning-primary-button {
+    width: 100%;
+
+    min-height: 42px;
+
+    padding: 0 10px;
+
+    font-size: 11px;
+  }
+
+  /* KPI */
+
+  .planning-summary-grid {
+    grid-template-columns: 1fr;
+
+    gap: 10px;
+
+    margin-bottom: 14px;
+  }
+
+  .planning-summary-card {
+    min-height: 84px;
+
+    gap: 12px;
+
+    padding: 13px 14px;
+  }
+
+  .planning-summary-icon {
+    width: 40px;
+    height: 40px;
+
+    flex-basis: 40px;
+
+    border-radius: 10px;
+  }
+
+  .planning-summary-card strong {
+    font-size: 19px;
+  }
+
+  .planning-summary-card p {
+    margin-top: 3px;
+
+    font-size: 10.5px;
+  }
+
+  /* CARD */
+
+  .planning-card {
+    padding: 15px;
+
+    border-radius: 12px;
+  }
+
+  /* TOOLBAR */
+
+  .planning-toolbar {
+    gap: 12px;
+
+    margin-bottom: 15px;
+  }
+
+  .planning-toolbar h2 {
+    font-size: 13px;
+  }
+
+  /* NAVIGATION */
+
+  .planning-navigation {
+    width: 100%;
+  }
+
+  .planning-navigation button {
+    min-width: 38px;
+    height: 38px;
+  }
+
+  .planning-navigation
+  .planning-today-button {
+    flex: 1;
+
+    max-width: 130px;
+  }
+
+  /* WEEK */
+
+  .planning-week {
+    grid-template-columns:
+      repeat(
+        7,
+        76px
+      );
+
+    gap: 6px;
+
+    margin-right: -4px;
+
+    padding-bottom: 8px;
+  }
+
+  .planning-day {
+    min-width: 76px;
+    min-height: 90px;
+
+    gap: 4px;
+
+    border-radius: 9px;
+  }
+
+  .planning-day span {
+    font-size: 9px;
+  }
+
+  .planning-day strong {
+    font-size: 18px;
+  }
+
+  .planning-day small {
+    font-size: 8px;
+  }
+
+  /* CARD HEADING */
+
+  .planning-card-heading {
+    gap: 10px;
+
+    margin-bottom: 17px;
+  }
+
+  .planning-card-heading h2 {
+    font-size: 14px;
+  }
+
+  .planning-card-heading p {
+    font-size: 10px;
+  }
+
+  /* TIMELINE */
+
+  .planning-event {
+    grid-template-columns:
+      45px
+      3px
+      minmax(0, 1fr);
+
+    gap: 9px;
+
+    min-height: 86px;
+  }
+
+  .planning-event-time strong {
+    font-size: 10.5px;
+  }
+
+  .planning-event-time span {
+    font-size: 8.5px;
+  }
+
+  .planning-event-content {
+    min-width: 0;
+
+    padding-bottom: 20px;
+  }
+
+  .planning-event-content h3 {
+    font-size: 12px;
+  }
+
+  .planning-event-content p {
+    flex-wrap: wrap;
+
+    font-size: 9.5px;
+  }
+
+  .planning-event-duration {
+    font-size: 8.5px;
+  }
+
+  .planning-event-badge {
+    padding: 4px 7px;
+
+    font-size: 8px;
+  }
+
+  /* INFORMATION */
+
+  .planning-information-list {
+    gap: 14px;
+  }
+
+  .planning-information-list strong {
+    font-size: 11px;
+  }
+
+  .planning-information-list p {
+    font-size: 10px;
+    line-height: 1.5;
+  }
+
+  .planning-note {
+    margin-top: 18px;
+
+    padding: 12px;
+  }
+
+}
+
+
+/* =========================================================
+   TRÈS PETIT MOBILE
+========================================================= */
+
+@media (max-width: 390px) {
+
+  .planning-page {
+    padding:
+      15px
+      10px;
+  }
+
+  .planning-heading h1 {
+    font-size: 21px;
+  }
+
+  /*
+     Sur très petit écran,
+     les boutons passent l'un sous l'autre.
+  */
+
+  .planning-heading-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .planning-summary-card {
+    min-height: 80px;
+  }
+
+  .planning-card {
+    padding: 13px;
+  }
+
+  .planning-week {
+    grid-template-columns:
+      repeat(
+        7,
+        72px
+      );
+  }
+
+  .planning-day {
+    min-width: 72px;
+  }
+
+  .planning-navigation {
+    gap: 5px;
+  }
+
+  .planning-navigation button {
+    min-width: 35px;
+    height: 35px;
+  }
+
+  .planning-event {
+    grid-template-columns:
+      41px
+      3px
+      minmax(0, 1fr);
+
+    gap: 8px;
   }
 
 }
