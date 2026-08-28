@@ -6,7 +6,13 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 # USERS
-from apps.users.views import SalarieViewSet, current_user, admin_stats
+from apps.users.views import (
+    SalarieViewSet,
+    current_user,
+    admin_stats,
+    password_reset_request,
+    password_reset_confirm,
+)
 
 # MODULES
 from apps.dossiers.views import DossierViewSet, AdresseViewSet, EtatCivilViewSet, FamilleViewSet, IbanViewSet
@@ -60,6 +66,9 @@ urlpatterns = [
     # AUTH
     path('api/token/', TokenObtainPairView.as_view()),
     path('api/token/refresh/', TokenRefreshView.as_view()),
+    path('api/password-reset/', password_reset_request, name='password-reset'),
+
+    path('api/password-reset-confirm/', password_reset_confirm, name='password-reset-confirm'),
 
     # USER
     path('api/me/', current_user),
