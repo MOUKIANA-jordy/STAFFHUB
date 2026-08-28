@@ -96,8 +96,20 @@ class SalarieSerializer(
         read_only=True,
     )
 
-    nom_complet = (
-        serializers.SerializerMethodField()
+    nom_complet = serializers.SerializerMethodField()
+
+    # ========================================================
+    # DONNEES LIEES EN CREATION
+    # ========================================================
+
+    adresse_data = serializers.DictField(
+        write_only=True,
+        required=False,
+    )
+
+    iban_data = serializers.DictField(
+        write_only=True,
+        required=False,
     )
 
     class Meta:
@@ -142,6 +154,9 @@ class SalarieSerializer(
 
             "must_change_password",
 
+            "adresse_data",
+            "iban_data",
+
             "created_at",
             "updated_at",
         ]
@@ -168,7 +183,10 @@ class SalarieSerializer(
     # NOM COMPLET
     # ========================================================
 
-    def get_nom_complet(self, obj):
+    def get_nom_complet(
+        self,
+        obj,
+    ):
         return (
             f"{obj.prenom} {obj.nom}"
             .strip()
@@ -205,7 +223,10 @@ class SalarieSerializer(
     # VALIDATION GENERALE
     # ========================================================
 
-    def validate(self, attrs):
+    def validate(
+        self,
+        attrs,
+    ):
         date_debut = attrs.get(
             "date_debut_contrat",
             getattr(
@@ -258,6 +279,72 @@ class SalarieSerializer(
                 )
             })
 
+        # ----------------------------------------------------
+        # VALIDATION ADRESSE
+        # ----------------------------------------------------
+
+        adresse_data = attrs.get(
+            "adresse_data"
+        )
+
+        if adresse_data:
+            required_address_fields = [
+                "voie",
+                "code_postal",
+                "commune",
+            ]
+
+            missing = [
+                field
+                for field in required_address_fields
+                if not str(
+                    adresse_data.get(
+                        field,
+                        ""
+                    )
+                ).strip()
+            ]
+
+            if missing:
+                raise serializers.ValidationError({
+                    "adresse_data": (
+                        "Pour enregistrer une adresse, "
+                        "renseignez au minimum la voie, "
+                        "le code postal et la commune."
+                    )
+                })
+
+        # ----------------------------------------------------
+        # VALIDATION IBAN
+        # ----------------------------------------------------
+
+        iban_data = attrs.get(
+            "iban_data"
+        )
+
+        if iban_data:
+            iban_value = str(
+                iban_data.get(
+                    "iban",
+                    ""
+                )
+            ).strip()
+
+            titulaire = str(
+                iban_data.get(
+                    "titulaire",
+                    ""
+                )
+            ).strip()
+
+            if iban_value and not titulaire:
+                raise serializers.ValidationError({
+                    "iban_data": (
+                        "Le titulaire est obligatoire "
+                        "lorsqu'un IBAN est renseigné."
+                    )
+                })
+
         return attrs
 
     # ========================================================
@@ -283,6 +370,20 @@ class SalarieSerializer(
             )
         )
 
+        adresse_data = (
+            validated_data.pop(
+                "adresse_data",
+                None,
+            )
+        )
+
+        iban_data = (
+            validated_data.pop(
+                "iban_data",
+                None,
+            )
+        )
+
         nom = (
             validated_data["nom"]
             .strip()
@@ -300,10 +401,8 @@ class SalarieSerializer(
         # CREATION SALARIE
         # ----------------------------------------------------
 
-        salarie = (
-            Salarie.objects.create(
-                **validated_data
-            )
+        salarie = Salarie.objects.create(
+            **validated_data
         )
 
         username = (
@@ -372,6 +471,114 @@ class SalarieSerializer(
         )
 
         # ----------------------------------------------------
+        # CREATION ADRESSE
+        # ----------------------------------------------------
+
+        if adresse_data:
+            adresse_clean = {
+                "numero": str(
+                    adresse_data.get(
+                        "numero",
+                        ""
+                    )
+                ).strip(),
+
+                "voie": str(
+                    adresse_data.get(
+                        "voie",
+                        ""
+                    )
+                ).strip(),
+
+                "complement": str(
+                    adresse_data.get(
+                        "complement",
+                        ""
+                    )
+                ).strip(),
+
+                "code_postal": str(
+                    adresse_data.get(
+                        "code_postal",
+                        ""
+                    )
+                ).strip(),
+
+                "commune": str(
+                    adresse_data.get(
+                        "commune",
+                        ""
+                    )
+                ).strip(),
+
+                "pays": str(
+                    adresse_data.get(
+                        "pays",
+                        "France"
+                    )
+                ).strip()
+                or "France",
+            }
+
+            has_address = any(
+                adresse_clean.values()
+            )
+
+            if has_address:
+                Adresse.objects.create(
+                    salarie=salarie,
+                    **adresse_clean,
+                )
+
+        # ----------------------------------------------------
+        # CREATION IBAN
+        # ----------------------------------------------------
+
+        if iban_data:
+            iban_value = str(
+                iban_data.get(
+                    "iban",
+                    ""
+                )
+            ).strip()
+
+            if iban_value:
+                iban_serializer = IbanSerializer(
+                    data={
+                        "iban": iban_value,
+
+                        "bic": str(
+                            iban_data.get(
+                                "bic",
+                                ""
+                            )
+                        ).strip(),
+
+                        "titulaire": str(
+                            iban_data.get(
+                                "titulaire",
+                                ""
+                            )
+                        ).strip(),
+
+                        "nom_banque": str(
+                            iban_data.get(
+                                "nom_banque",
+                                ""
+                            )
+                        ).strip(),
+                    }
+                )
+
+                iban_serializer.is_valid(
+                    raise_exception=True
+                )
+
+                iban_serializer.save(
+                    salarie=salarie
+                )
+
+        # ----------------------------------------------------
         # DONNEES TEMPORAIRES EMAIL
         # ----------------------------------------------------
 
@@ -402,6 +609,16 @@ class SalarieSerializer(
 
         validated_data.pop(
             "password",
+            None,
+        )
+
+        validated_data.pop(
+            "adresse_data",
+            None,
+        )
+
+        validated_data.pop(
+            "iban_data",
             None,
         )
 
@@ -455,13 +672,7 @@ class CurrentUserSerializer(
         read_only=True,
     )
 
-    # ========================================================
-    # OBJETS LIES
-    # ========================================================
-
-    adresse = (
-        serializers.SerializerMethodField()
-    )
+    adresse = serializers.SerializerMethodField()
 
     coordonnees_bancaires = (
         serializers.SerializerMethodField()
@@ -495,21 +706,16 @@ class CurrentUserSerializer(
             "date_naissance",
             "nationalite",
 
-            # Contact urgence brut
             "contact_urgence_nom",
             "contact_urgence_lien",
             "contact_urgence_telephone",
 
-            # Contact urgence structuré
             "contact_urgence",
 
-            # Adresse
             "adresse",
 
-            # Banque
             "coordonnees_bancaires",
 
-            # Documents administratifs
             "documents",
 
             "photo",
