@@ -539,7 +539,7 @@ def password_reset_request(request):
     # --------------------------------------------------------
 
     reset_url = (
-        "http://localhost:3000"
+        f"{settings.FRONTEND_URL}"
         f"/reset-password/{uid}/{token}"
     )
 
@@ -868,3 +868,4 @@ def set_password(request):
         },
         status=status.HTTP_200_OK,
     )
+

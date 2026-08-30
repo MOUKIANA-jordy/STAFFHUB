@@ -360,6 +360,10 @@ DEFAULT_FROM_EMAIL = os.getenv(
     EMAIL_HOST_USER
 )
 
+FRONTEND_URL = os.getenv(
+    "FRONTEND_URL",
+    "http://localhost:3000"
+).rstrip("/")
 
 # ==========================================================
 # DEFAULT PRIMARY KEY
