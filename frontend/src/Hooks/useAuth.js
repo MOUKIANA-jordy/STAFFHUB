@@ -5,7 +5,9 @@ import {
 } from "react";
 
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL =
+  process.env.REACT_APP_API_URL
+  || "http://127.0.0.1:8000";
 
 
 /*
@@ -88,12 +90,20 @@ function clearAuthStorage() {
     "refresh"
   );
 
+  localStorage.removeItem(
+    "user"
+  );
+
   sessionStorage.removeItem(
     "access"
   );
 
   sessionStorage.removeItem(
     "refresh"
+  );
+
+  sessionStorage.removeItem(
+    "user"
   );
 
   cachedUser = null;
@@ -254,7 +264,7 @@ async function requestCurrentUser() {
 =========================================================
 CHARGEMENT PARTAGÉ
 
-Si 5 composants appellent useAuth() en même temps,
+Si plusieurs composants appellent useAuth() en même temps,
 une seule requête /api/me/ sera exécutée.
 =========================================================
 */
