@@ -1,66 +1,172 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, {
+  useState,
+} from "react";
+
+import {
+  Link,
+} from "react-router-dom";
+
+import API from "../Services/api";
+
 import "../Styles/login.css";
 
+
 export default function ForgotPassword() {
+  const [
+    email,
+    setEmail,
+  ] = useState("");
 
-  const [identifiant, setIdentifiant] = useState("");
-  const [message, setMessage] = useState("");
+  const [
+    message,
+    setMessage,
+  ] = useState("");
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const [
+    error,
+    setError,
+  ] = useState("");
 
-    if (!identifiant) {
-      setMessage("Veuillez entrer votre identifiant");
+  const [
+    loading,
+    setLoading,
+  ] = useState(false);
+
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    setMessage("");
+    setError("");
+
+
+    if (!email.trim()) {
+      setError(
+        "Veuillez entrer votre adresse e-mail."
+      );
+
       return;
     }
 
-    // Simulation envoi email
-    setMessage("Un lien de réinitialisation a été envoyé.");
+
+    try {
+      setLoading(true);
+
+
+      const response = await API.post(
+        "/api/password-reset/",
+        {
+          email: email.trim(),
+        }
+      );
+
+
+      setMessage(
+        response.data?.message
+        || (
+          "Si cette adresse e-mail est associée "
+          + "à un compte StaffHub, un lien de "
+          + "réinitialisation a été envoyé."
+        )
+      );
+
+    } catch (err) {
+      console.error(
+        "FORGOT PASSWORD ERROR:",
+        err
+      );
+
+
+      const data =
+        err.response?.data;
+
+
+      setError(
+        data?.email?.[0]
+        || data?.detail
+        || (
+          "Impossible d'envoyer la demande. "
+          + "Veuillez réessayer."
+        )
+      );
+
+    } finally {
+      setLoading(false);
+    }
   };
 
+
   return (
-    <div className="login-page"> {/* CENTRAGE */}
-
+    <div className="login-page">
       <div className="wrapper">
-
         <div className="form-box login">
-
           <form onSubmit={handleSubmit}>
+            <h1>
+              Mot de passe oublié
+            </h1>
 
-            <h1>Mot de passe oublié</h1>
 
-            {/* INPUT */}
             <div className="input-box">
               <input
-                type="text"
-                placeholder="Identifiant ou Email"
-                value={identifiant}
-                onChange={(e) => setIdentifiant(e.target.value)}
+                type="email"
+                name="email"
+                placeholder="Adresse e-mail"
+                value={email}
+                onChange={(event) => {
+                  setEmail(
+                    event.target.value
+                  );
+
+                  setError("");
+                  setMessage("");
+                }}
+                autoComplete="email"
+                required
               />
             </div>
 
-            {/* MESSAGE */}
-            {message && <p className="error">{message}</p>}
 
-            {/* BUTTON */}
+            {error && (
+              <p
+                className="error"
+                role="alert"
+              >
+                {error}
+              </p>
+            )}
+
+
+            {message && (
+              <p className="reset-success">
+                {message}
+              </p>
+            )}
+
+
             <div className="input-box forgot-input">
-              <button type="submit">Envoyer le lien</button>
+              <button
+                type="submit"
+                disabled={loading}
+              >
+                {
+                  loading
+                    ? "Envoi en cours..."
+                    : "Envoyer le lien"
+                }
+              </button>
             </div>
 
-            {/* BACK */}
+
             <div className="register-link">
               <p>
-                <Link to="/">Retour à la connexion</Link>
+                <Link to="/">
+                  Retour à la connexion
+                </Link>
               </p>
             </div>
-
           </form>
-
         </div>
-
       </div>
-
     </div>
   );
 }
