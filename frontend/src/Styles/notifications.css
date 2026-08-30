@@ -1,10 +1,49 @@
 /* =========================================================
-   TITRE AVEC ICÔNE
+   STAFFHUB
+   NOTIFICATIONS
 ========================================================= */
+
+
+/* =========================================================
+   PAGE
+========================================================= */
+
+.notifications-page {
+  width: 100%;
+  min-height: 100%;
+
+  padding: 30px;
+
+  background:
+    radial-gradient(
+      circle at 95% 0%,
+      rgba(8, 124, 240, 0.045),
+      transparent 24%
+    ),
+    var(--rh-background);
+
+  color: var(--rh-text);
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.notifications-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 24px;
+
+  margin-bottom: 22px;
+}
 
 .notifications-title-row {
   display: flex;
   align-items: center;
+
   gap: 13px;
 }
 
@@ -18,10 +57,44 @@
 
   flex-shrink: 0;
 
-  border-radius: 13px;
+  border-radius: 12px;
 
-  background: #dcfce7;
-  color: #166534;
+  background:
+    rgba(22, 163, 106, 0.09);
+
+  color:
+    var(--rh-success);
+}
+
+.notifications-header h1 {
+  margin: 0;
+
+  color:
+    var(--rh-text);
+
+  font-size:
+    clamp(
+      27px,
+      3vw,
+      32px
+    );
+
+  font-weight: 750;
+
+  letter-spacing:
+    -0.035em;
+}
+
+.notifications-header p {
+  margin:
+    5px
+    0
+    0;
+
+  color:
+    var(--rh-text-secondary);
+
+  font-size: 12px;
 }
 
 
@@ -32,43 +105,97 @@
 .notifications-header-actions {
   display: flex;
   align-items: center;
+
   gap: 10px;
+
+  flex-shrink: 0;
 }
 
-.notifications-refresh {
+.notifications-refresh,
+.notifications-read-all {
   min-height: 42px;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
+
   gap: 8px;
 
-  padding: 0 14px;
+  padding:
+    0
+    14px;
 
-  border: 1px solid #d1d5db;
-  border-radius: 11px;
+  border-radius: 10px;
 
-  background: #ffffff;
-  color: #475569;
+  font: inherit;
 
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 650;
 
   cursor: pointer;
 
   transition:
-    background 150ms ease,
-    border-color 150ms ease;
+    transform 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.notifications-refresh {
+  border:
+    1px solid
+    var(--rh-border);
+
+  background:
+    #ffffff;
+
+  color:
+    var(--rh-text-secondary);
 }
 
 .notifications-refresh:hover:not(:disabled) {
-  background: #f8fafc;
-  border-color: #94a3b8;
+  border-color:
+    rgba(8, 124, 240, 0.22);
+
+  background:
+    rgba(8, 124, 240, 0.03);
+
+  color:
+    var(--rh-blue);
 }
 
-.notifications-refresh:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.notifications-read-all {
+  border: 0;
+
+  background:
+    var(--rh-gradient-blue);
+
+  color: #ffffff;
+
+  box-shadow:
+    0 6px 18px
+    rgba(8, 124, 240, 0.18);
+}
+
+.notifications-read-all:hover:not(:disabled) {
+  transform:
+    translateY(-1px);
+
+  box-shadow:
+    0 8px 22px
+    rgba(8, 124, 240, 0.23);
+}
+
+.notifications-refresh:disabled,
+.notifications-read-all:disabled {
+  opacity: 0.5;
+
+  cursor:
+    not-allowed;
+
+  transform: none;
 }
 
 
@@ -78,7 +205,12 @@
 
 .notifications-summary {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
 
   gap: 14px;
 
@@ -86,38 +218,198 @@
 }
 
 .notifications-summary article {
-  padding: 17px 18px;
+  min-height: 94px;
 
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 
-  background: #ffffff;
+  padding:
+    16px
+    18px;
+
+  border:
+    1px solid
+    var(--rh-border-light);
+
+  border-radius: 12px;
+
+  background:
+    var(--rh-surface);
 
   box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.03);
+    var(--rh-shadow-sm);
 }
 
 .notifications-summary span {
   display: block;
 
-  margin-bottom: 5px;
+  margin-bottom: 6px;
 
-  color: #64748b;
+  color:
+    var(--rh-text-muted);
 
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 600;
 }
 
 .notifications-summary strong {
-  font-size: 25px;
-  line-height: 1;
+  color:
+    var(--rh-text);
 
-  color: #111827;
+  font-size: 25px;
+  font-weight: 750;
+
+  line-height: 1;
 }
 
 
 /* =========================================================
-   BOUTON PRINCIPAL DE LA NOTIFICATION
+   ERREUR
+========================================================= */
+
+.notifications-error {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  margin-bottom: 18px;
+
+  padding:
+    12px
+    14px;
+
+  border:
+    1px solid
+    rgba(220, 76, 100, 0.18);
+
+  border-radius: 10px;
+
+  background:
+    rgba(220, 76, 100, 0.06);
+
+  color:
+    #a63449;
+
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.notifications-loading {
+  min-height: 340px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+
+  gap: 12px;
+
+  color:
+    var(--rh-text-secondary);
+
+  font-size: 11px;
+}
+
+.notifications-spin {
+  animation:
+    notificationsSpin
+    0.8s
+    linear
+    infinite;
+}
+
+@keyframes notificationsSpin {
+
+  to {
+    transform:
+      rotate(360deg);
+  }
+
+}
+
+
+/* =========================================================
+   LISTE
+========================================================= */
+
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 10px;
+}
+
+
+/* =========================================================
+   NOTIFICATION CARD
+========================================================= */
+
+.notification-card {
+  display: flex;
+  align-items: stretch;
+
+  gap: 12px;
+
+  padding:
+    14px
+    15px;
+
+  border:
+    1px solid
+    var(--rh-border-light);
+
+  border-radius: 12px;
+
+  background:
+    #ffffff;
+
+  box-shadow:
+    var(--rh-shadow-sm);
+
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+
+.notification-card:hover {
+  transform:
+    translateY(-1px);
+
+  border-color:
+    rgba(8, 124, 240, 0.15);
+
+  box-shadow:
+    var(--rh-shadow);
+}
+
+.notification-card:not(.notification-read) {
+  border-left:
+    3px solid
+    var(--rh-blue);
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(8, 124, 240, 0.025),
+      #ffffff 25%
+    );
+}
+
+.notification-read {
+  opacity: 0.82;
+}
+
+
+/* =========================================================
+   ACTION PRINCIPALE
 ========================================================= */
 
 .notification-main-action {
@@ -126,13 +418,15 @@
 
   display: flex;
   align-items: flex-start;
-  gap: 16px;
+
+  gap: 14px;
 
   padding: 0;
 
   border: 0;
 
-  background: transparent;
+  background:
+    transparent;
 
   text-align: left;
 
@@ -147,24 +441,121 @@
 
 
 /* =========================================================
-   TITRE
+   ICÔNE
 ========================================================= */
 
+.notification-icon {
+  width: 42px;
+  height: 42px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex:
+    0
+    0
+    42px;
+
+  border-radius: 10px;
+
+  background:
+    rgba(8, 124, 240, 0.07);
+
+  color:
+    var(--rh-blue);
+}
+
+
+/* =========================================================
+   CONTENT
+========================================================= */
+
+.notification-content {
+  min-width: 0;
+
+  flex: 1;
+}
+
+.notification-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 15px;
+}
+
 .notification-title-container {
+  min-width: 0;
+
   display: flex;
   align-items: center;
-  gap: 9px;
 
-  min-width: 0;
+  gap: 8px;
+
   flex: 1;
+}
+
+.notification-title-container h2 {
+  margin: 0;
+
+  overflow: hidden;
+
+  color:
+    var(--rh-text);
+
+  font-size: 12px;
+  font-weight: 700;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .notification-title-row time {
   flex-shrink: 0;
 
-  color: #94a3b8;
+  color:
+    var(--rh-text-muted);
 
-  font-size: 11px;
+  font-size: 9px;
+}
+
+.notification-content > p {
+  margin:
+    6px
+    0
+    0;
+
+  color:
+    var(--rh-text-secondary);
+
+  font-size: 10.5px;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   UNREAD
+========================================================= */
+
+.notification-unread-dot {
+  width: 7px;
+  height: 7px;
+
+  flex:
+    0
+    0
+    7px;
+
+  border-radius: 50%;
+
+  background:
+    var(--rh-blue);
+
+  box-shadow:
+    0 0 0 3px
+    rgba(8, 124, 240, 0.08);
 }
 
 
@@ -177,24 +568,28 @@
   align-items: center;
   flex-wrap: wrap;
 
-  gap: 7px;
+  gap: 6px;
 
-  margin-top: 8px;
+  margin-top: 9px;
 }
 
 .notification-meta > span {
   display: inline-flex;
   align-items: center;
 
-  padding: 3px 7px;
+  padding:
+    3px
+    7px;
 
-  border-radius: 20px;
+  border-radius: 999px;
 
-  background: #f1f5f9;
+  background:
+    var(--rh-surface-secondary);
 
-  color: #64748b;
+  color:
+    var(--rh-text-muted);
 
-  font-size: 10px;
+  font-size: 8.5px;
   font-weight: 600;
 }
 
@@ -208,23 +603,35 @@
 }
 
 .notification-priority-basse {
-  background: #f1f5f9 !important;
-  color: #64748b !important;
+  background:
+    #f1f5f9 !important;
+
+  color:
+    #64748b !important;
 }
 
 .notification-priority-normale {
-  background: #eff6ff !important;
-  color: #1d4ed8 !important;
+  background:
+    rgba(8, 124, 240, 0.07) !important;
+
+  color:
+    var(--rh-blue) !important;
 }
 
 .notification-priority-haute {
-  background: #fff7ed !important;
-  color: #c2410c !important;
+  background:
+    rgba(233, 162, 59, 0.10) !important;
+
+  color:
+    #c77d18 !important;
 }
 
 .notification-priority-urgente {
-  background: #fef2f2 !important;
-  color: #b91c1c !important;
+  background:
+    rgba(220, 76, 100, 0.08) !important;
+
+  color:
+    var(--rh-danger) !important;
 }
 
 
@@ -240,113 +647,236 @@
 
   gap: 5px;
 
-  margin-left: 10px;
+  flex-shrink: 0;
+
+  margin-left: 8px;
 }
 
 .notification-actions button {
-  padding: 5px 8px;
+  padding:
+    5px
+    8px;
 
   border: 0;
+
   border-radius: 7px;
 
-  background: transparent;
+  background:
+    transparent;
 
-  color: #64748b;
+  color:
+    var(--rh-text-muted);
 
-  font-size: 10px;
+  font: inherit;
+
+  font-size: 9px;
   font-weight: 600;
 
   cursor: pointer;
+
+  white-space: nowrap;
+
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
 }
 
-.notification-actions button:hover {
-  background: #f1f5f9;
-  color: #166534;
+.notification-actions button:hover:not(:disabled) {
+  background:
+    rgba(8, 124, 240, 0.06);
+
+  color:
+    var(--rh-blue);
 }
 
+.notification-actions button:disabled {
+  opacity: 0.5;
 
-/* =========================================================
-   COULEURS PAR TYPE
-========================================================= */
-
-.notification-type-alert .notification-icon {
-  background: #fff7ed;
-  color: #c2410c;
-}
-
-.notification-type-success .notification-icon {
-  background: #ecfdf5;
-  color: #15803d;
-}
-
-.notification-type-danger .notification-icon {
-  background: #fef2f2;
-  color: #b91c1c;
-}
-
-.notification-type-pay .notification-icon {
-  background: #f5f3ff;
-  color: #7c3aed;
-}
-
-.notification-type-document .notification-icon {
-  background: #eff6ff;
-  color: #2563eb;
-}
-
-.notification-type-request .notification-icon {
-  background: #f0fdf4;
-  color: #16a34a;
-}
-
-.notification-type-planning .notification-icon {
-  background: #ecfeff;
-  color: #0e7490;
-}
-
-.notification-type-time .notification-icon {
-  background: #fff7ed;
-  color: #ea580c;
+  cursor: not-allowed;
 }
 
 
 /* =========================================================
-   ERREUR AVEC ICÔNE
+   TYPES
 ========================================================= */
 
-.notifications-error {
+.notification-type-info
+.notification-icon {
+  background:
+    rgba(8, 124, 240, 0.08);
+
+  color:
+    var(--rh-blue);
+}
+
+.notification-type-alert
+.notification-icon {
+  background:
+    rgba(233, 162, 59, 0.10);
+
+  color:
+    #c77d18;
+}
+
+.notification-type-success
+.notification-icon {
+  background:
+    rgba(22, 163, 106, 0.09);
+
+  color:
+    var(--rh-success);
+}
+
+.notification-type-danger
+.notification-icon {
+  background:
+    rgba(220, 76, 100, 0.08);
+
+  color:
+    var(--rh-danger);
+}
+
+.notification-type-pay
+.notification-icon {
+  background:
+    rgba(84, 55, 245, 0.08);
+
+  color:
+    var(--rh-purple);
+}
+
+.notification-type-document
+.notification-icon {
+  background:
+    rgba(8, 124, 240, 0.08);
+
+  color:
+    var(--rh-blue);
+}
+
+.notification-type-request
+.notification-icon {
+  background:
+    rgba(22, 163, 106, 0.08);
+
+  color:
+    var(--rh-success);
+}
+
+.notification-type-planning
+.notification-icon {
+  background:
+    rgba(8, 183, 242, 0.09);
+
+  color:
+    #079bcf;
+}
+
+.notification-type-time
+.notification-icon {
+  background:
+    rgba(233, 162, 59, 0.09);
+
+  color:
+    var(--rh-warning);
+}
+
+
+/* =========================================================
+   EMPTY
+========================================================= */
+
+.notifications-empty {
+  min-height: 320px;
+
   display: flex;
   align-items: center;
-  gap: 9px;
+  justify-content: center;
+  flex-direction: column;
+
+  padding: 30px;
+
+  border:
+    1px solid
+    var(--rh-border-light);
+
+  border-radius:
+    var(--rh-radius);
+
+  background:
+    var(--rh-surface);
+
+  color:
+    var(--rh-text-muted);
+
+  text-align: center;
+
+  box-shadow:
+    var(--rh-shadow-sm);
+}
+
+.notifications-empty svg {
+  color:
+    #b5c2d0;
+}
+
+.notifications-empty h2 {
+  margin:
+    14px
+    0
+    5px;
+
+  color:
+    var(--rh-text);
+
+  font-size: 14px;
+}
+
+.notifications-empty p {
+  margin: 0;
+
+  font-size: 10.5px;
 }
 
 
 /* =========================================================
-   LOADER
+   RESPONSIVE - TABLETTE
 ========================================================= */
 
-.notifications-loading {
-  flex-direction: column;
-  gap: 12px;
-}
+@media (max-width: 900px) {
 
-.notifications-spin {
-  animation:
-    notificationsSpin 0.8s linear infinite;
-}
-
-@keyframes notificationsSpin {
-  to {
-    transform: rotate(360deg);
+  .notifications-page {
+    padding:
+      24px
+      20px;
   }
+
 }
 
 
 /* =========================================================
-   RESPONSIVE
+   RESPONSIVE - PETITE TABLETTE
 ========================================================= */
 
 @media (max-width: 760px) {
+
+  .notifications-page {
+    padding:
+      20px
+      16px
+      80px;
+  }
+
+  .notifications-header {
+    flex-direction:
+      column;
+
+    align-items:
+      stretch;
+
+    gap: 16px;
+  }
+
   .notifications-header-actions {
     width: 100%;
   }
@@ -357,15 +887,131 @@
   }
 
   .notifications-summary {
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      );
+
+    gap: 10px;
+  }
+
+  .notification-card {
+    padding: 13px;
+  }
+
+}
+
+
+/* =========================================================
+   RESPONSIVE - MOBILE
+========================================================= */
+
+@media (max-width: 560px) {
+
+  .notifications-page {
+    padding:
+      17px
+      12px
+      82px;
+  }
+
+  .notifications-title-icon {
+    width: 40px;
+    height: 40px;
+
+    border-radius: 10px;
+  }
+
+  .notifications-header h1 {
+    font-size: 23px;
+  }
+
+  .notifications-header p {
+    font-size: 10.5px;
+  }
+
+  .notifications-header-actions {
+    display: grid;
+
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+
+    gap: 8px;
+  }
+
+  .notifications-refresh,
+  .notifications-read-all {
+    width: 100%;
+
+    min-height: 41px;
+
+    padding:
+      0
+      9px;
+
+    font-size: 10px;
+  }
+
+  .notifications-summary {
     grid-template-columns: 1fr;
+
+    gap: 9px;
+
+    margin-bottom: 16px;
+  }
+
+  .notifications-summary article {
+    min-height: 78px;
+
+    padding:
+      13px
+      14px;
+  }
+
+  .notifications-summary strong {
+    font-size: 21px;
   }
 
   .notification-card {
     flex-direction: column;
+
+    gap: 10px;
+
+    padding:
+      12px;
   }
 
   .notification-main-action {
     width: 100%;
+
+    gap: 11px;
+  }
+
+  .notification-icon {
+    width: 38px;
+    height: 38px;
+
+    flex-basis: 38px;
+  }
+
+  .notification-title-row {
+    flex-direction: column;
+
+    gap: 4px;
+  }
+
+  .notification-title-container h2 {
+    white-space: normal;
+
+    font-size: 11.5px;
+  }
+
+  .notification-content > p {
+    font-size: 10px;
   }
 
   .notification-actions {
@@ -374,25 +1020,64 @@
     flex-direction: row;
     justify-content: flex-end;
 
+    gap: 5px;
+
     margin-left: 0;
+
     padding-top: 8px;
 
-    border-top: 1px solid #f1f5f9;
+    border-top:
+      1px solid
+      var(--rh-border-light);
   }
+
+  .notification-actions button {
+    font-size: 8.5px;
+  }
+
 }
 
-@media (max-width: 540px) {
+
+/* =========================================================
+   RESPONSIVE - TRÈS PETIT MOBILE
+========================================================= */
+
+@media (max-width: 390px) {
+
+  .notifications-page {
+    padding:
+      15px
+      10px
+      80px;
+  }
+
   .notifications-header-actions {
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
 
-  .notifications-refresh,
-  .notifications-read-all {
-    width: 100%;
+  .notifications-title-row {
+    align-items:
+      flex-start;
   }
 
-  .notification-title-row {
-    align-items: flex-start;
-    flex-direction: column;
+  .notifications-title-icon {
+    width: 38px;
+    height: 38px;
   }
+
+  .notifications-header h1 {
+    font-size: 21px;
+  }
+
+  .notification-main-action {
+    gap: 9px;
+  }
+
+  .notification-icon {
+    width: 36px;
+    height: 36px;
+
+    flex-basis: 36px;
+  }
+
 }

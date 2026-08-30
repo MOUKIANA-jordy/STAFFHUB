@@ -1,6 +1,7 @@
 /* =========================================================
    STAFFHUB
-   ADMIN PAIE
+   ADMIN USERS
+   VERSION PRO
 ========================================================= */
 
 
@@ -8,7 +9,7 @@
    PAGE
 ========================================================= */
 
-.paie-admin-page {
+.users-admin-page {
   width: 100%;
   min-height: 100%;
 
@@ -31,7 +32,7 @@
    HEADER
 ========================================================= */
 
-.paie-admin-header {
+.users-admin-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -41,7 +42,7 @@
   margin-bottom: 22px;
 }
 
-.paie-admin-eyebrow {
+.users-admin-eyebrow {
   display: block;
 
   margin-bottom: 6px;
@@ -57,7 +58,7 @@
   text-transform: uppercase;
 }
 
-.paie-admin-header h1 {
+.users-admin-header h1 {
   margin: 0;
 
   color:
@@ -76,8 +77,8 @@
     -0.035em;
 }
 
-.paie-admin-header p {
-  max-width: 650px;
+.users-admin-header p {
+  max-width: 620px;
 
   margin:
     7px
@@ -94,10 +95,20 @@
 
 
 /* =========================================================
-   REFRESH
+   HEADER ACTIONS
 ========================================================= */
 
-.paie-refresh-button {
+.users-admin-header-actions {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  flex-shrink: 0;
+}
+
+.users-refresh-button,
+.users-add-button {
   min-height: 41px;
 
   display: inline-flex;
@@ -110,17 +121,7 @@
     0
     14px;
 
-  border:
-    1px solid
-    var(--rh-border);
-
   border-radius: 9px;
-
-  background:
-    #ffffff;
-
-  color:
-    var(--rh-text-secondary);
 
   font: inherit;
 
@@ -130,24 +131,62 @@
   cursor: pointer;
 
   transition:
-    background 0.15s ease,
+    transform 0.15s ease,
     border-color 0.15s ease,
+    background 0.15s ease,
     color 0.15s ease,
+    box-shadow 0.15s ease,
     opacity 0.15s ease;
 }
 
-.paie-refresh-button:hover:not(:disabled) {
+.users-refresh-button {
+  border:
+    1px solid
+    var(--rh-border);
+
+  background:
+    #ffffff;
+
+  color:
+    var(--rh-text-secondary);
+}
+
+.users-refresh-button:hover:not(:disabled) {
+  color:
+    var(--rh-blue);
+
   border-color:
     rgba(8, 124, 240, 0.24);
 
   background:
     rgba(8, 124, 240, 0.035);
-
-  color:
-    var(--rh-blue);
 }
 
-.paie-refresh-button:disabled {
+.users-add-button {
+  border: 0;
+
+  background:
+    var(--rh-gradient-blue);
+
+  color:
+    #ffffff;
+
+  box-shadow:
+    0 6px 18px
+    rgba(8, 124, 240, 0.18);
+}
+
+.users-add-button:hover {
+  transform:
+    translateY(-1px);
+
+  box-shadow:
+    0 8px 22px
+    rgba(8, 124, 240, 0.24);
+}
+
+.users-refresh-button:disabled,
+.users-add-button:disabled {
   opacity: 0.5;
 
   cursor:
@@ -159,7 +198,7 @@
    ERROR
 ========================================================= */
 
-.paie-error {
+.users-admin-error {
   margin-bottom: 18px;
 
   padding:
@@ -186,12 +225,12 @@
    SUMMARY
 ========================================================= */
 
-.paie-summary-grid {
+.users-admin-summary {
   display: grid;
 
   grid-template-columns:
     repeat(
-      4,
+      3,
       minmax(0, 1fr)
     );
 
@@ -200,17 +239,17 @@
   margin-bottom: 20px;
 }
 
-.paie-summary-card {
-  min-height: 100px;
+.users-admin-summary article {
+  min-height: 92px;
 
   display: flex;
   align-items: center;
 
-  gap: 13px;
+  gap: 12px;
 
   padding:
-    16px
-    17px;
+    15px
+    16px;
 
   border:
     1px solid
@@ -225,9 +264,9 @@
     var(--rh-shadow-sm);
 }
 
-.paie-summary-icon {
-  width: 42px;
-  height: 42px;
+.users-summary-icon {
+  width: 40px;
+  height: 40px;
 
   display: inline-flex;
   align-items: center;
@@ -236,12 +275,12 @@
   flex:
     0
     0
-    42px;
+    40px;
 
   border-radius: 10px;
 }
 
-.paie-summary-icon-blue {
+.users-summary-icon-blue {
   background:
     rgba(8, 124, 240, 0.08);
 
@@ -249,7 +288,7 @@
     var(--rh-blue);
 }
 
-.paie-summary-icon-green {
+.users-summary-icon-green {
   background:
     rgba(22, 163, 106, 0.08);
 
@@ -257,7 +296,7 @@
     var(--rh-success);
 }
 
-.paie-summary-icon-purple {
+.users-summary-icon-purple {
   background:
     rgba(84, 55, 245, 0.08);
 
@@ -265,29 +304,20 @@
     var(--rh-purple);
 }
 
-.paie-summary-icon-orange {
-  background:
-    rgba(233, 162, 59, 0.10);
-
-  color:
-    var(--rh-warning);
-}
-
-.paie-summary-card strong {
+.users-admin-summary strong {
   display: block;
 
   color:
     var(--rh-text);
 
-  font-size: 20px;
+  font-size: 21px;
   font-weight: 750;
 }
 
-.paie-summary-card p {
-  margin:
-    5px
-    0
-    0;
+.users-admin-summary div > span {
+  display: block;
+
+  margin-top: 4px;
 
   color:
     var(--rh-text-muted);
@@ -300,7 +330,7 @@
    CARD
 ========================================================= */
 
-.paie-admin-card {
+.users-admin-card {
   overflow: hidden;
 
   border:
@@ -322,12 +352,12 @@
    CARD HEADER
 ========================================================= */
 
-.paie-card-header {
+.users-admin-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  gap: 20px;
+  gap: 18px;
 
   padding:
     18px
@@ -338,7 +368,7 @@
     var(--rh-border-light);
 }
 
-.paie-card-header h2 {
+.users-admin-card-header h2 {
   margin: 0;
 
   color:
@@ -348,7 +378,7 @@
   font-weight: 700;
 }
 
-.paie-card-header p {
+.users-admin-card-header p {
   margin:
     4px
     0
@@ -362,21 +392,15 @@
 
 
 /* =========================================================
-   TOOLBAR
+   SEARCH
 ========================================================= */
 
-.paie-toolbar {
-  display: flex;
-  align-items: center;
-
-  gap: 9px;
-}
-
-.paie-search {
-  width: min(
-    280px,
-    35vw
-  );
+.users-search {
+  width:
+    min(
+      310px,
+      40vw
+    );
 
   min-height: 39px;
 
@@ -402,7 +426,7 @@
     var(--rh-text-muted);
 }
 
-.paie-search:focus-within {
+.users-search:focus-within {
   border-color:
     rgba(8, 124, 240, 0.42);
 
@@ -414,7 +438,7 @@
     rgba(8, 124, 240, 0.06);
 }
 
-.paie-search input {
+.users-search input {
   width: 100%;
 
   border: 0;
@@ -431,37 +455,9 @@
   font-size: 10.5px;
 }
 
-.paie-search input::placeholder {
+.users-search input::placeholder {
   color:
     var(--rh-text-muted);
-}
-
-.paie-toolbar select {
-  min-height: 39px;
-
-  min-width: 145px;
-
-  padding:
-    0
-    10px;
-
-  border:
-    1px solid
-    var(--rh-border);
-
-  border-radius: 9px;
-
-  outline: 0;
-
-  background:
-    #ffffff;
-
-  color:
-    var(--rh-text-secondary);
-
-  font: inherit;
-
-  font-size: 10px;
 }
 
 
@@ -469,7 +465,7 @@
    TABLE WRAPPER
 ========================================================= */
 
-.paie-table-wrapper {
+.users-table-wrapper {
   width: 100%;
 
   overflow-x: auto;
@@ -484,11 +480,11 @@
     transparent;
 }
 
-.paie-table-wrapper::-webkit-scrollbar {
+.users-table-wrapper::-webkit-scrollbar {
   height: 5px;
 }
 
-.paie-table-wrapper::-webkit-scrollbar-thumb {
+.users-table-wrapper::-webkit-scrollbar-thumb {
   border-radius: 999px;
 
   background:
@@ -500,28 +496,28 @@
    TABLE
 ========================================================= */
 
-.paie-table {
+.users-table {
   width: 100%;
 
-  min-width: 850px;
+  min-width: 860px;
 
   border-collapse:
     collapse;
 
-  background:
-    #ffffff;
+  table-layout:
+    auto;
 }
 
-.paie-table thead {
+.users-table thead {
   background:
     var(--rh-surface-secondary);
 }
 
-.paie-table th,
-.paie-table td {
+.users-table th,
+.users-table td {
   padding:
     12px
-    13px;
+    12px;
 
   border-bottom:
     1px solid
@@ -531,7 +527,7 @@
   vertical-align: middle;
 }
 
-.paie-table th {
+.users-table th {
   color:
     var(--rh-text-muted);
 
@@ -548,44 +544,84 @@
     nowrap;
 }
 
-.paie-table td {
+.users-table td {
   color:
     var(--rh-text-secondary);
 
   font-size: 10.5px;
 }
 
-.paie-table tbody tr {
+.users-table tbody tr {
   transition:
     background 0.15s ease;
 }
 
-.paie-table tbody tr:hover {
+.users-table tbody tr:hover {
   background:
     rgba(8, 124, 240, 0.025);
 }
 
-.paie-table tbody tr:last-child td {
+.users-table tbody tr:last-child td {
   border-bottom: 0;
+}
+
+.users-clickable-row {
+  cursor: pointer;
 }
 
 
 /* =========================================================
-   USER
+   COLONNES
 ========================================================= */
 
-.paie-user {
+.users-table th:nth-child(1),
+.users-table td:nth-child(1) {
+  min-width: 220px;
+}
+
+.users-table th:nth-child(2),
+.users-table td:nth-child(2) {
+  min-width: 125px;
+}
+
+.users-table th:nth-child(3),
+.users-table td:nth-child(3) {
+  min-width: 125px;
+}
+
+.users-table th:nth-child(4),
+.users-table td:nth-child(4) {
+  min-width: 85px;
+}
+
+.users-table th:nth-child(5),
+.users-table td:nth-child(5) {
+  min-width: 90px;
+}
+
+.users-table th:nth-child(6),
+.users-table td:nth-child(6) {
+  width: 132px;
+  min-width: 132px;
+}
+
+
+/* =========================================================
+   EMPLOYEE
+========================================================= */
+
+.users-employee {
   display: flex;
   align-items: center;
 
   gap: 10px;
 
-  min-width: 170px;
+  min-width: 0;
 }
 
-.paie-avatar {
-  width: 36px;
-  height: 36px;
+.users-avatar {
+  width: 38px;
+  height: 38px;
 
   display: inline-flex;
   align-items: center;
@@ -594,7 +630,7 @@
   flex:
     0
     0
-    36px;
+    38px;
 
   border-radius: 50%;
 
@@ -604,144 +640,248 @@
   color:
     #ffffff;
 
-  font-size: 9.5px;
+  font-size: 10px;
   font-weight: 750;
 }
 
-.paie-user strong {
+.users-employee > div {
+  min-width: 0;
+}
+
+.users-employee strong {
+  display: block;
+
   color:
     var(--rh-text);
 
   font-size: 10.5px;
   font-weight: 700;
+
+  white-space: nowrap;
+}
+
+.users-employee div > span {
+  display: block;
+
+  margin-top: 3px;
+
+  color:
+    var(--rh-text-muted);
+
+  font-size: 8.5px;
+
+  white-space:
+    nowrap;
+}
+
+.users-main-value {
+  color:
+    var(--rh-text);
+
+  font-weight: 600;
+
+  white-space:
+    nowrap;
+}
+
+.users-secondary-value {
+  color:
+    var(--rh-text-secondary);
+
+  white-space:
+    nowrap;
 }
 
 
 /* =========================================================
-   TYPE
+   BADGES
 ========================================================= */
 
-.paie-type {
+.users-contract-badge,
+.users-role-badge {
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
 
   padding:
-    5px
+    4px
     8px;
 
   border-radius: 999px;
 
+  font-size: 8px;
+  font-weight: 650;
+
+  white-space:
+    nowrap;
+}
+
+.users-contract-badge {
+  background:
+    #f1f5f9;
+
+  color:
+    #475569;
+}
+
+.users-role-salarie {
   background:
     rgba(8, 124, 240, 0.07);
 
   color:
     var(--rh-blue);
-
-  font-size: 8.5px;
-  font-weight: 650;
-
-  white-space:
-    nowrap;
 }
 
+.users-role-rh {
+  background:
+    rgba(22, 163, 106, 0.08);
 
-/* =========================================================
-   AMOUNT
-========================================================= */
-
-.paie-amount {
   color:
-    var(--rh-text);
+    var(--rh-success);
+}
 
-  font-size: 11px;
-  font-weight: 750;
+.users-role-admin {
+  background:
+    rgba(84, 55, 245, 0.08);
+
+  color:
+    var(--rh-purple);
+}
+
+
+/* =========================================================
+   ACTIONS
+========================================================= */
+
+.users-actions-column {
+  width: 132px;
+
+  text-align:
+    center !important;
+}
+
+.users-row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  min-width: 132px;
 
   white-space:
     nowrap;
 }
 
-
-/* =========================================================
-   DATE
-========================================================= */
-
-.paie-date {
-  white-space:
-    nowrap;
-}
-
-
-/* =========================================================
-   COMMENT
-========================================================= */
-
-.paie-comment {
-  display: block;
-
-  max-width: 260px;
-
-  overflow: hidden;
-
-  white-space:
-    nowrap;
-
-  text-overflow:
-    ellipsis;
-}
-
-
-/* =========================================================
-   PDF
-========================================================= */
-
-.paie-pdf-button {
-  min-height: 32px;
+.users-action-button {
+  width: 32px;
+  height: 32px;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
-  gap: 6px;
-
-  padding:
+  flex:
     0
-    9px;
+    0
+    32px;
+
+  padding: 0;
 
   border:
     1px solid
-    rgba(8, 124, 240, 0.12);
+    transparent;
 
   border-radius: 8px;
 
+  cursor: pointer;
+
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.users-action-button:hover {
+  transform:
+    translateY(-1px);
+}
+
+
+/* VIEW */
+
+.users-action-view {
+  border-color:
+    rgba(8, 124, 240, 0.09);
+
   background:
-    rgba(8, 124, 240, 0.05);
+    rgba(8, 124, 240, 0.055);
 
   color:
     var(--rh-blue);
-
-  font-size: 8.5px;
-  font-weight: 650;
-
-  text-decoration:
-    none;
-
-  transition:
-    background 0.15s ease,
-    border-color 0.15s ease;
 }
 
-.paie-pdf-button:hover {
+.users-action-view:hover {
   border-color:
-    rgba(8, 124, 240, 0.2);
+    rgba(8, 124, 240, 0.18);
 
   background:
-    rgba(8, 124, 240, 0.09);
+    rgba(8, 124, 240, 0.1);
 }
 
-.paie-no-document {
-  color:
-    var(--rh-text-muted);
 
-  font-size: 9px;
+/* EDIT */
+
+.users-action-edit {
+  border-color:
+    rgba(217, 119, 6, 0.09);
+
+  background:
+    rgba(217, 119, 6, 0.05);
+
+  color:
+    #d97706;
+}
+
+.users-action-edit:hover {
+  border-color:
+    rgba(217, 119, 6, 0.18);
+
+  background:
+    rgba(217, 119, 6, 0.1);
+}
+
+
+/* DELETE */
+
+.users-action-delete {
+  border-color:
+    rgba(220, 76, 100, 0.09);
+
+  background:
+    rgba(220, 76, 100, 0.05);
+
+  color:
+    var(--rh-danger);
+}
+
+.users-action-delete:hover {
+  border-color:
+    rgba(220, 76, 100, 0.18);
+
+  background:
+    rgba(220, 76, 100, 0.1);
+}
+
+.users-action-button:disabled {
+  opacity: 0.45;
+
+  cursor:
+    not-allowed;
+
+  transform:
+    none;
 }
 
 
@@ -749,9 +889,9 @@
    LOADING / EMPTY
 ========================================================= */
 
-.paie-loading,
-.paie-empty {
-  min-height: 310px;
+.users-admin-loading,
+.users-admin-empty {
+  min-height: 300px;
 
   display: flex;
   align-items: center;
@@ -760,7 +900,7 @@
 
   gap: 10px;
 
-  padding: 25px;
+  padding: 24px;
 
   color:
     var(--rh-text-muted);
@@ -770,22 +910,22 @@
   text-align: center;
 }
 
-.paie-empty strong {
+.users-admin-empty strong {
   color:
     var(--rh-text);
 
   font-size: 13px;
 }
 
-.paie-spin {
+.users-spin {
   animation:
-    paie-spin
+    users-spin
     0.8s
     linear
     infinite;
 }
 
-@keyframes paie-spin {
+@keyframes users-spin {
   to {
     transform:
       rotate(360deg);
@@ -797,14 +937,24 @@
    RESPONSIVE - LAPTOP
 ========================================================= */
 
-@media (max-width: 1150px) {
+@media (max-width: 1100px) {
 
-  .paie-summary-grid {
-    grid-template-columns:
-      repeat(
-        2,
-        minmax(0, 1fr)
-      );
+  .users-admin-page {
+    padding:
+      24px
+      20px;
+  }
+
+  .users-table {
+    min-width:
+      820px;
+  }
+
+  .users-table th,
+  .users-table td {
+    padding:
+      11px
+      10px;
   }
 
 }
@@ -814,30 +964,19 @@
    RESPONSIVE - TABLETTE
 ========================================================= */
 
-@media (max-width: 850px) {
+@media (max-width: 900px) {
 
-  .paie-admin-page {
-    padding:
-      24px
-      20px;
+  .users-admin-summary {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
   }
 
-  .paie-card-header {
-    flex-direction:
-      column;
-
-    align-items:
-      stretch;
-  }
-
-  .paie-toolbar {
-    width: 100%;
-  }
-
-  .paie-search {
-    flex: 1;
-
-    width: auto;
+  .users-table {
+    min-width:
+      820px;
   }
 
 }
@@ -849,14 +988,14 @@
 
 @media (max-width: 700px) {
 
-  .paie-admin-page {
+  .users-admin-page {
     padding:
       20px
       14px
       82px;
   }
 
-  .paie-admin-header {
+  .users-admin-header {
     flex-direction:
       column;
 
@@ -864,11 +1003,15 @@
       stretch;
   }
 
-  .paie-refresh-button {
+  .users-admin-header-actions {
     width: 100%;
   }
 
-  .paie-toolbar {
+  .users-admin-header-actions button {
+    flex: 1;
+  }
+
+  .users-admin-card-header {
     flex-direction:
       column;
 
@@ -876,8 +1019,7 @@
       stretch;
   }
 
-  .paie-search,
-  .paie-toolbar select {
+  .users-search {
     width: 100%;
   }
 
@@ -890,22 +1032,29 @@
 
 @media (max-width: 560px) {
 
-  .paie-admin-header h1 {
+  .users-admin-header h1 {
     font-size: 23px;
   }
 
-  .paie-summary-grid {
+  .users-admin-header-actions {
+    display: grid;
+
     grid-template-columns:
       1fr;
 
-    gap: 10px;
+    gap: 8px;
   }
 
-  .paie-summary-card {
-    min-height: 82px;
+  .users-admin-summary {
+    grid-template-columns:
+      1fr;
   }
 
-  .paie-card-header {
+  .users-admin-summary article {
+    min-height: 80px;
+  }
+
+  .users-admin-card-header {
     padding: 15px;
   }
 
@@ -913,19 +1062,19 @@
 
 
 /* =========================================================
-   VERY SMALL
+   TRÈS PETIT MOBILE
 ========================================================= */
 
 @media (max-width: 390px) {
 
-  .paie-admin-page {
+  .users-admin-page {
     padding:
       15px
       10px
       80px;
   }
 
-  .paie-admin-header h1 {
+  .users-admin-header h1 {
     font-size: 21px;
   }
 

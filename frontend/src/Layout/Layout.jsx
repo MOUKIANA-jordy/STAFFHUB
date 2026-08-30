@@ -2,18 +2,20 @@ import React from "react";
 
 import {
   Outlet,
-  useNavigate,
 } from "react-router-dom";
 
 import useAuth from "../Hooks/useAuth";
 
 import Sidebar from "../Components/Sidebar";
 import Header from "../Components/Header";
+import "../Styles/layout.css";
 
 
 export default function Layout() {
 
-  const navigate = useNavigate();
+  // =========================================================
+  // UTILISATEUR CONNECTÉ
+  // =========================================================
 
   const {
     user,
@@ -21,41 +23,15 @@ export default function Layout() {
 
 
   // =========================================================
-  // LOGOUT
-  // =========================================================
-
-  const handleLogout = () => {
-
-    localStorage.removeItem(
-      "access"
-    );
-
-    localStorage.removeItem(
-      "refresh"
-    );
-
-    navigate(
-      "/",
-      {
-        replace: true,
-      }
-    );
-
-  };
-
-
-  // =========================================================
-  // CHARGEMENT USER
+  // CHARGEMENT
   // =========================================================
 
   if (!user) {
-
     return (
       <div className="app-loading">
         Chargement...
       </div>
     );
-
   }
 
 
@@ -66,14 +42,21 @@ export default function Layout() {
   return (
     <div className="app-layout">
 
+      {/* ===================================================
+          SIDEBAR
+      =================================================== */}
+
       <Sidebar />
 
+
+      {/* ===================================================
+          CONTENU PRINCIPAL
+      =================================================== */}
 
       <div className="main-area">
 
         <Header
           user={user}
-          onLogout={handleLogout}
         />
 
 

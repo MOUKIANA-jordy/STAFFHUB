@@ -9,7 +9,6 @@ import {
   Mail,
   Search,
   ChevronDown,
-  LogOut,
 } from "lucide-react";
 
 import "../Styles/header.css";
@@ -17,7 +16,6 @@ import "../Styles/header.css";
 
 export default function Header({
   user,
-  onLogout,
 }) {
 
   // =========================================================
@@ -111,16 +109,21 @@ export default function Header({
 
       <div className="header-right">
 
-        {/* NOTIFICATIONS */}
+        {/* =================================================
+            NOTIFICATIONS
+        ================================================= */}
 
         <NavLink
           to="/home/notifications"
           className={({ isActive }) =>
             `header-icon ${
-              isActive ? "header-icon-active" : ""
+              isActive
+                ? "header-icon-active"
+                : ""
             }`
           }
           aria-label="Notifications"
+          title="Notifications"
         >
 
           <Bell
@@ -131,16 +134,21 @@ export default function Header({
         </NavLink>
 
 
-        {/* MESSAGERIE */}
+        {/* =================================================
+            MESSAGERIE
+        ================================================= */}
 
         <NavLink
           to="/home/messagerie"
           className={({ isActive }) =>
             `header-icon ${
-              isActive ? "header-icon-active" : ""
+              isActive
+                ? "header-icon-active"
+                : ""
             }`
           }
           aria-label="Messagerie"
+          title="Messagerie"
         >
 
           <Mail
@@ -151,17 +159,23 @@ export default function Header({
         </NavLink>
 
 
-        {/* PROFIL */}
+        {/* =================================================
+            PROFIL
+        ================================================= */}
 
         <NavLink
           to="/home/profile"
           className={({ isActive }) =>
             `header-profile ${
-              isActive ? "header-profile-active" : ""
+              isActive
+                ? "header-profile-active"
+                : ""
             }`
           }
           aria-label="Ouvrir mon profil"
         >
+
+          {/* AVATAR */}
 
           {avatar ? (
 
@@ -182,6 +196,8 @@ export default function Header({
           )}
 
 
+          {/* INFORMATIONS UTILISATEUR */}
+
           <div className="header-profile-text">
 
             <strong>
@@ -195,6 +211,8 @@ export default function Header({
           </div>
 
 
+          {/* CHEVRON */}
+
           <ChevronDown
             size={17}
             strokeWidth={1.8}
@@ -202,24 +220,6 @@ export default function Header({
           />
 
         </NavLink>
-
-
-        {/* DÉCONNEXION */}
-
-        <button
-          type="button"
-          className="header-logout"
-          onClick={onLogout}
-          aria-label="Se déconnecter"
-          title="Déconnexion"
-        >
-
-          <LogOut
-            size={19}
-            strokeWidth={1.8}
-          />
-
-        </button>
 
       </div>
 

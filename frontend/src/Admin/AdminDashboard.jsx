@@ -1,19 +1,44 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  useNavigate,
+} from "react-router-dom";
+
+import {
+  CalendarDays,
+  CheckCircle2,
+  Clock3,
+  FileText,
+  Users,
+  XCircle,
+  ClipboardList,
+  WalletCards,
+  ArrowRight,
+  RefreshCw,
+} from "lucide-react";
 
 import API from "../Services/api";
+
 import "../Styles/admin.css";
 
 
 export default function AdminDashboard() {
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
 
 
   // =========================================================
   // STATES
   // =========================================================
 
-  const [stats, setStats] = useState({
+  const [
+    stats,
+    setStats,
+  ] = useState({
     salaries: 0,
     demandes: 0,
     demandes_en_attente: 0,
@@ -24,191 +49,381 @@ export default function AdminDashboard() {
     plannings: 0,
   });
 
-  const [planning, setPlanning] = useState([]);
-  const [requests, setRequests] = useState([]);
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [
+    planning,
+    setPlanning,
+  ] = useState([]);
+
+
+  const [
+    requests,
+    setRequests,
+  ] = useState([]);
+
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
+
+
+  const [
+    refreshing,
+    setRefreshing,
+  ] = useState(false);
+
+
+  const [
+    error,
+    setError,
+  ] = useState("");
 
 
   // =========================================================
-  // HELPER PAGINATION DRF
+  // HELPER DRF
   // =========================================================
 
-  const extractResults = (data) => {
-    if (Array.isArray(data)) {
+  const extractResults = (
+    data
+  ) => {
+    if (
+      Array.isArray(data)
+    ) {
       return data;
     }
 
-    if (data && Array.isArray(data.results)) {
+
+    if (
+      data
+      && Array.isArray(
+        data.results
+      )
+    ) {
       return data.results;
     }
+
 
     return [];
   };
 
 
   // =========================================================
-  // CHARGEMENT DES DONNÉES
+  // FETCH
   // =========================================================
 
-  useEffect(() => {
-    const fetchData = async () => {
+  const fetchDashboard = async (
+    isRefresh = false
+  ) => {
+    if (
+      isRefresh
+    ) {
+      setRefreshing(true);
+    } else {
       setLoading(true);
-      setError("");
+    }
 
 
-      // =====================================================
-      // STATS
-      // =====================================================
+    setError("");
 
-      try {
-        const statsRes = await API.get(
+
+    try {
+      const [
+        statsRes,
+        planningRes,
+        requestsRes,
+      ] = await Promise.all([
+        API.get(
           "/api/admin/stats/"
-        );
+        ),
 
-        setStats({
-          salaries:
-            statsRes.data.salaries || 0,
-
-          demandes:
-            statsRes.data.demandes || 0,
-
-          demandes_en_attente:
-            statsRes.data.demandes_en_attente || 0,
-
-          demandes_approuvees:
-            statsRes.data.demandes_approuvees || 0,
-
-          demandes_refusees:
-            statsRes.data.demandes_refusees || 0,
-
-          pointages:
-            statsRes.data.pointages || 0,
-
-          fiches:
-            statsRes.data.fiches || 0,
-
-          plannings:
-            statsRes.data.plannings || 0,
-        });
-
-      } catch (err) {
-        console.error(
-          "STATS ERROR",
-          err
-        );
-
-        setError(
-          "Impossible de charger les statistiques."
-        );
-      }
-
-
-      // =====================================================
-      // PLANNING
-      // =====================================================
-
-      try {
-        const planningRes = await API.get(
+        API.get(
           "/api/planning/"
-        );
+        ),
 
-        setPlanning(
-          extractResults(
-            planningRes.data
-          )
-        );
-
-      } catch (err) {
-        console.error(
-          "PLANNING ERROR",
-          err
-        );
-
-        setPlanning([]);
-      }
-
-
-      // =====================================================
-      // DEMANDES
-      // =====================================================
-
-      try {
-        const reqRes = await API.get(
+        API.get(
           "/api/demandes/"
-        );
-
-        setRequests(
-          extractResults(
-            reqRes.data
-          )
-        );
-
-      } catch (err) {
-        console.error(
-          "DEMANDES ERROR",
-          err
-        );
-
-        setRequests([]);
-      }
+        ),
+      ]);
 
 
+      setStats({
+        salaries:
+          statsRes.data.salaries
+          || 0,
+
+        demandes:
+          statsRes.data.demandes
+          || 0,
+
+        demandes_en_attente:
+          statsRes.data
+            .demandes_en_attente
+          || 0,
+
+        demandes_approuvees:
+          statsRes.data
+            .demandes_approuvees
+          || 0,
+
+        demandes_refusees:
+          statsRes.data
+            .demandes_refusees
+          || 0,
+
+        pointages:
+          statsRes.data.pointages
+          || 0,
+
+        fiches:
+          statsRes.data.fiches
+          || 0,
+
+        plannings:
+          statsRes.data.plannings
+          || 0,
+      });
+
+
+      setPlanning(
+        extractResults(
+          planningRes.data
+        )
+      );
+
+
+      setRequests(
+        extractResults(
+          requestsRes.data
+        )
+      );
+
+
+    } catch (err) {
+      console.error(
+        "ADMIN DASHBOARD ERROR",
+        err
+      );
+
+
+      setError(
+        err.response?.data?.detail
+        || "Impossible de charger le dashboard RH."
+      );
+
+
+    } finally {
       setLoading(false);
-    };
+      setRefreshing(false);
+    }
+  };
 
-    fetchData();
 
+  useEffect(() => {
+    fetchDashboard();
   }, []);
 
 
   // =========================================================
-  // POURCENTAGES DES DEMANDES
+  // POURCENTAGES
   // =========================================================
 
-  const total = stats.demandes || 0;
+  const totalDemandes =
+    stats.demandes
+    || 0;
 
 
   const percentEncours =
-    total > 0
+    totalDemandes > 0
       ? (
-          stats.demandes_en_attente
-          / total
+          stats
+            .demandes_en_attente
+          / totalDemandes
         ) * 100
       : 0;
 
 
   const percentAcceptees =
-    total > 0
+    totalDemandes > 0
       ? (
-          stats.demandes_approuvees
-          / total
+          stats
+            .demandes_approuvees
+          / totalDemandes
         ) * 100
       : 0;
 
 
   const percentRefusees =
-    total > 0
+    totalDemandes > 0
       ? (
-          stats.demandes_refusees
-          / total
+          stats
+            .demandes_refusees
+          / totalDemandes
         ) * 100
       : 0;
 
 
   // =========================================================
-  // FORMATAGE DATE
+  // KPI
   // =========================================================
 
-  const formatDate = (dateValue) => {
-    if (!dateValue) {
+  const primaryStats =
+    useMemo(
+      () => [
+        {
+          label:
+            "Salariés",
+
+          value:
+            stats.salaries,
+
+          icon:
+            Users,
+
+          className:
+            "stat-purple",
+        },
+
+        {
+          label:
+            "Demandes",
+
+          value:
+            stats.demandes,
+
+          icon:
+            ClipboardList,
+
+          className:
+            "stat-blue",
+        },
+
+        {
+          label:
+            "En attente",
+
+          value:
+            stats
+              .demandes_en_attente,
+
+          icon:
+            Clock3,
+
+          className:
+            "stat-yellow",
+        },
+
+        {
+          label:
+            "Approuvées",
+
+          value:
+            stats
+              .demandes_approuvees,
+
+          icon:
+            CheckCircle2,
+
+          className:
+            "stat-green",
+        },
+      ],
+      [stats]
+    );
+
+
+  const secondaryStats =
+    useMemo(
+      () => [
+        {
+          label:
+            "Refusées",
+
+          value:
+            stats
+              .demandes_refusees,
+
+          icon:
+            XCircle,
+
+          className:
+            "stat-red",
+        },
+
+        {
+          label:
+            "Pointages",
+
+          value:
+            stats.pointages,
+
+          icon:
+            Clock3,
+
+          className:
+            "stat-cyan",
+        },
+
+        {
+          label:
+            "Fiches de paie",
+
+          value:
+            stats.fiches,
+
+          icon:
+            WalletCards,
+
+          className:
+            "stat-orange",
+        },
+
+        {
+          label:
+            "Plannings",
+
+          value:
+            stats.plannings,
+
+          icon:
+            CalendarDays,
+
+          className:
+            "stat-navy",
+        },
+      ],
+      [stats]
+    );
+
+
+  // =========================================================
+  // FORMAT DATE
+  // =========================================================
+
+  const formatDate = (
+    dateValue
+  ) => {
+    if (
+      !dateValue
+    ) {
       return "—";
     }
 
-    const date = new Date(
-      `${dateValue}T00:00:00`
-    );
+
+    const date =
+      new Date(
+        `${dateValue}T00:00:00`
+      );
+
+
+    if (
+      Number.isNaN(
+        date.getTime()
+      )
+    ) {
+      return dateValue;
+    }
+
 
     return date.toLocaleDateString(
       "fr-FR"
@@ -217,32 +432,63 @@ export default function AdminDashboard() {
 
 
   // =========================================================
-  // FORMATAGE TYPE DEMANDE
+  // TYPE DEMANDE
   // =========================================================
 
-  const formatRequestType = (request) => {
+  const formatRequestType = (
+    request
+  ) => (
+    request
+      .type_demande_display
+    || request.type_demande
+    || "—"
+  );
+
+
+  // =========================================================
+  // STATUT
+  // =========================================================
+
+  const getStatusClass = (
+    status
+  ) => {
+    const classes = {
+      EN_ATTENTE:
+        "admin-status-pending",
+
+      APPROUVE:
+        "admin-status-approved",
+
+      REFUSE:
+        "admin-status-rejected",
+    };
+
+
     return (
-      request.type_demande_display
-      || request.type_demande
-      || "—"
+      classes[status]
+      || ""
     );
   };
 
 
-  // =========================================================
-  // FORMATAGE STATUT
-  // =========================================================
+  const getStatusLabel = (
+    status
+  ) => {
+    const labels = {
+      EN_ATTENTE:
+        "En attente",
 
-  const formatStatus = (statut) => {
-    const statuses = {
-      EN_ATTENTE: "🕐 En attente",
-      APPROUVE: "✅ Approuvé",
-      REFUSE: "❌ Refusé",
+      APPROUVE:
+        "Approuvé",
+
+      REFUSE:
+        "Refusé",
     };
 
+
     return (
-      statuses[statut]
-      || statut
+      labels[status]
+      || status
       || "—"
     );
   };
@@ -252,19 +498,26 @@ export default function AdminDashboard() {
   // LOADING
   // =========================================================
 
-  if (loading) {
+  if (
+    loading
+  ) {
     return (
-      <div className="admin-dashboard">
+      <main className="admin-dashboard">
 
-        <h1 className="dashboard-title">
-          Dashboard RH
-        </h1>
+        <div className="admin-loading">
 
-        <p>
-          Chargement du dashboard...
-        </p>
+          <RefreshCw
+            size={28}
+            className="admin-spin"
+          />
 
-      </div>
+          <span>
+            Chargement du dashboard RH...
+          </span>
+
+        </div>
+
+      </main>
     );
   }
 
@@ -274,746 +527,722 @@ export default function AdminDashboard() {
   // =========================================================
 
   return (
-    <div className="admin-dashboard">
-
+    <main className="admin-dashboard">
 
       {/* ===================================================
-          TITRE
+          HEADER
       =================================================== */}
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "20px",
-        }}
-      >
+      <header className="admin-dashboard-header">
 
         <div>
+
+          <span className="admin-eyebrow">
+            Administration RH
+          </span>
 
           <h1 className="dashboard-title">
             Dashboard RH
           </h1>
 
-          <p
-            style={{
-              margin: 0,
-              color: "#6b7280",
-            }}
-          >
-            Vue d'ensemble de StaffHub
+          <p>
+            Vue d'ensemble de l'activité StaffHub.
           </p>
 
         </div>
 
-      </div>
+
+        <button
+          type="button"
+          className="admin-refresh-button"
+          onClick={() =>
+            fetchDashboard(
+              true
+            )
+          }
+          disabled={
+            refreshing
+          }
+        >
+
+          <RefreshCw
+            size={17}
+            className={
+              refreshing
+                ? "admin-spin"
+                : ""
+            }
+          />
+
+          Actualiser
+
+        </button>
+
+      </header>
 
 
       {/* ===================================================
-          ERREUR
+          ERROR
       =================================================== */}
 
-      {error && (
-
-        <div
-          style={{
-            marginBottom: "20px",
-            padding: "12px 16px",
-            borderRadius: "8px",
-            background: "#fee2e2",
-            color: "#991b1b",
-          }}
-        >
-          {error}
-        </div>
-
-      )}
+      {
+        error
+        && (
+          <div className="admin-error">
+            {error}
+          </div>
+        )
+      }
 
 
       {/* ===================================================
           KPI PRINCIPAUX
       =================================================== */}
 
-      <div className="stats-grid">
+      <section className="stats-grid">
 
+        {
+          primaryStats.map(
+            (item) => (
+              <StatCard
+                key={
+                  item.label
+                }
+                item={
+                  item
+                }
+              />
+            )
+          )
+        }
 
-        {/* SALARIÉS */}
-
-        <div className="stat-card stat-purple">
-
-          <h3>
-            Salariés
-          </h3>
-
-          <p>
-            {stats.salaries}
-          </p>
-
-        </div>
-
-
-        {/* DEMANDES */}
-
-        <div className="stat-card stat-blue">
-
-          <h3>
-            Demandes
-          </h3>
-
-          <p>
-            {stats.demandes}
-          </p>
-
-        </div>
-
-
-        {/* EN ATTENTE */}
-
-        <div className="stat-card stat-yellow">
-
-          <h3>
-            En attente
-          </h3>
-
-          <p>
-            {stats.demandes_en_attente}
-          </p>
-
-        </div>
-
-
-        {/* APPROUVÉES */}
-
-        <div className="stat-card stat-green">
-
-          <h3>
-            Approuvées
-          </h3>
-
-          <p>
-            {stats.demandes_approuvees}
-          </p>
-
-        </div>
-
-
-      </div>
+      </section>
 
 
       {/* ===================================================
           KPI SECONDAIRES
       =================================================== */}
 
-      <div
-        className="stats-grid"
-        style={{
-          marginTop: "20px",
-        }}
-      >
+      <section className="stats-grid admin-secondary-stats">
 
+        {
+          secondaryStats.map(
+            (item) => (
+              <StatCard
+                key={
+                  item.label
+                }
+                item={
+                  item
+                }
+              />
+            )
+          )
+        }
 
-        {/* REFUSÉES */}
-
-        <div className="stat-card">
-
-          <h3>
-            Refusées
-          </h3>
-
-          <p>
-            {stats.demandes_refusees}
-          </p>
-
-        </div>
-
-
-        {/* POINTAGES */}
-
-        <div className="stat-card">
-
-          <h3>
-            Pointages
-          </h3>
-
-          <p>
-            {stats.pointages}
-          </p>
-
-        </div>
-
-
-        {/* FICHES DE PAIE */}
-
-        <div className="stat-card">
-
-          <h3>
-            Fiches de paie
-          </h3>
-
-          <p>
-            {stats.fiches}
-          </p>
-
-        </div>
-
-
-        {/* PLANNINGS */}
-
-        <div className="stat-card">
-
-          <h3>
-            Plannings
-          </h3>
-
-          <p>
-            {stats.plannings}
-          </p>
-
-        </div>
-
-
-      </div>
+      </section>
 
 
       {/* ===================================================
-          ACTIVITÉ + RÉPARTITION
+          ACTIVITÉ / RÉPARTITION
       =================================================== */}
 
-      <div className="charts-grid">
+      <section className="charts-grid">
 
+        <article className="chart-card">
 
-        {/* =================================================
-            ACTIVITÉ RH
-        ================================================= */}
+          <header className="admin-card-heading">
 
-        <div className="chart-card">
+            <div>
 
-          <h2>
-            Activité RH
-          </h2>
+              <h2>
+                Activité RH
+              </h2>
 
-
-          <div
-            style={{
-              minHeight: "250px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "40px",
-              flexWrap: "wrap",
-            }}
-          >
-
-
-            {/* PLANNINGS */}
-
-            <div
-              style={{
-                textAlign: "center",
-              }}
-            >
-
-              <div
-                style={{
-                  fontSize: "36px",
-                  fontWeight: "700",
-                  color: "#111827",
-                }}
-              >
-                {stats.plannings}
-              </div>
-
-              <div
-                style={{
-                  color: "#6b7280",
-                  marginTop: "5px",
-                }}
-              >
-                Plannings
-              </div>
+              <p>
+                Vue synthétique de l'activité opérationnelle.
+              </p>
 
             </div>
 
-
-            {/* POINTAGES */}
-
-            <div
-              style={{
-                textAlign: "center",
-              }}
-            >
-
-              <div
-                style={{
-                  fontSize: "36px",
-                  fontWeight: "700",
-                  color: "#111827",
-                }}
-              >
-                {stats.pointages}
-              </div>
-
-              <div
-                style={{
-                  color: "#6b7280",
-                  marginTop: "5px",
-                }}
-              >
-                Pointages
-              </div>
-
-            </div>
+          </header>
 
 
-            {/* FICHES */}
+          <div className="admin-activity-grid">
 
-            <div
-              style={{
-                textAlign: "center",
-              }}
-            >
+            <ActivityMetric
+              icon={
+                CalendarDays
+              }
+              value={
+                stats.plannings
+              }
+              label="Plannings"
+              accent="blue"
+            />
 
-              <div
-                style={{
-                  fontSize: "36px",
-                  fontWeight: "700",
-                  color: "#111827",
-                }}
-              >
-                {stats.fiches}
-              </div>
 
-              <div
-                style={{
-                  color: "#6b7280",
-                  marginTop: "5px",
-                }}
-              >
-                Fiches de paie
-              </div>
+            <ActivityMetric
+              icon={
+                Clock3
+              }
+              value={
+                stats.pointages
+              }
+              label="Pointages"
+              accent="cyan"
+            />
 
-            </div>
 
+            <ActivityMetric
+              icon={
+                FileText
+              }
+              value={
+                stats.fiches
+              }
+              label="Fiches de paie"
+              accent="purple"
+            />
 
           </div>
 
-        </div>
+        </article>
 
 
-        {/* =================================================
-            RÉPARTITION DES DEMANDES
-        ================================================= */}
+        <article className="overview-card">
 
-        <div className="overview-card">
+          <header className="admin-card-heading">
 
-          <h3>
-            Répartition des demandes
-          </h3>
+            <div>
 
+              <h3>
+                Répartition des demandes
+              </h3>
 
-          {/* EN ATTENTE */}
-
-          <div className="overview-item">
-
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-              }}
-            >
-
-              <span>
-                En attente
-              </span>
-
-              <strong>
-                {stats.demandes_en_attente}
-              </strong>
+              <p>
+                État des demandes RH.
+              </p>
 
             </div>
 
-
-            <div className="bar">
-
-              <div
-                className="bar-fill bar-fill-yellow"
-                style={{
-                  width: `${percentEncours}%`,
-                }}
-              />
-
-            </div>
-
-          </div>
+          </header>
 
 
-          {/* APPROUVÉES */}
-
-          <div className="overview-item">
-
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-              }}
-            >
-
-              <span>
-                Approuvées
-              </span>
-
-              <strong>
-                {stats.demandes_approuvees}
-              </strong>
-
-            </div>
+          <OverviewItem
+            label="En attente"
+            value={
+              stats
+                .demandes_en_attente
+            }
+            percent={
+              percentEncours
+            }
+            className="bar-fill-yellow"
+          />
 
 
-            <div className="bar">
-
-              <div
-                className="bar-fill bar-fill-green"
-                style={{
-                  width: `${percentAcceptees}%`,
-                }}
-              />
-
-            </div>
-
-          </div>
-
-
-          {/* REFUSÉES */}
-
-          <div className="overview-item">
-
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-              }}
-            >
-
-              <span>
-                Refusées
-              </span>
-
-              <strong>
-                {stats.demandes_refusees}
-              </strong>
-
-            </div>
+          <OverviewItem
+            label="Approuvées"
+            value={
+              stats
+                .demandes_approuvees
+            }
+            percent={
+              percentAcceptees
+            }
+            className="bar-fill-green"
+          />
 
 
-            <div className="bar">
+          <OverviewItem
+            label="Refusées"
+            value={
+              stats
+                .demandes_refusees
+            }
+            percent={
+              percentRefusees
+            }
+            className="bar-fill-red"
+          />
 
-              <div
-                className="bar-fill bar-fill-red"
-                style={{
-                  width: `${percentRefusees}%`,
-                }}
-              />
+        </article>
 
-            </div>
-
-          </div>
-
-
-        </div>
-
-
-      </div>
+      </section>
 
 
       {/* ===================================================
-          PLANNING RÉCENT
+          PLANNING RECENT
       =================================================== */}
 
-      <div className="chart-card">
+      <section className="chart-card admin-planning-card">
 
+        <header className="admin-card-heading admin-card-heading-action">
 
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
+          <div>
 
-          <h2>
-            Planning récent
-          </h2>
+            <h2>
+              Planning récent
+            </h2>
+
+            <p>
+              Dernières journées planifiées.
+            </p>
+
+          </div>
 
 
           <button
-            className="btn-primary"
+            type="button"
+            className="admin-link-button"
             onClick={() =>
               navigate(
                 "/activites/planning"
               )
             }
           >
-            Voir le planning →
+
+            Voir le planning
+
+            <ArrowRight
+              size={16}
+            />
+
           </button>
 
-        </div>
+        </header>
 
 
-        {planning.length > 0 ? (
+        {
+          planning.length > 0
+            ? (
+              <div className="admin-planning-list">
 
-          <ul>
+                {
+                  planning
+                    .slice(
+                      0,
+                      6
+                    )
+                    .map(
+                      (item) => (
+                        <article
+                          key={
+                            item.id
+                          }
+                          className="admin-planning-item"
+                        >
 
-            {planning
-              .slice(0, 6)
-              .map((p) => (
+                          <div className="admin-planning-date">
 
-                <li
-                  key={p.id}
-                  style={{
-                    marginBottom: "10px",
-                  }}
-                >
+                            <CalendarDays
+                              size={16}
+                            />
 
-                  <strong>
-                    {formatDate(
-                      p.date
-                    )}
-                  </strong>
+                            <strong>
+                              {
+                                formatDate(
+                                  item.date
+                                )
+                              }
+                            </strong>
 
-
-                  {" → "}
-
-
-                  {(
-                    p.type_journee_display
-                    || p.type_journee
-                    || "—"
-                  )}
-
-
-                  {(
-                    p.heure_debut
-                    && p.heure_fin
-                  ) && (
-
-                    <>
-
-                      {" — "}
-
-                      {p.heure_debut.slice(
-                        0,
-                        5
-                      )}
-
-                      {" à "}
-
-                      {p.heure_fin.slice(
-                        0,
-                        5
-                      )}
-
-                    </>
-
-                  )}
+                          </div>
 
 
-                  {p.commentaire && (
+                          <div className="admin-planning-main">
 
-                    <span
-                      style={{
-                        color: "#6b7280",
-                        marginLeft: "10px",
-                      }}
-                    >
-                      {p.commentaire}
-                    </span>
+                            <span className="admin-planning-type">
 
-                  )}
+                              {
+                                item
+                                  .type_journee_display
+                                || item
+                                  .type_journee
+                                || "—"
+                              }
 
-                </li>
-
-              ))}
-
-          </ul>
-
-        ) : (
-
-          <p>
-            Aucun planning disponible.
-          </p>
-
-        )}
+                            </span>
 
 
-      </div>
+                            {
+                              item.heure_debut
+                              && item.heure_fin
+                              && (
+                                <span className="admin-planning-time">
+
+                                  {
+                                    item
+                                      .heure_debut
+                                      .slice(
+                                        0,
+                                        5
+                                      )
+                                  }
+
+                                  {" — "}
+
+                                  {
+                                    item
+                                      .heure_fin
+                                      .slice(
+                                        0,
+                                        5
+                                      )
+                                  }
+
+                                </span>
+                              )
+                            }
+
+
+                            {
+                              item.commentaire
+                              && (
+                                <span className="admin-planning-comment">
+
+                                  {
+                                    item.commentaire
+                                  }
+
+                                </span>
+                              )
+                            }
+
+                          </div>
+
+                        </article>
+                      )
+                    )
+                }
+
+              </div>
+            )
+            : (
+              <div className="admin-empty">
+                Aucun planning disponible.
+              </div>
+            )
+        }
+
+      </section>
 
 
       {/* ===================================================
-          DERNIÈRES DEMANDES
+          DEMANDES RECENTES
       =================================================== */}
 
-      <div className="table-container">
+      <section className="table-container">
 
+        <header className="admin-card-heading admin-card-heading-action">
 
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
+          <div>
 
-          <h2>
-            Dernières demandes
-          </h2>
+            <h2>
+              Dernières demandes
+            </h2>
+
+            <p>
+              Les cinq demandes les plus récentes.
+            </p>
+
+          </div>
 
 
           <button
-            className="btn-primary"
+            type="button"
+            className="admin-link-button"
             onClick={() =>
               navigate(
-                "/admin/requests"
+                "/admin/demandes"
               )
             }
           >
-            Voir tout →
+
+            Voir tout
+
+            <ArrowRight
+              size={16}
+            />
+
           </button>
 
-        </div>
+        </header>
 
 
-        <table>
+        <div className="admin-table-wrapper">
 
+          <table>
 
-          <thead>
-
-            <tr>
-
-              <th>
-                Salarié
-              </th>
-
-              <th>
-                Type
-              </th>
-
-              <th>
-                Statut
-              </th>
-
-              <th>
-                Date
-              </th>
-
-            </tr>
-
-          </thead>
-
-
-          <tbody>
-
-
-            {requests.length > 0 ? (
-
-              requests
-                .slice(0, 5)
-                .map((request) => (
-
-                  <tr
-                    key={request.id}
-                    onClick={() =>
-                      navigate(
-                        `/admin/requests/${request.id}`
-                      )
-                    }
-                    style={{
-                      cursor: "pointer",
-                    }}
-                  >
-
-
-                    {/* SALARIÉ */}
-
-                    <td>
-
-                      {(
-                        request.salarie_nom
-                        || "—"
-                      )}
-
-                    </td>
-
-
-                    {/* TYPE */}
-
-                    <td>
-
-                      {formatRequestType(
-                        request
-                      )}
-
-                    </td>
-
-
-                    {/* STATUT */}
-
-                    <td>
-
-                      {formatStatus(
-                        request.statut
-                      )}
-
-                    </td>
-
-
-                    {/* DATE */}
-
-                    <td>
-
-                      {request.date_demande
-                        ? new Date(
-                            request.date_demande
-                          ).toLocaleDateString(
-                            "fr-FR"
-                          )
-                        : "—"
-                      }
-
-                    </td>
-
-
-                  </tr>
-
-                ))
-
-            ) : (
+            <thead>
 
               <tr>
 
-                <td
-                  colSpan="4"
-                  style={{
-                    textAlign: "center",
-                    padding: "30px",
-                  }}
-                >
-                  Aucune demande disponible.
-                </td>
+                <th>
+                  Salarié
+                </th>
+
+                <th>
+                  Type
+                </th>
+
+                <th>
+                  Statut
+                </th>
+
+                <th>
+                  Date
+                </th>
 
               </tr>
 
-            )}
+            </thead>
 
 
-          </tbody>
+            <tbody>
+
+              {
+                requests.length > 0
+                  ? (
+                    requests
+                      .slice(
+                        0,
+                        5
+                      )
+                      .map(
+                        (request) => (
+                          <tr
+                            key={
+                              request.id
+                            }
+                            className="admin-clickable-row"
+                            onClick={() =>
+                              navigate(
+                                `/admin/requests/${request.id}`
+                              )
+                            }
+                          >
+
+                            <td>
+                              {
+                                request
+                                  .salarie_nom
+                                || "—"
+                              }
+                            </td>
 
 
-        </table>
+                            <td>
+                              {
+                                formatRequestType(
+                                  request
+                                )
+                              }
+                            </td>
 
+
+                            <td>
+
+                              <span
+                                className={
+                                  `admin-status ${getStatusClass(
+                                    request.statut
+                                  )}`
+                                }
+                              >
+
+                                {
+                                  getStatusLabel(
+                                    request.statut
+                                  )
+                                }
+
+                              </span>
+
+                            </td>
+
+
+                            <td>
+                              {
+                                request
+                                  .date_demande
+                                  ? new Date(
+                                      request
+                                        .date_demande
+                                    )
+                                      .toLocaleDateString(
+                                        "fr-FR"
+                                      )
+                                  : "—"
+                              }
+                            </td>
+
+                          </tr>
+                        )
+                      )
+                  )
+                  : (
+                    <tr>
+
+                      <td
+                        colSpan="4"
+                        className="admin-table-empty"
+                      >
+                        Aucune demande disponible.
+                      </td>
+
+                    </tr>
+                  )
+              }
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </section>
+
+    </main>
+  );
+}
+
+
+// =========================================================
+// KPI CARD
+// =========================================================
+
+function StatCard({
+  item,
+}) {
+  const Icon =
+    item.icon;
+
+
+  return (
+    <article
+      className={
+        `stat-card ${item.className}`
+      }
+    >
+
+      <div className="stat-card-top">
+
+        <span className="stat-card-icon">
+
+          <Icon
+            size={20}
+            strokeWidth={1.8}
+          />
+
+        </span>
+
+        <span className="stat-card-label">
+          {item.label}
+        </span>
 
       </div>
 
+
+      <p>
+        {item.value}
+      </p>
+
+    </article>
+  );
+}
+
+
+// =========================================================
+// ACTIVITY
+// =========================================================
+
+function ActivityMetric({
+  icon,
+  value,
+  label,
+  accent,
+}) {
+  const Icon =
+    icon;
+
+
+  return (
+    <article className="admin-activity-item">
+
+      <span
+        className={
+          `admin-activity-icon admin-activity-icon-${accent}`
+        }
+      >
+
+        <Icon
+          size={21}
+        />
+
+      </span>
+
+
+      <div>
+
+        <strong>
+          {value}
+        </strong>
+
+        <span>
+          {label}
+        </span>
+
+      </div>
+
+    </article>
+  );
+}
+
+
+// =========================================================
+// OVERVIEW
+// =========================================================
+
+function OverviewItem({
+  label,
+  value,
+  percent,
+  className,
+}) {
+  return (
+    <div className="overview-item">
+
+      <div className="overview-item-header">
+
+        <span>
+          {label}
+        </span>
+
+        <strong>
+          {value}
+        </strong>
+
+      </div>
+
+
+      <div className="bar">
+
+        <div
+          className={
+            `bar-fill ${className}`
+          }
+          style={{
+            width:
+              `${Math.min(
+                percent,
+                100
+              )}%`,
+          }}
+        />
+
+      </div>
 
     </div>
   );

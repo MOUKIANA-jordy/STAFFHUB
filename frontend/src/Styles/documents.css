@@ -922,7 +922,7 @@
 
 
 /* =========================================================
-   RESPONSIVE
+   RESPONSIVE - GRAND ÉCRAN / PETIT LAPTOP
 ========================================================= */
 
 @media (max-width: 1200px) {
@@ -935,7 +935,6 @@
       );
   }
 
-
   .documents-grid {
     grid-template-columns:
       repeat(
@@ -943,58 +942,313 @@
         minmax(0, 1fr)
       );
   }
-
 }
 
 
-@media (max-width: 700px) {
+/* =========================================================
+   RESPONSIVE - TABLETTE
+========================================================= */
+
+@media (max-width: 900px) {
+
+  .documents-page {
+    padding: 24px;
+  }
+
+  .documents-heading {
+    gap: 18px;
+  }
+
+  .documents-heading h1 {
+    font-size: 28px;
+  }
+
+  .documents-heading p {
+    max-width: 520px;
+
+    font-size: 12.5px;
+  }
+
+  .documents-form-card,
+  .documents-card {
+    padding: 18px;
+  }
+
+  .documents-form-grid {
+    gap: 14px;
+  }
+
+  .documents-grid {
+    gap: 12px;
+  }
+
+  .document-card-content h3 {
+    font-size: 12px;
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVE - PETITE TABLETTE
+========================================================= */
+
+@media (max-width: 760px) {
 
   .documents-page {
     padding:
       20px
-      14px;
+      16px
+      80px;
   }
-
 
   .documents-heading {
+    align-items: stretch;
     flex-direction: column;
-  }
 
+    margin-bottom: 20px;
+  }
 
   .documents-heading-actions {
     width: 100%;
-  }
 
+    display: grid;
+
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
 
   .documents-heading-actions button {
-    flex: 1;
+    width: 100%;
   }
 
+  .documents-summary-grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+
+    gap: 10px;
+  }
+
+  .documents-summary-card {
+    min-height: 100px;
+
+    padding: 15px;
+  }
+
+  .documents-summary-icon {
+    width: 40px;
+    height: 40px;
+
+    flex-basis: 40px;
+  }
+
+  .documents-summary-card strong {
+    font-size: 19px;
+  }
+
+  .documents-card-heading {
+    align-items: flex-start;
+  }
 
   .documents-form-grid {
     grid-template-columns: 1fr;
   }
 
-
   .documents-field-full {
     grid-column: auto;
   }
 
-
-  .documents-summary-grid,
   .documents-grid {
     grid-template-columns: 1fr;
   }
 
-
-  .documents-form-actions {
-    flex-direction:
-      column-reverse;
+  .documents-filter {
+    max-width: 170px;
   }
 
+  .documents-form-actions {
+    flex-direction: column-reverse;
+  }
 
   .documents-form-actions button {
     width: 100%;
   }
+}
 
+
+/* =========================================================
+   RESPONSIVE - MOBILE
+========================================================= */
+
+@media (max-width: 560px) {
+
+  .documents-page {
+    padding:
+      18px
+      12px
+      82px;
+  }
+
+  .documents-heading h1 {
+    font-size: 25px;
+  }
+
+  .documents-eyebrow {
+    font-size: 9px;
+  }
+
+  .documents-heading p {
+    font-size: 11.5px;
+
+    line-height: 1.5;
+  }
+
+  .documents-heading-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .documents-primary-button,
+  .documents-secondary-button {
+    min-height: 42px;
+
+    width: 100%;
+  }
+
+  .documents-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .documents-summary-card {
+    min-height: 92px;
+  }
+
+  .documents-form-card,
+  .documents-card {
+    padding: 15px;
+
+    border-radius: 12px;
+  }
+
+  .documents-card-heading {
+    gap: 10px;
+  }
+
+  .documents-card-heading h2 {
+    font-size: 14px;
+  }
+
+  .documents-card-heading p {
+    font-size: 9.5px;
+
+    line-height: 1.45;
+  }
+
+  .documents-card-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .documents-filter {
+    width: 100%;
+    max-width: none;
+
+    margin-top: 8px;
+  }
+
+  .documents-card > .documents-card-heading {
+    flex-direction: column;
+  }
+
+  .document-card-top {
+    padding:
+      13px
+      13px
+      0;
+  }
+
+  .document-card-content {
+    padding: 13px;
+  }
+
+  .document-info {
+    align-items: flex-start;
+  }
+
+  .document-info strong {
+    max-width: 55%;
+
+    text-align: right;
+
+    white-space: normal;
+
+    overflow-wrap: anywhere;
+  }
+
+  .document-card-footer {
+    padding:
+      11px
+      13px;
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVE - TRÈS PETIT MOBILE
+========================================================= */
+
+@media (max-width: 390px) {
+
+  .documents-page {
+    padding:
+      16px
+      10px
+      80px;
+  }
+
+  .documents-heading h1 {
+    font-size: 23px;
+  }
+
+  .documents-summary-card {
+    gap: 11px;
+
+    padding: 13px;
+  }
+
+  .documents-summary-icon {
+    width: 38px;
+    height: 38px;
+
+    flex-basis: 38px;
+  }
+
+  .documents-summary-card strong {
+    font-size: 18px;
+  }
+
+  .documents-summary-card p {
+    font-size: 10px;
+  }
+
+  .documents-field input,
+  .documents-field select {
+    min-height: 44px;
+  }
+
+  .document-info {
+    flex-direction: column;
+
+    gap: 3px;
+  }
+
+  .document-info strong {
+    max-width: 100%;
+
+    text-align: left;
+  }
 }

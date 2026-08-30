@@ -45,6 +45,11 @@ class Document(models.Model):
             "Passeport",
         )
 
+        TITRE_SEJOUR = (
+            "TITRE_SEJOUR",
+            "Titre de séjour",
+        )
+
         CONTRAT = (
             "CONTRAT",
             "Contrat",

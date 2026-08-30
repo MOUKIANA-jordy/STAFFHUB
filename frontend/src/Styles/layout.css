@@ -1,0 +1,78 @@
+/* =========================================================
+   LAYOUT GLOBAL
+========================================================= */
+
+.app-layout {
+  min-height: 100vh;
+
+  display: flex;
+
+  background:
+    var(--rh-background);
+}
+
+
+/* =========================================================
+   ZONE PRINCIPALE
+========================================================= */
+
+.main-area {
+  min-width: 0;
+
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  background:
+    var(--rh-background);
+}
+
+
+/* =========================================================
+   CONTENU DES PAGES
+========================================================= */
+
+.main-content {
+  min-width: 0;
+
+  flex: 1;
+
+  overflow-x: hidden;
+
+  background:
+    var(--rh-background);
+}
+
+
+/* =========================================================
+   CHARGEMENT
+========================================================= */
+
+.app-loading {
+  min-height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background:
+    var(--rh-background);
+
+  color:
+    var(--rh-text-secondary);
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 800px) {
+  .main-area {
+    width: calc(100% - 76px);
+  }
+}
