@@ -23,7 +23,7 @@ export default function Avance() {
       accent="green"
 
       submitLabel={
-        "Envoyer la demande d’avance"
+        "Envoyer"
       }
 
       fields={[
