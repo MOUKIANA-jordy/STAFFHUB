@@ -1092,3 +1092,123 @@
     width: 100%;
   }
 }
+
+/* =========================================================
+   PHOTO DE PROFIL
+========================================================= */
+
+.profile-avatar-container {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.profile-avatar {
+  width: 112px;
+  height: 112px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  border: 4px solid #ffffff;
+  border-radius: 50%;
+
+  background: linear-gradient(
+    135deg,
+    #5437f5,
+    #087cf0
+  );
+
+  color: #ffffff;
+  font-size: 34px;
+  font-weight: 700;
+
+  box-shadow: 0 10px 30px rgba(15, 35, 70, 0.18);
+}
+
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.profile-photo-input {
+  display: none;
+}
+
+.profile-photo-button {
+  position: absolute;
+  right: 1px;
+  bottom: 3px;
+
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+
+  background: #087cf0;
+  color: #ffffff;
+
+  cursor: pointer;
+
+  box-shadow: 0 5px 15px rgba(8, 124, 240, 0.35);
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.profile-photo-button:hover:not(:disabled) {
+  background: #5437f5;
+  transform: scale(1.08);
+}
+
+.profile-photo-button:focus-visible {
+  outline: 3px solid rgba(8, 124, 240, 0.3);
+  outline-offset: 2px;
+}
+
+.profile-photo-button:disabled {
+  cursor: wait;
+  opacity: 0.75;
+}
+
+.profile-photo-loader {
+  width: 16px;
+  height: 16px;
+
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+
+  animation: profile-photo-spin 0.7s linear infinite;
+}
+
+@keyframes profile-photo-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 600px) {
+  .profile-avatar {
+    width: 94px;
+    height: 94px;
+    font-size: 29px;
+  }
+
+  .profile-photo-button {
+    width: 34px;
+    height: 34px;
+  }
+}
