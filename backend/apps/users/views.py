@@ -298,6 +298,11 @@ class SalarieViewSet(viewsets.ModelViewSet):
 @permission_classes([
     IsAuthenticated,
 ])
+@parser_classes([
+    JSONParser,
+    FormParser,
+    MultiPartParser,
+])
 def current_user(request):
     salarie = getattr(
         request.user,
@@ -316,21 +321,26 @@ def current_user(request):
             status=status.HTTP_404_NOT_FOUND,
         )
 
+    serializer_context = {
+        "request": request,
+    }
+
     if request.method == "GET":
-        serializer = (
-            CurrentUserSerializer(
-                salarie,
-            )
+        serializer = CurrentUserSerializer(
+            salarie,
+            context=serializer_context,
         )
 
         return Response(
             serializer.data,
+            status=status.HTTP_200_OK,
         )
 
     serializer = CurrentUserSerializer(
         salarie,
         data=request.data,
         partial=True,
+        context=serializer_context,
     )
 
     serializer.is_valid(
@@ -868,4 +878,3 @@ def set_password(request):
         },
         status=status.HTTP_200_OK,
     )
-
