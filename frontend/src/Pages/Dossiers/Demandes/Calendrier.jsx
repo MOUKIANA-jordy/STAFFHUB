@@ -20,7 +20,7 @@ export default function Calendrier() {
 
       accent="purple"
 
-      submitLabel="Envoyer la demande"
+      submitLabel="Envoyer"
 
 
       fields={[

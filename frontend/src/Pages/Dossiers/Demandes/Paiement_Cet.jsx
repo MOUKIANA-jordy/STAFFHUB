@@ -19,7 +19,7 @@ export default function PaiementCet() {
 
       accent="blue"
 
-      submitLabel="Envoyer la demande de paiement CET"
+      submitLabel="Envoyer"
 
 
       fields={[

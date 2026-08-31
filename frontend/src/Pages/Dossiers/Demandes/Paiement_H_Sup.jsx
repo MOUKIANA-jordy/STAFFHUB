@@ -356,7 +356,7 @@ export default function PaiementHSup() {
       setMessage({
         type: "success",
         text:
-          "Votre demande de paiement des heures supplémentaires a bien été envoyée.",
+          "Votre demande a été envoyée.",
       });
 
 

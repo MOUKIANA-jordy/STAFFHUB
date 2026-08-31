@@ -23,7 +23,7 @@ export default function Acompte() {
       accent="blue"
 
       submitLabel={
-        "Envoyer la demande d’acompte"
+        "Envoyer"
       }
 
       fields={[

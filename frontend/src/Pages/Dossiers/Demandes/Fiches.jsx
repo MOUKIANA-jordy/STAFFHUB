@@ -19,7 +19,7 @@ export default function Fiches() {
 
       accent="orange"
 
-      submitLabel="Envoyer la demande de fiche"
+      submitLabel="Envoyer"
 
 
       fields={[
