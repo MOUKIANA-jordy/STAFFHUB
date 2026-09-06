@@ -5,8 +5,9 @@ import React, {
   useState,
 } from "react";
 
-import "../Styles/demandes.css";
+import Button from "./Button";
 import API from "../Services/api";
+import "../Styles/demandes.css";
 
 
 export default function RequestFormPage({
@@ -20,781 +21,301 @@ export default function RequestFormPage({
   endpoint = "/api/demandes/",
   submitLabel = "Envoyer la demande",
 }) {
+  const initialValues = useMemo(
+    () => fields.reduce((values, field) => {
+      values[field.name] = field.defaultValue ?? "";
+      return values;
+    }, {}),
+    [fields]
+  );
 
-  // =========================================================
-  // VALEURS INITIALES
-  // =========================================================
-
-  const initialValues = useMemo(() => {
-    return fields.reduce(
-      (values, field) => {
-        values[field.name] =
-          field.defaultValue ?? "";
-
-        return values;
-      },
-      {}
-    );
-  }, [fields]);
-
-
-  // =========================================================
-  // STATES
-  // =========================================================
-
-  const [
-    formData,
-    setFormData,
-  ] = useState(initialValues);
-
-  const [
-    message,
-    setMessage,
-  ] = useState("");
-
-  const [
-    messageType,
-    setMessageType,
-  ] = useState("");
-
-  const [
-    isSubmitting,
-    setIsSubmitting,
-  ] = useState(false);
-
-  const [
-    history,
-    setHistory,
-  ] = useState([]);
-
-  const [
-    loadingHistory,
-    setLoadingHistory,
-  ] = useState(true);
-
-
-  // =========================================================
-  // RESET SI LES CHAMPS CHANGENT
-  // =========================================================
+  const [formData, setFormData] = useState(initialValues);
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [history, setHistory] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(true);
 
   useEffect(() => {
     setFormData(initialValues);
   }, [initialValues]);
 
-
-  // =========================================================
-  // PAGINATION DRF
-  // =========================================================
-
   const extractResults = (data) => {
-    if (Array.isArray(data)) {
-      return data;
-    }
-
-    if (
-      data
-      && Array.isArray(data.results)
-    ) {
-      return data.results;
-    }
-
+    if (Array.isArray(data)) return data;
+    if (data && Array.isArray(data.results)) return data.results;
     return [];
   };
 
+  const fetchHistory = useCallback(async () => {
+    if (!endpoint || !requestType) {
+      setHistory([]);
+      setLoadingHistory(false);
+      return;
+    }
 
-  // =========================================================
-  // CHARGER L'HISTORIQUE RÉEL
-  // =========================================================
+    try {
+      setLoadingHistory(true);
 
-  const fetchHistory = useCallback(
-    async () => {
+      const response = await API.get(endpoint, {
+        params: {
+          type_demande: requestType,
+          ordering: "-date_demande",
+        },
+      });
 
-      if (
-        !endpoint
-        || !requestType
-      ) {
-        setHistory([]);
-        setLoadingHistory(false);
-        return;
-      }
-
-      try {
-        setLoadingHistory(true);
-
-        const response = await API.get(
-          endpoint,
-          {
-            params: {
-              type_demande:
-                requestType,
-
-              ordering:
-                "-date_demande",
-            },
-          }
-        );
-
-        setHistory(
-          extractResults(
-            response.data
-          )
-        );
-
-      } catch (error) {
-        console.error(
-          "HISTORY ERROR",
-          error
-        );
-
-        setHistory([]);
-
-      } finally {
-        setLoadingHistory(false);
-      }
-
-    },
-    [
-      endpoint,
-      requestType,
-    ]
-  );
-
+      setHistory(extractResults(response.data));
+    } catch (error) {
+      console.error("HISTORY ERROR", error);
+      setHistory([]);
+    } finally {
+      setLoadingHistory(false);
+    }
+  }, [endpoint, requestType]);
 
   useEffect(() => {
     fetchHistory();
   }, [fetchHistory]);
 
+  const handleChange = (event) => {
+    const { name, value, files } = event.target;
 
-  // =========================================================
-  // CHANGEMENT CHAMP
-  // =========================================================
-
-  const handleChange = (
-    event
-  ) => {
-
-    const {
-      name,
-      value,
-      files,
-    } = event.target;
-
-    setFormData(
-      (currentData) => ({
-        ...currentData,
-
-        [name]:
-          files
-            ? files[0] || null
-            : value,
-      })
-    );
-
+    setFormData((currentData) => ({
+      ...currentData,
+      [name]: files ? files[0] || null : value,
+    }));
   };
 
-
-  // =========================================================
-  // CONVERSION CAMELCASE → SNAKE_CASE
-  // =========================================================
-
-  const toSnakeCase = (
-    value
-  ) => {
+  const toSnakeCase = (value) => {
     return value
-      .replace(
-        /([a-z0-9])([A-Z])/g,
-        "$1_$2"
-      )
-      .replace(
-        /-/g,
-        "_"
-      )
+      .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+      .replace(/-/g, "_")
       .toLowerCase();
   };
 
-
-  // =========================================================
-  // CONSTRUIRE LE PAYLOAD DJANGO
-  // =========================================================
-
   const buildPayload = () => {
-
     const details = {};
-
     let montantSouhaite = null;
     let document = null;
     let pointages = [];
 
-
-    fields.forEach(
-      (field) => {
-
-        // champ masqué = ne pas envoyer
-        if (
-          typeof field.hidden === "function"
-          && field.hidden(formData)
-        ) {
-          return;
-        }
-
-        const value =
-          formData[field.name];
-
-
-        if (
-          value === ""
-          || value === null
-          || value === undefined
-        ) {
-          return;
-        }
-
-
-        // -----------------------------------------------------
-        // MONTANT
-        // -----------------------------------------------------
-
-        if (
-          field.apiField
-            === "montant_souhaite"
-          || field.name === "amount"
-          || field.name
-            === "montant_souhaite"
-        ) {
-
-          montantSouhaite = value;
-
-          return;
-        }
-
-
-        // -----------------------------------------------------
-        // DOCUMENT
-        // -----------------------------------------------------
-
-        if (
-          field.apiField
-            === "document"
-          || field.name === "document"
-        ) {
-
-          document = value;
-
-          return;
-        }
-
-
-        // -----------------------------------------------------
-        // POINTAGES
-        // -----------------------------------------------------
-
-        if (
-          field.apiField
-            === "pointages"
-          || field.name === "pointages"
-        ) {
-
-          if (Array.isArray(value)) {
-            pointages = value;
-          } else {
-            pointages = [value];
-          }
-
-          return;
-        }
-
-
-        // -----------------------------------------------------
-        // DETAILS
-        // -----------------------------------------------------
-
-        const detailKey =
-          field.detailKey
-          || field.apiField
-          || toSnakeCase(
-            field.name
-          );
-
-
-        details[
-          detailKey
-        ] = value;
-
+    fields.forEach((field) => {
+      if (
+        typeof field.hidden === "function" &&
+        field.hidden(formData)
+      ) {
+        return;
       }
-    );
 
+      const value = formData[field.name];
+
+      if (value === "" || value === null || value === undefined) {
+        return;
+      }
+
+      if (
+        field.apiField === "montant_souhaite" ||
+        field.name === "amount" ||
+        field.name === "montant_souhaite"
+      ) {
+        montantSouhaite = value;
+        return;
+      }
+
+      if (
+        field.apiField === "document" ||
+        field.name === "document"
+      ) {
+        document = value;
+        return;
+      }
+
+      if (
+        field.apiField === "pointages" ||
+        field.name === "pointages"
+      ) {
+        pointages = Array.isArray(value) ? value : [value];
+        return;
+      }
+
+      const detailKey =
+        field.detailKey ||
+        field.apiField ||
+        toSnakeCase(field.name);
+
+      details[detailKey] = value;
+    });
 
     const payload = {
-      type_demande:
-        requestType,
-
+      type_demande: requestType,
       details,
     };
 
-
-    if (
-      montantSouhaite !== null
-    ) {
-      payload.montant_souhaite =
-        montantSouhaite;
+    if (montantSouhaite !== null) {
+      payload.montant_souhaite = montantSouhaite;
     }
 
-
-    if (
-      pointages.length > 0
-    ) {
-      payload.pointages =
-        pointages;
+    if (pointages.length > 0) {
+      payload.pointages = pointages;
     }
-
 
     if (document) {
-      payload.document =
-        document;
+      payload.document = document;
     }
-
 
     return payload;
   };
 
-
-  // =========================================================
-  // EXTRAIRE LES ERREURS DRF
-  // =========================================================
-
-  const getApiErrorMessage = (
-    data
-  ) => {
-
+  const getApiErrorMessage = (data) => {
     if (!data) {
-      return (
-        "Une erreur est survenue pendant l’envoi."
-      );
+      return "Une erreur est survenue pendant l’envoi.";
     }
 
-
-    if (
-      typeof data === "string"
-    ) {
+    if (typeof data === "string") {
+      if (data.includes("<html") || data.includes("<!DOCTYPE html>")) {
+        return "Le serveur a rencontré une erreur pendant l’envoi.";
+      }
       return data;
     }
 
+    if (data.detail) return data.detail;
 
-    if (
-      data.detail
-    ) {
-      return data.detail;
-    }
-
-
-    const extractMessage = (
-      value
-    ) => {
-
-      if (
-        typeof value === "string"
-      ) {
-        return value;
+    const extractMessage = (value) => {
+      if (typeof value === "string") return value;
+      if (Array.isArray(value)) {
+        return value.length > 0 ? extractMessage(value[0]) : null;
       }
-
-
-      if (
-        Array.isArray(value)
-      ) {
-
-        if (
-          value.length === 0
-        ) {
-          return null;
+      if (value && typeof value === "object") {
+        for (const nestedValue of Object.values(value)) {
+          const result = extractMessage(nestedValue);
+          if (result) return result;
         }
-
-        return extractMessage(
-          value[0]
-        );
-
       }
-
-
-      if (
-        value
-        && typeof value
-          === "object"
-      ) {
-
-        for (
-          const nestedValue
-          of Object.values(value)
-        ) {
-
-          const result =
-            extractMessage(
-              nestedValue
-            );
-
-          if (result) {
-            return result;
-          }
-
-        }
-
-      }
-
-
       return null;
     };
 
-
-    for (
-      const value
-      of Object.values(data)
-    ) {
-
-      const result =
-        extractMessage(
-          value
-        );
-
-      if (result) {
-        return result;
-      }
-
+    for (const value of Object.values(data)) {
+      const result = extractMessage(value);
+      if (result) return result;
     }
 
-
-    return (
-      "La demande contient des informations invalides."
-    );
+    return "La demande contient des informations invalides.";
   };
 
-
-  // =========================================================
-  // ENVOI
-  // =========================================================
-
-  const handleSubmit = async (
-    event
-  ) => {
-
+  const handleSubmit = async (event) => {
     event.preventDefault();
-
     setMessage("");
     setMessageType("");
     setIsSubmitting(true);
 
-
     try {
-
       if (!endpoint) {
-        throw new Error(
-          "Aucun endpoint API n’a été défini pour cette demande."
-        );
+        throw new Error("Aucun endpoint API n’a été défini pour cette demande.");
       }
-
-
       if (!requestType) {
-        throw new Error(
-          "Aucun type de demande n’a été défini."
-        );
+        throw new Error("Aucun type de demande n’a été défini.");
       }
 
-
-      const payload =
-        buildPayload();
-
-
-      // -----------------------------------------------------
-      // FICHIER ?
-      // -----------------------------------------------------
-
-      const hasFile =
-        payload.document
-        instanceof File;
-
-
+      const payload = buildPayload();
+      const hasFile = payload.document instanceof File;
       let requestPayload;
 
-
       if (hasFile) {
+        requestPayload = new FormData();
+        requestPayload.append("type_demande", payload.type_demande);
 
-        requestPayload =
-          new FormData();
-
-
-        requestPayload.append(
-          "type_demande",
-          payload.type_demande
-        );
-
-
-        if (
-          payload.montant_souhaite
-          !== undefined
-        ) {
-
+        if (payload.montant_souhaite !== undefined) {
           requestPayload.append(
             "montant_souhaite",
             payload.montant_souhaite
           );
-
         }
-
 
         requestPayload.append(
           "details",
-          JSON.stringify(
-            payload.details || {}
-          )
+          JSON.stringify(payload.details || {})
         );
 
-
-        if (
-          Array.isArray(
-            payload.pointages
-          )
-        ) {
-
-          payload.pointages.forEach(
-            (pointageId) => {
-
-              requestPayload.append(
-                "pointages",
-                pointageId
-              );
-
-            }
-          );
-
+        if (Array.isArray(payload.pointages)) {
+          payload.pointages.forEach((pointageId) => {
+            requestPayload.append("pointages", pointageId);
+          });
         }
 
-
-        requestPayload.append(
-          "document",
-          payload.document
-        );
-
+        requestPayload.append("document", payload.document);
       } else {
-
         requestPayload = {
-          type_demande:
-            payload.type_demande,
-
-          details:
-            payload.details || {},
+          type_demande: payload.type_demande,
+          details: payload.details || {},
         };
 
-
-        if (
-          payload.montant_souhaite
-          !== undefined
-        ) {
-          requestPayload.montant_souhaite =
-            payload.montant_souhaite;
+        if (payload.montant_souhaite !== undefined) {
+          requestPayload.montant_souhaite = payload.montant_souhaite;
         }
 
-
         if (
-          Array.isArray(
-            payload.pointages
-          )
-          && payload.pointages.length > 0
+          Array.isArray(payload.pointages) &&
+          payload.pointages.length > 0
         ) {
-          requestPayload.pointages =
-            payload.pointages;
+          requestPayload.pointages = payload.pointages;
         }
-
       }
 
-
-      console.log(
-        "DEMANDE PAYLOAD :",
-        hasFile
-          ? "FormData"
-          : requestPayload
-      );
-
-
-      await API.post(
-        endpoint,
-        requestPayload
-      );
-
-
-      setMessage(
-        "Votre demande a bien été envoyée."
-      );
-
-      setMessageType(
-        "success"
-      );
-
-
-      setFormData(
-        initialValues
-      );
-
-
+      await API.post(endpoint, requestPayload);
+      setMessage("Votre demande a bien été envoyée.");
+      setMessageType("success");
+      setFormData(initialValues);
       await fetchHistory();
-
     } catch (error) {
-
-      console.error(
-        "Erreur pendant l’envoi :",
-        error
-      );
-
-
-      const apiErrors =
-        error.response?.data;
-
+      console.error("Erreur pendant l’envoi :", error);
+      const apiErrors = error.response?.data;
 
       setMessage(
         apiErrors
-          ? getApiErrorMessage(
-              apiErrors
-            )
-          : (
-              error.message
-              || "Une erreur est survenue pendant l’envoi."
-            )
+          ? getApiErrorMessage(apiErrors)
+          : error.message || "Une erreur est survenue pendant l’envoi."
       );
-
-
-      setMessageType(
-        "error"
-      );
-
+      setMessageType("error");
     } finally {
-
-      setIsSubmitting(
-        false
-      );
-
+      setIsSubmitting(false);
     }
-
   };
 
+  const formatHistoryDate = (value) => {
+    if (!value) return "—";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "—";
 
-  // =========================================================
-  // FORMAT DATE HISTORIQUE
-  // =========================================================
-
-  const formatHistoryDate = (
-    value
-  ) => {
-
-    if (!value) {
-      return "—";
-    }
-
-
-    const date =
-      new Date(value);
-
-
-    if (
-      Number.isNaN(
-        date.getTime()
-      )
-    ) {
-      return "—";
-    }
-
-
-    return date.toLocaleDateString(
-      "fr-FR",
-      {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-      }
-    );
-
+    return date.toLocaleDateString("fr-FR", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
   };
 
-
-  // =========================================================
-  // DÉTAIL HISTORIQUE
-  // =========================================================
-
-  const getHistoryDetail = (
-    item
-  ) => {
-
-    // montant
+  const getHistoryDetail = (item) => {
     if (
-      item.montant_souhaite
-      !== null
-      && item.montant_souhaite
-      !== undefined
+      item.montant_souhaite !== null &&
+      item.montant_souhaite !== undefined
     ) {
-
-      const amount =
-        Number(
-          item.montant_souhaite
-        );
-
-
-      if (
-        !Number.isNaN(
-          amount
-        )
-      ) {
-
-        return (
-          `${amount.toLocaleString(
-            "fr-FR",
-            {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            }
-          )} €`
-        );
-
+      const amount = Number(item.montant_souhaite);
+      if (!Number.isNaN(amount)) {
+        return `${amount.toLocaleString("fr-FR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })} €`;
       }
-
     }
 
+    const details = item.details || {};
 
-    const details =
-      item.details || {};
-
-
-    // -------------------------------------------------------
-    // CALENDRIER
-    // -------------------------------------------------------
-
-    if (
-      item.type_demande
-      === "CALENDRIER"
-    ) {
-
+    if (item.type_demande === "CALENDRIER") {
       const parts = [];
-
-
       if (details.date) {
-
-        const date =
-          new Date(
-            `${details.date}T12:00:00`
-          );
-
-
-        if (
-          !Number.isNaN(
-            date.getTime()
-          )
-        ) {
-
-          parts.push(
-            date.toLocaleDateString(
-              "fr-FR"
-            )
-          );
-
+        const date = new Date(`${details.date}T12:00:00`);
+        if (!Number.isNaN(date.getTime())) {
+          parts.push(date.toLocaleDateString("fr-FR"));
         }
-
       }
-
 
       const typeLabels = {
         BUREAU: "Bureau",
@@ -805,751 +326,271 @@ export default function RequestFormPage({
         FORMATION: "Formation",
       };
 
-
-      if (
-        details.type_journee
-      ) {
-
-        parts.push(
-          typeLabels[
-            details.type_journee
-          ]
-          || details.type_journee
-        );
-
+      if (details.type_journee) {
+        parts.push(typeLabels[details.type_journee] || details.type_journee);
       }
-
-
-      if (
-        details.heure_debut
-        && details.heure_fin
-      ) {
-
-        parts.push(
-          `${details.heure_debut} - ${details.heure_fin}`
-        );
-
+      if (details.heure_debut && details.heure_fin) {
+        parts.push(`${details.heure_debut} - ${details.heure_fin}`);
       }
-
-
-      if (
-        details.motif
-      ) {
-
-        parts.push(
-          details.motif
-        );
-
-      }
-
-
-      return (
-        parts.length > 0
-          ? parts.join(" • ")
-          : "—"
-      );
-
+      if (details.motif) parts.push(details.motif);
+      return parts.length > 0 ? parts.join(" • ") : "—";
     }
 
-
-    // -------------------------------------------------------
-    // AUTRES DEMANDES
-    // -------------------------------------------------------
-
-    if (
-      details.commentaire
-    ) {
-      return details.commentaire;
-    }
-
-
-    if (
-      details.reason
-    ) {
-      return details.reason;
-    }
-
-
-    if (
-      details.motif
-    ) {
-      return details.motif;
-    }
-
-
-    if (
-      details.date
-    ) {
-      return details.date;
-    }
-
-
-    return "—";
-
+    return (
+      details.commentaire ||
+      details.reason ||
+      details.motif ||
+      details.date ||
+      "—"
+    );
   };
-
-
-  // =========================================================
-  // RENDER
-  // =========================================================
 
   return (
     <div className="request-page">
-
-
-      {/* ===================================================
-          HEADER
-      =================================================== */}
-
       <section className="request-heading">
-
         <div>
-
-          <h1>
-            {
-              title
-              || `Demande ${
-                requestType || ""
-              }`
-            }
-          </h1>
-
-          <p>
-            {description}
-          </p>
-
+          <h1>{title || `Demande ${requestType || ""}`}</h1>
+          <p>{description}</p>
         </div>
 
-
-        <div
-          className={
-            `request-heading-icon request-accent-${accent}`
-          }
-        >
-
+        <div className={`request-heading-icon request-accent-${accent}`}>
           {icon}
-
         </div>
-
       </section>
-
-
-      {/* ===================================================
-          MESSAGE
-      =================================================== */}
 
       {message && (
-
         <div
-          className={
-            `request-message ${
-              messageType === "success"
-                ? "request-message-success"
-                : "request-message-error"
-            }`
-          }
+          className={`request-message ${
+            messageType === "success"
+              ? "request-message-success"
+              : "request-message-error"
+          }`}
         >
-
           {message}
-
         </div>
-
       )}
 
-
-      {/* ===================================================
-          LAYOUT
-      =================================================== */}
-
       <section className="request-layout">
-
-
-        {/* =================================================
-            FORMULAIRE
-        ================================================= */}
-
         <main className="request-card">
-
-
           <div className="request-card-heading">
-
             <div>
-
-              <h2>
-                Nouvelle demande
-              </h2>
-
-              <p>
-                Complétez les informations ci-dessous.
-              </p>
-
+              <h2>Nouvelle demande</h2>
+              <p>Complétez les informations ci-dessous.</p>
             </div>
 
-
-            <span
-              className={
-                `request-small-icon request-accent-${accent}`
-              }
-            >
-
+            <span className={`request-small-icon request-accent-${accent}`}>
               {icon}
-
             </span>
-
           </div>
 
-
-          <form
-            onSubmit={handleSubmit}
-          >
-
+          <form onSubmit={handleSubmit}>
             <div className="request-form-grid">
-
-
-              {fields.map(
-                (field) => (
-
-                  <RequestField
-                    key={field.name}
-                    field={field}
-                    value={
-                      formData[
-                        field.name
-                      ]
-                    }
-                    onChange={
-                      handleChange
-                    }
-                    formData={
-                      formData
-                    }
-                  />
-
-                )
-              )}
-
-
+              {fields.map((field) => (
+                <RequestField
+                  key={field.name}
+                  field={field}
+                  value={formData[field.name]}
+                  onChange={handleChange}
+                  formData={formData}
+                />
+              ))}
             </div>
-
 
             <div className="request-actions">
-
-
-              <button
+              <Button
                 type="button"
-                className="request-secondary-button"
+                variant="secondary"
                 disabled={isSubmitting}
                 onClick={() => {
-
-                  setFormData(
-                    initialValues
-                  );
-
+                  setFormData(initialValues);
                   setMessage("");
                   setMessageType("");
-
                 }}
               >
-
                 Réinitialiser
+              </Button>
 
-              </button>
-
-
-              <button
+              <Button
                 type="submit"
-                className="request-primary-button"
+                variant="primary"
+                loading={isSubmitting}
                 disabled={isSubmitting}
               >
-
-                {
-                  isSubmitting
-                    ? "Envoi..."
-                    : submitLabel
-                }
-
-              </button>
-
-
+                {submitLabel}
+              </Button>
             </div>
-
           </form>
-
         </main>
 
-
-        {/* =================================================
-            INFORMATIONS
-        ================================================= */}
-
         <aside className="request-sidebar-card">
-
-
           <div className="request-card-heading">
-
             <div>
-
-              <h2>
-                Informations
-              </h2>
-
-              <p>
-                À savoir avant l’envoi.
-              </p>
-
+              <h2>Informations</h2>
+              <p>À savoir avant l’envoi.</p>
             </div>
-
           </div>
-
 
           <div className="request-information-list">
-
-
-            {information.map(
-              (
-                item,
-                index
-              ) => (
-
-                <div
-                  key={
-                    `${item.title}-${index}`
-                  }
-                >
-
-                  <span>
-                    {index + 1}
-                  </span>
-
-
-                  <div>
-
-                    <strong>
-                      {item.title}
-                    </strong>
-
-                    <p>
-                      {item.text}
-                    </p>
-
-                  </div>
-
+            {information.map((item, index) => (
+              <div key={`${item.title}-${index}`}>
+                <span>{index + 1}</span>
+                <div>
+                  <strong>{item.title}</strong>
+                  <p>{item.text}</p>
                 </div>
-
-              )
-            )}
-
-
+              </div>
+            ))}
           </div>
-
         </aside>
-
-
       </section>
-
-
-      {/* ===================================================
-          HISTORIQUE RÉEL
-      =================================================== */}
 
       <section className="request-history-card">
-
-
         <div className="request-card-heading">
-
           <div>
-
-            <h2>
-              Historique
-            </h2>
-
-            <p>
-              Vos dernières demandes.
-            </p>
-
+            <h2>Historique</h2>
+            <p>Vos dernières demandes.</p>
           </div>
-
         </div>
 
-
         {loadingHistory ? (
-
-          <div className="request-empty">
-            Chargement de l'historique...
-          </div>
-
+          <div className="request-empty">Chargement de l'historique...</div>
         ) : history.length > 0 ? (
-
           <div className="request-table-wrapper">
-
-
             <table className="request-table">
-
-
               <thead>
-
                 <tr>
-
-                  <th>
-                    Date
-                  </th>
-
-                  <th>
-                    Demande
-                  </th>
-
-                  <th>
-                    Détail
-                  </th>
-
-                  <th>
-                    Statut
-                  </th>
-
+                  <th>Date</th>
+                  <th>Demande</th>
+                  <th>Détail</th>
+                  <th>Statut</th>
                 </tr>
-
               </thead>
-
-
               <tbody>
-
-
-                {history.map(
-                  (item) => (
-
-                    <tr
-                      key={item.id}
-                    >
-
-                      <td>
-
-                        {formatHistoryDate(
-                          item.date_demande
-                        )}
-
-                      </td>
-
-
-                      <td>
-
-                        {
-                          item.type_demande_display
-                          || item.type_demande
-                        }
-
-                      </td>
-
-
-                      <td>
-
-                        {getHistoryDetail(
-                          item
-                        )}
-
-                      </td>
-
-
-                      <td>
-
-                        <StatusBadge
-                          status={
-                            item.statut
-                          }
-                        />
-
-                      </td>
-
-
-                    </tr>
-
-                  )
-                )}
-
-
+                {history.map((item) => (
+                  <tr key={item.id}>
+                    <td>{formatHistoryDate(item.date_demande)}</td>
+                    <td>{item.type_demande_display || item.type_demande}</td>
+                    <td>{getHistoryDetail(item)}</td>
+                    <td><StatusBadge status={item.statut} /></td>
+                  </tr>
+                ))}
               </tbody>
-
-
             </table>
-
           </div>
-
         ) : (
-
-          <div className="request-empty">
-            Aucune demande enregistrée.
-          </div>
-
+          <div className="request-empty">Aucune demande enregistrée.</div>
         )}
-
-
       </section>
-
-
     </div>
   );
 }
 
 
-// ===========================================================
-// CHAMP
-// ===========================================================
-
-function RequestField({
-  field,
-  value,
-  onChange,
-  formData,
-}) {
-
-  // champ conditionnel
+function RequestField({ field, value, onChange, formData }) {
   if (
-    typeof field.hidden
-    === "function"
-    && field.hidden(
-      formData
-    )
+    typeof field.hidden === "function" &&
+    field.hidden(formData)
   ) {
     return null;
   }
 
-
   const isRequired =
-    typeof field.required
-    === "function"
-      ? field.required(
-          formData
-        )
-      : Boolean(
-          field.required
-        );
-
+    typeof field.required === "function"
+      ? field.required(formData)
+      : Boolean(field.required);
 
   const commonProps = {
-    id:
-      field.name,
-
-    name:
-      field.name,
-
-    value:
-      value ?? "",
-
+    id: field.name,
+    name: field.name,
+    value: value ?? "",
     onChange,
-
-    required:
-      isRequired,
-
-    disabled:
-      field.disabled,
+    required: isRequired,
+    disabled: field.disabled,
   };
 
-
   return (
-    <div
-      className={
-        `request-field ${
-          field.fullWidth
-            ? "request-field-full"
-            : ""
-        }`
-      }
-    >
-
-
-      <label
-        htmlFor={field.name}
-      >
-
+    <div className={`request-field ${field.fullWidth ? "request-field-full" : ""}`}>
+      <label htmlFor={field.name}>
         {field.label}
-
-        {isRequired && (
-          <span>
-            {" "}*
-          </span>
-        )}
-
+        {isRequired && <span> *</span>}
       </label>
 
-
       {field.type === "select" && (
+        <select {...commonProps}>
+          <option value="">Sélectionner</option>
+          {field.options?.map((option) => {
+            const optionValue =
+              typeof option === "string" ? option : option.value;
+            const optionLabel =
+              typeof option === "string" ? option : option.label;
 
-        <select
-          {...commonProps}
-        >
-
-          <option value="">
-            Sélectionner
-          </option>
-
-
-          {field.options?.map(
-            (option) => {
-
-              const optionValue =
-                typeof option
-                === "string"
-                  ? option
-                  : option.value;
-
-
-              const optionLabel =
-                typeof option
-                === "string"
-                  ? option
-                  : option.label;
-
-
-              return (
-
-                <option
-                  key={optionValue}
-                  value={optionValue}
-                >
-                  {optionLabel}
-                </option>
-
-              );
-
-            }
-          )}
-
+            return (
+              <option key={optionValue} value={optionValue}>
+                {optionLabel}
+              </option>
+            );
+          })}
         </select>
-
       )}
-
 
       {field.type === "textarea" && (
-
         <textarea
           {...commonProps}
-          rows={
-            field.rows
-            || 4
-          }
-          placeholder={
-            field.placeholder
-          }
+          rows={field.rows || 4}
+          placeholder={field.placeholder}
         />
-
       )}
 
-
       {field.type === "file" && (
-
         <input
           id={field.name}
           name={field.name}
           type="file"
-          accept={
-            field.accept
-          }
-          onChange={
-            onChange
-          }
-          required={
-            isRequired
-          }
-          disabled={
-            field.disabled
-          }
+          accept={field.accept}
+          onChange={onChange}
+          required={isRequired}
+          disabled={field.disabled}
         />
-
       )}
 
-
-      {![
-        "select",
-        "textarea",
-        "file",
-      ].includes(
-        field.type
-      ) && (
-
+      {!['select', 'textarea', 'file'].includes(field.type) && (
         <input
           {...commonProps}
-          type={
-            field.type
-            || "text"
-          }
-          min={
-            field.min
-          }
-          max={
-            field.max
-          }
-          step={
-            field.step
-          }
-          placeholder={
-            field.placeholder
-          }
+          type={field.type || "text"}
+          min={field.min}
+          max={field.max}
+          step={field.step}
+          placeholder={field.placeholder}
         />
-
       )}
 
-
-      {field.help && (
-
-        <small>
-          {field.help}
-        </small>
-
-      )}
-
-
+      {field.help && <small>{field.help}</small>}
     </div>
   );
 }
 
 
-// ===========================================================
-// STATUT
-// ===========================================================
-
-function StatusBadge({
-  status,
-}) {
-
+function StatusBadge({ status }) {
   const labels = {
-    EN_ATTENTE:
-      "En attente",
-
-    APPROUVE:
-      "Approuvée",
-
-    REFUSE:
-      "Refusée",
+    EN_ATTENTE: "En attente",
+    APPROUVE: "Approuvée",
+    REFUSE: "Refusée",
   };
-
 
   const cssClasses = {
-    EN_ATTENTE:
-      "pending",
-
-    APPROUVE:
-      "approved",
-
-    REFUSE:
-      "rejected",
+    EN_ATTENTE: "pending",
+    APPROUVE: "approved",
+    REFUSE: "rejected",
   };
-
 
   return (
     <span
-      className={
-        `request-status request-status-${
-          cssClasses[status]
-          || "pending"
-        }`
-      }
+      className={`request-status request-status-${
+        cssClasses[status] || "pending"
+      }`}
     >
-
-      {
-        labels[status]
-        || status
-        || "—"
-      }
-
+      {labels[status] || status || "—"}
     </span>
   );
 }
+
