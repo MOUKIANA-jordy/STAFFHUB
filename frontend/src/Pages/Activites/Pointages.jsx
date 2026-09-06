@@ -937,11 +937,6 @@ export default function Pointages() {
               Historique des pointages
             </h2>
 
-            <p>
-              Vos horaires enregistrés
-              dans RH Manager.
-            </p>
-
           </div>
 
 
