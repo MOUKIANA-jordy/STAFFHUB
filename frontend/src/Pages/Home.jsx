@@ -719,7 +719,6 @@ export default function Home() {
             Bonjour, {firstName}
 
             <span className="dashboard-wave">
-              👋
             </span>
           </h1>
 
