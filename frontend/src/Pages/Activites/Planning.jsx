@@ -851,7 +851,7 @@ export default function Planning() {
 
           <p>
             Consultez vos horaires
-            et l'organisation de votre semaine.
+            et l'organisation de la semaine.
           </p>
 
         </div>
