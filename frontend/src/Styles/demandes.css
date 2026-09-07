@@ -743,3 +743,27 @@
   }
 }
 
+.request-field input,
+.request-field select,
+.request-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+
+  border: 1px solid #dbe2ea;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 13.5px;
+  outline: none;
+
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    background 150ms ease;
+}
+
+.request-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 24px;
+}
