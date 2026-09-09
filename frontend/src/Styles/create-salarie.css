@@ -477,3 +477,368 @@
     padding: 26px 18px;
   }
 }
+
+/* ============================================================
+   AJOUTS — FORMULAIRE MULTI-ÉTAPES CRÉATION SALARIÉ
+   À ajouter à la fin de create-salarie.css
+============================================================ */
+
+.create-salarie-stepper-card {
+  background: #ffffff;
+  border: 1px solid #e7ecf3;
+  border-radius: 20px;
+  box-shadow: 0 12px 35px rgba(15, 23, 42, 0.06);
+  margin-bottom: 24px;
+  padding: 22px;
+}
+
+.create-salarie-stepper-top {
+  align-items: flex-start;
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.create-salarie-stepper-top > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.create-salarie-stepper-top span {
+  color: #8792a6;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.create-salarie-stepper-top strong {
+  color: #172033;
+  font-size: 18px;
+}
+
+.create-salarie-progress-value {
+  color: #3157d5 !important;
+  font-size: 13px !important;
+}
+
+.create-salarie-progress {
+  background: #edf1f7;
+  border-radius: 999px;
+  height: 7px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.create-salarie-progress > span {
+  background: linear-gradient(90deg, #3157d5, #6c7df2);
+  border-radius: inherit;
+  display: block;
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.create-salarie-stepper {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  margin-top: 20px;
+}
+
+.create-salarie-step {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 14px;
+  color: #7c879c;
+  cursor: default;
+  display: flex;
+  gap: 9px;
+  min-width: 0;
+  padding: 10px;
+  text-align: left;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.create-salarie-step:not(:disabled) {
+  cursor: pointer;
+}
+
+.create-salarie-step:not(:disabled):hover {
+  background: #f4f7ff;
+}
+
+.create-salarie-step.is-active {
+  background: #eef3ff;
+  color: #3157d5;
+}
+
+.create-salarie-step.is-completed {
+  color: #178b66;
+}
+
+.create-salarie-step-icon {
+  align-items: center;
+  background: #f0f3f8;
+  border-radius: 50%;
+  display: flex;
+  flex: 0 0 34px;
+  height: 34px;
+  justify-content: center;
+  width: 34px;
+}
+
+.create-salarie-step.is-active .create-salarie-step-icon {
+  background: #3157d5;
+  color: #ffffff;
+}
+
+.create-salarie-step.is-completed .create-salarie-step-icon {
+  background: #e6f7f1;
+  color: #178b66;
+}
+
+.create-salarie-step-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.create-salarie-step-copy small {
+  font-size: 10px;
+  font-weight: 800;
+  opacity: 0.7;
+}
+
+.create-salarie-step-copy strong {
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.create-salarie-form-wizard {
+  display: block;
+}
+
+.create-salarie-step-panel {
+  animation: createSalarieStepIn 0.22s ease;
+  margin-bottom: 0;
+}
+
+@keyframes createSalarieStepIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.create-salarie-section-kicker {
+  color: #3157d5 !important;
+  font-size: 11px !important;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  margin: 0 0 3px !important;
+  text-transform: uppercase;
+}
+
+.create-salarie-document-block + .create-salarie-document-block {
+  border-top: 1px solid #edf0f5;
+  margin-top: 26px;
+  padding-top: 26px;
+}
+
+.create-salarie-document-block > h3 {
+  color: #20293a;
+  font-size: 15px;
+  margin: 0 0 18px;
+}
+
+.create-salarie-final-layout {
+  display: grid;
+  gap: 20px;
+}
+
+.create-salarie-summary-card {
+  margin-top: 0;
+}
+
+.create-salarie-summary-section {
+  border-top: 1px solid #edf0f5;
+  padding: 20px 0;
+}
+
+.create-salarie-summary-section:first-of-type {
+  border-top: 0;
+  padding-top: 4px;
+}
+
+.create-salarie-summary-section:last-child {
+  padding-bottom: 0;
+}
+
+.create-salarie-summary-heading {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.create-salarie-summary-heading h3 {
+  color: #20293a;
+  font-size: 14px;
+  margin: 0;
+}
+
+.create-salarie-summary-heading button {
+  background: #eef3ff;
+  border: 0;
+  border-radius: 8px;
+  color: #3157d5;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 7px 10px;
+}
+
+.create-salarie-summary-heading button:hover {
+  background: #e1e9ff;
+}
+
+.create-salarie-summary-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.create-salarie-summary-item {
+  background: #f8fafc;
+  border: 1px solid #edf0f5;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  padding: 13px 14px;
+}
+
+.create-salarie-summary-item span {
+  color: #8a94a7;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.create-salarie-summary-item strong {
+  color: #20293a;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.create-salarie-wizard-actions {
+  align-items: center;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr auto 1fr;
+  margin-top: 20px;
+}
+
+.create-salarie-wizard-actions > div {
+  justify-self: start;
+}
+
+.create-salarie-wizard-actions > .create-salarie-primary-button {
+  justify-self: end;
+}
+
+.create-salarie-action-step {
+  color: #8a94a7;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.create-salarie-primary-button,
+.create-salarie-secondary-button {
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+@media (max-width: 1150px) {
+  .create-salarie-stepper {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .create-salarie-stepper-card {
+    border-radius: 16px;
+    padding: 16px;
+  }
+
+  .create-salarie-stepper {
+    display: flex;
+    gap: 7px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .create-salarie-step {
+    flex: 0 0 auto;
+    min-width: 112px;
+  }
+
+  .create-salarie-step-copy strong {
+    max-width: 75px;
+  }
+
+  .create-salarie-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .create-salarie-wizard-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .create-salarie-action-step {
+    display: none;
+  }
+
+  .create-salarie-wizard-actions > .create-salarie-primary-button {
+    justify-self: stretch;
+  }
+
+  .create-salarie-wizard-actions > div {
+    width: 100%;
+  }
+
+  .create-salarie-wizard-actions > div > button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .create-salarie-stepper-top strong {
+    font-size: 16px;
+  }
+
+  .create-salarie-wizard-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .create-salarie-wizard-actions > .create-salarie-primary-button {
+    width: 100%;
+  }
+}
