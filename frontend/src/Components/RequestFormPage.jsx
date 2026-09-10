@@ -5,10 +5,28 @@ import React, {
   useState,
 } from "react";
 
+import {
+  ArrowLeft,
+  ArrowRight,
+  Bell,
+  CalendarDays,
+  Check,
+  CheckCircle2,
+  CircleDollarSign,
+  Clock3,
+  FileText,
+  Info,
+  Lightbulb,
+  LockKeyhole,
+  RotateCcw,
+  Send,
+  ShieldCheck,
+} from "lucide-react";
+
 import Button from "./Button";
 import API from "../Services/api";
 import "../Styles/demandes.css";
-
+import Select from "./Select";
 
 export default function RequestFormPage({
   title,
@@ -22,10 +40,11 @@ export default function RequestFormPage({
   submitLabel = "Envoyer la demande",
 }) {
   const initialValues = useMemo(
-    () => fields.reduce((values, field) => {
-      values[field.name] = field.defaultValue ?? "";
-      return values;
-    }, {}),
+    () =>
+      fields.reduce((values, field) => {
+        values[field.name] = field.defaultValue ?? "";
+        return values;
+      }, {}),
     [fields]
   );
 
@@ -35,6 +54,8 @@ export default function RequestFormPage({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [history, setHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [lastCreated, setLastCreated] = useState(null);
 
   useEffect(() => {
     setFormData(initialValues);
@@ -55,14 +76,12 @@ export default function RequestFormPage({
 
     try {
       setLoadingHistory(true);
-
       const response = await API.get(endpoint, {
         params: {
           type_demande: requestType,
           ordering: "-date_demande",
         },
       });
-
       setHistory(extractResults(response.data));
     } catch (error) {
       console.error("HISTORY ERROR", error);
@@ -79,18 +98,20 @@ export default function RequestFormPage({
   const handleChange = (event) => {
     const { name, value, files } = event.target;
 
+    setMessage("");
+    setMessageType("");
+
     setFormData((currentData) => ({
       ...currentData,
       [name]: files ? files[0] || null : value,
     }));
   };
 
-  const toSnakeCase = (value) => {
-    return value
+  const toSnakeCase = (value) =>
+    value
       .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
       .replace(/-/g, "_")
       .toLowerCase();
-  };
 
   const buildPayload = () => {
     const details = {};
@@ -171,9 +192,13 @@ export default function RequestFormPage({
     }
 
     if (typeof data === "string") {
-      if (data.includes("<html") || data.includes("<!DOCTYPE html>")) {
+      if (
+        data.includes("<html") ||
+        data.includes("<!DOCTYPE html>")
+      ) {
         return "Le serveur a rencontré une erreur pendant l’envoi.";
       }
+
       return data;
     }
 
@@ -181,15 +206,18 @@ export default function RequestFormPage({
 
     const extractMessage = (value) => {
       if (typeof value === "string") return value;
+
       if (Array.isArray(value)) {
         return value.length > 0 ? extractMessage(value[0]) : null;
       }
+
       if (value && typeof value === "object") {
         for (const nestedValue of Object.values(value)) {
           const result = extractMessage(nestedValue);
           if (result) return result;
         }
       }
+
       return null;
     };
 
@@ -201,16 +229,71 @@ export default function RequestFormPage({
     return "La demande contient des informations invalides.";
   };
 
+  const validateFields = () => {
+    for (const field of fields) {
+      if (
+        typeof field.hidden === "function" &&
+        field.hidden(formData)
+      ) {
+        continue;
+      }
+
+      const required =
+        typeof field.required === "function"
+          ? field.required(formData)
+          : Boolean(field.required);
+
+      if (!required) continue;
+
+      const value = formData[field.name];
+
+      if (
+        value === "" ||
+        value === null ||
+        value === undefined
+      ) {
+        return `${field.label} est obligatoire.`;
+      }
+    }
+
+    return "";
+  };
+
+  const goToReview = () => {
+    const validationError = validateFields();
+
+    if (validationError) {
+      setMessage(validationError);
+      setMessageType("error");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    setMessage("");
+    setMessageType("");
+    setCurrentStep(2);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (currentStep === 1) {
+      goToReview();
+      return;
+    }
+
     setMessage("");
     setMessageType("");
     setIsSubmitting(true);
 
     try {
       if (!endpoint) {
-        throw new Error("Aucun endpoint API n’a été défini pour cette demande.");
+        throw new Error(
+          "Aucun endpoint API n’a été défini pour cette demande."
+        );
       }
+
       if (!requestType) {
         throw new Error("Aucun type de demande n’a été défini.");
       }
@@ -221,7 +304,10 @@ export default function RequestFormPage({
 
       if (hasFile) {
         requestPayload = new FormData();
-        requestPayload.append("type_demande", payload.type_demande);
+        requestPayload.append(
+          "type_demande",
+          payload.type_demande
+        );
 
         if (payload.montant_souhaite !== undefined) {
           requestPayload.append(
@@ -249,7 +335,8 @@ export default function RequestFormPage({
         };
 
         if (payload.montant_souhaite !== undefined) {
-          requestPayload.montant_souhaite = payload.montant_souhaite;
+          requestPayload.montant_souhaite =
+            payload.montant_souhaite;
         }
 
         if (
@@ -260,11 +347,22 @@ export default function RequestFormPage({
         }
       }
 
-      await API.post(endpoint, requestPayload);
+      const response = await API.post(endpoint, requestPayload);
+
+      setLastCreated(
+        response.data || {
+          ...payload,
+          statut: "EN_ATTENTE",
+        }
+      );
+
       setMessage("Votre demande a bien été envoyée.");
       setMessageType("success");
-      setFormData(initialValues);
+      setCurrentStep(3);
+
       await fetchHistory();
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
       console.error("Erreur pendant l’envoi :", error);
       const apiErrors = error.response?.data;
@@ -272,17 +370,30 @@ export default function RequestFormPage({
       setMessage(
         apiErrors
           ? getApiErrorMessage(apiErrors)
-          : error.message || "Une erreur est survenue pendant l’envoi."
+          : error.message ||
+              "Une erreur est survenue pendant l’envoi."
       );
+
       setMessageType("error");
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const resetForm = () => {
+    setFormData(initialValues);
+    setMessage("");
+    setMessageType("");
+    setLastCreated(null);
+    setCurrentStep(1);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const formatHistoryDate = (value) => {
     if (!value) return "—";
+
     const date = new Date(value);
+
     if (Number.isNaN(date.getTime())) return "—";
 
     return date.toLocaleDateString("fr-FR", {
@@ -298,6 +409,7 @@ export default function RequestFormPage({
       item.montant_souhaite !== undefined
     ) {
       const amount = Number(item.montant_souhaite);
+
       if (!Number.isNaN(amount)) {
         return `${amount.toLocaleString("fr-FR", {
           minimumFractionDigits: 2,
@@ -308,34 +420,6 @@ export default function RequestFormPage({
 
     const details = item.details || {};
 
-    if (item.type_demande === "CALENDRIER") {
-      const parts = [];
-      if (details.date) {
-        const date = new Date(`${details.date}T12:00:00`);
-        if (!Number.isNaN(date.getTime())) {
-          parts.push(date.toLocaleDateString("fr-FR"));
-        }
-      }
-
-      const typeLabels = {
-        BUREAU: "Bureau",
-        TELETRAVAIL: "Télétravail",
-        CONGE: "Congé",
-        ABSENCE: "Absence",
-        VACATION: "Vacation",
-        FORMATION: "Formation",
-      };
-
-      if (details.type_journee) {
-        parts.push(typeLabels[details.type_journee] || details.type_journee);
-      }
-      if (details.heure_debut && details.heure_fin) {
-        parts.push(`${details.heure_debut} - ${details.heure_fin}`);
-      }
-      if (details.motif) parts.push(details.motif);
-      return parts.length > 0 ? parts.join(" • ") : "—";
-    }
-
     return (
       details.commentaire ||
       details.reason ||
@@ -345,17 +429,169 @@ export default function RequestFormPage({
     );
   };
 
+  const requestAmount =
+    formData.amount ||
+    formData.montant_souhaite ||
+    "";
+
+  const reviewRows = fields
+    .filter((field) => {
+      if (
+        typeof field.hidden === "function" &&
+        field.hidden(formData)
+      ) {
+        return false;
+      }
+
+      const value = formData[field.name];
+
+      return (
+        value !== "" &&
+        value !== null &&
+        value !== undefined
+      );
+    })
+    .map((field) => ({
+      label: field.label,
+      value: formatReviewValue(
+        field,
+        formData[field.name]
+      ),
+    }));
+
+  const steps = [
+    {
+      id: 1,
+      label: "Détails",
+      icon: FileText,
+    },
+    {
+      id: 2,
+      label: "Vérification",
+      icon: ShieldCheck,
+    },
+    {
+      id: 3,
+      label: "Confirmation",
+      icon: CheckCircle2,
+    },
+  ];
+
   return (
     <div className="request-page">
-      <section className="request-heading">
-        <div>
-          <h1>{title || `Demande ${requestType || ""}`}</h1>
-          <p>{description}</p>
+      <section className="request-hero">
+        <div className="request-hero-main">
+          <div
+            className={`request-heading-icon request-accent-${accent}`}
+          >
+            {icon}
+          </div>
+
+          <div>
+            <div className="request-breadcrumb">
+              Mes demandes
+              <span>›</span>
+              Nouvelle demande
+              <span>›</span>
+              {title || requestType}
+            </div>
+
+            <h1>
+              {title || `Demande ${requestType || ""}`}
+            </h1>
+
+            <p>{description}</p>
+          </div>
         </div>
 
-        <div className={`request-heading-icon request-accent-${accent}`}>
-          {icon}
+        <button
+          type="button"
+          className="request-help-button"
+        >
+          <Info size={17} />
+          Besoin d’aide ?
+        </button>
+      </section>
+
+      <section className="request-overview-card">
+        <div className="request-overview-item">
+          <CircleDollarSign size={24} />
+
+          <div>
+            <span>Montant demandé</span>
+            <strong>
+              {requestAmount
+                ? `${requestAmount} €`
+                : "—"}
+            </strong>
+            <small>Demande en cours</small>
+          </div>
         </div>
+
+        <div className="request-overview-item">
+          <CalendarDays size={24} />
+
+          <div>
+            <span>Demandes précédentes</span>
+            <strong>{history.length}</strong>
+            <small>Historique disponible</small>
+          </div>
+        </div>
+
+        <div className="request-overview-item">
+          <Clock3 size={24} />
+
+          <div>
+            <span>Statut</span>
+            <strong>
+              {currentStep === 3
+                ? "Envoyée"
+                : "Brouillon"}
+            </strong>
+            <small>Suivi dans StaffHub</small>
+          </div>
+        </div>
+
+        <div className="request-overview-note">
+          <Info size={20} />
+
+          <p>
+            Votre demande sera examinée par le service RH
+            avant validation.
+          </p>
+        </div>
+      </section>
+
+      <section className="request-stepper">
+        {steps.map((step) => {
+          const StepIcon = step.icon;
+          const isActive = currentStep === step.id;
+          const isDone = currentStep > step.id;
+
+          return (
+            <div
+              key={step.id}
+              className={[
+                "request-step",
+                isActive ? "is-active" : "",
+                isDone ? "is-done" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+            >
+              <span>
+                {isDone
+                  ? <Check size={16} />
+                  : <StepIcon size={16} />}
+              </span>
+
+              <div>
+                <small>Étape {step.id}</small>
+                <strong>{step.label}</strong>
+              </div>
+            </div>
+          );
+        })}
       </section>
 
       {message && (
@@ -372,74 +608,285 @@ export default function RequestFormPage({
 
       <section className="request-layout">
         <main className="request-card">
-          <div className="request-card-heading">
-            <div>
-              <h2>Nouvelle demande</h2>
-              <p>Complétez les informations ci-dessous.</p>
-            </div>
+          {currentStep === 1 && (
+            <>
+              <div className="request-card-heading">
+                <div className="request-card-heading-number">
+                  1
+                </div>
 
-            <span className={`request-small-icon request-accent-${accent}`}>
-              {icon}
-            </span>
-          </div>
+                <div>
+                  <h2>Détails de la demande</h2>
+                  <p>
+                    Renseignez les informations nécessaires.
+                  </p>
+                </div>
+              </div>
 
-          <form onSubmit={handleSubmit}>
-            <div className="request-form-grid">
-              {fields.map((field) => (
-                <RequestField
-                  key={field.name}
-                  field={field}
-                  value={formData[field.name]}
-                  onChange={handleChange}
-                  formData={formData}
-                />
-              ))}
-            </div>
+              <form onSubmit={handleSubmit}>
+                <div className="request-form-grid">
+                  {fields.map((field) => (
+                    <RequestField
+                      key={field.name}
+                      field={field}
+                      value={formData[field.name]}
+                      onChange={handleChange}
+                      formData={formData}
+                    />
+                  ))}
+                </div>
 
-            <div className="request-actions">
+                <div className="request-info-banner">
+                  <Info size={18} />
+
+                  <div>
+                    <strong>
+                      Transmission au service RH
+                    </strong>
+
+                    <p>
+                      Après l’envoi, votre demande apparaîtra
+                      dans « Mes demandes » avec son statut.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="request-actions">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={isSubmitting}
+                    onClick={resetForm}
+                  >
+                    <RotateCcw size={16} />
+                    Réinitialiser
+                  </Button>
+
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    disabled={isSubmitting}
+                  >
+                    Continuer
+                    <ArrowRight size={16} />
+                  </Button>
+                </div>
+              </form>
+            </>
+          )}
+
+          {currentStep === 2 && (
+            <>
+              <div className="request-card-heading">
+                <div className="request-card-heading-number">
+                  2
+                </div>
+
+                <div>
+                  <h2>Vérification</h2>
+                  <p>
+                    Contrôlez les informations avant l’envoi.
+                  </p>
+                </div>
+              </div>
+
+              <div className="request-review">
+                <div className="request-review-title">
+                  <div
+                    className={`request-review-icon request-accent-${accent}`}
+                  >
+                    {icon}
+                  </div>
+
+                  <div>
+                    <strong>{title}</strong>
+                    <span>{description}</span>
+                  </div>
+                </div>
+
+                <div className="request-review-grid">
+                  {reviewRows.map((item) => (
+                    <div key={item.label}>
+                      <span>{item.label}</span>
+                      <strong>{item.value}</strong>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="request-info-banner">
+                <ShieldCheck size={18} />
+
+                <div>
+                  <strong>Dernière vérification</strong>
+                  <p>
+                    Une fois envoyée, la demande sera
+                    transmise au service RH.
+                  </p>
+                </div>
+              </div>
+
+              <div className="request-actions">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={isSubmitting}
+                  onClick={() => setCurrentStep(1)}
+                >
+                  <ArrowLeft size={16} />
+                  Modifier
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="primary"
+                  loading={isSubmitting}
+                  disabled={isSubmitting}
+                  onClick={handleSubmit}
+                >
+                  <Send size={16} />
+                  {submitLabel}
+                </Button>
+              </div>
+            </>
+          )}
+
+          {currentStep === 3 && (
+            <div className="request-confirmation">
+              <div className="request-confirmation-icon">
+                <CheckCircle2 size={40} />
+              </div>
+
+              <span className="request-confirmation-eyebrow">
+                Demande envoyée
+              </span>
+
+              <h2>
+                Votre demande a bien été transmise
+              </h2>
+
+              <p>
+                Le service RH peut maintenant consulter et
+                traiter votre demande. Vous pourrez suivre son
+                statut depuis votre historique StaffHub.
+              </p>
+
+              <div className="request-confirmation-grid">
+                <div>
+                  <span>Type</span>
+                  <strong>{title || requestType}</strong>
+                </div>
+
+                <div>
+                  <span>Statut</span>
+                  <strong>En attente</strong>
+                </div>
+
+                <div>
+                  <span>Référence</span>
+                  <strong>
+                    {lastCreated?.id
+                      ? `DEM-${String(lastCreated.id).padStart(5, "0")}`
+                      : "Générée par le serveur"}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Suivi</span>
+                  <strong>Historique StaffHub</strong>
+                </div>
+              </div>
+
               <Button
                 type="button"
-                variant="secondary"
-                disabled={isSubmitting}
-                onClick={() => {
-                  setFormData(initialValues);
-                  setMessage("");
-                  setMessageType("");
-                }}
-              >
-                Réinitialiser
-              </Button>
-
-              <Button
-                type="submit"
                 variant="primary"
-                loading={isSubmitting}
-                disabled={isSubmitting}
+                onClick={resetForm}
               >
-                {submitLabel}
+                Nouvelle demande
               </Button>
             </div>
-          </form>
+          )}
         </main>
 
         <aside className="request-sidebar-card">
-          <div className="request-card-heading">
+          <div className="request-sidebar-heading">
+            <Lightbulb size={19} />
+
             <div>
-              <h2>Informations</h2>
-              <p>À savoir avant l’envoi.</p>
+              <h2>À savoir</h2>
+              <p>Avant d’envoyer votre demande.</p>
             </div>
           </div>
 
           <div className="request-information-list">
-            {information.map((item, index) => (
-              <div key={`${item.title}-${index}`}>
-                <span>{index + 1}</span>
+            {information.length > 0 ? (
+              information.map((item, index) => {
+                const icons = [
+                  ShieldCheck,
+                  Clock3,
+                  Bell,
+                  LockKeyhole,
+                ];
+
+                const ItemIcon =
+                  icons[index % icons.length];
+
+                return (
+                  <div key={`${item.title}-${index}`}>
+                    <span>
+                      <ItemIcon size={17} />
+                    </span>
+
+                    <div>
+                      <strong>{item.title}</strong>
+                      <p>{item.text}</p>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <>
                 <div>
-                  <strong>{item.title}</strong>
-                  <p>{item.text}</p>
+                  <span>
+                    <ShieldCheck size={17} />
+                  </span>
+
+                  <div>
+                    <strong>Validation RH</strong>
+                    <p>
+                      Votre demande sera examinée avant
+                      validation.
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+
+                <div>
+                  <span>
+                    <Clock3 size={17} />
+                  </span>
+
+                  <div>
+                    <strong>Délai de traitement</strong>
+                    <p>
+                      Le traitement peut prendre quelques jours.
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <span>
+                    <Bell size={17} />
+                  </span>
+
+                  <div>
+                    <strong>Notification</strong>
+                    <p>
+                      Vous serez informé après traitement.
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </aside>
       </section>
@@ -447,13 +894,17 @@ export default function RequestFormPage({
       <section className="request-history-card">
         <div className="request-card-heading">
           <div>
-            <h2>Historique</h2>
-            <p>Vos dernières demandes.</p>
+            <h2>Mes dernières demandes</h2>
+            <p>
+              Suivez les demandes déjà envoyées.
+            </p>
           </div>
         </div>
 
         {loadingHistory ? (
-          <div className="request-empty">Chargement de l'historique...</div>
+          <div className="request-empty">
+            Chargement de l'historique...
+          </div>
         ) : history.length > 0 ? (
           <div className="request-table-wrapper">
             <table className="request-table">
@@ -465,28 +916,47 @@ export default function RequestFormPage({
                   <th>Statut</th>
                 </tr>
               </thead>
+
               <tbody>
                 {history.map((item) => (
                   <tr key={item.id}>
-                    <td>{formatHistoryDate(item.date_demande)}</td>
-                    <td>{item.type_demande_display || item.type_demande}</td>
+                    <td>
+                      {formatHistoryDate(item.date_demande)}
+                    </td>
+
+                    <td>
+                      {item.type_demande_display ||
+                        item.type_demande}
+                    </td>
+
                     <td>{getHistoryDetail(item)}</td>
-                    <td><StatusBadge status={item.statut} /></td>
+
+                    <td>
+                      <StatusBadge
+                        status={item.statut}
+                      />
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         ) : (
-          <div className="request-empty">Aucune demande enregistrée.</div>
+          <div className="request-empty">
+            Aucune demande enregistrée.
+          </div>
         )}
       </section>
     </div>
   );
 }
 
-
-function RequestField({ field, value, onChange, formData }) {
+function RequestField({
+  field,
+  value,
+  onChange,
+  formData,
+}) {
   if (
     typeof field.hidden === "function" &&
     field.hidden(formData)
@@ -509,7 +979,11 @@ function RequestField({ field, value, onChange, formData }) {
   };
 
   return (
-    <div className={`request-field ${field.fullWidth ? "request-field-full" : ""}`}>
+    <div
+      className={`request-field ${
+        field.fullWidth ? "request-field-full" : ""
+      }`}
+    >
       <label htmlFor={field.name}>
         {field.label}
         {isRequired && <span> *</span>}
@@ -517,15 +991,26 @@ function RequestField({ field, value, onChange, formData }) {
 
       {field.type === "select" && (
         <select {...commonProps}>
-          <option value="">Sélectionner</option>
+          <option value="">
+            Sélectionner
+          </option>
+
           {field.options?.map((option) => {
             const optionValue =
-              typeof option === "string" ? option : option.value;
+              typeof option === "string"
+                ? option
+                : option.value;
+
             const optionLabel =
-              typeof option === "string" ? option : option.label;
+              typeof option === "string"
+                ? option
+                : option.label;
 
             return (
-              <option key={optionValue} value={optionValue}>
+              <option
+                key={optionValue}
+                value={optionValue}
+              >
                 {optionLabel}
               </option>
             );
@@ -538,6 +1023,7 @@ function RequestField({ field, value, onChange, formData }) {
           {...commonProps}
           rows={field.rows || 4}
           placeholder={field.placeholder}
+          maxLength={field.maxLength}
         />
       )}
 
@@ -553,7 +1039,9 @@ function RequestField({ field, value, onChange, formData }) {
         />
       )}
 
-      {!['select', 'textarea', 'file'].includes(field.type) && (
+      {!["select", "textarea", "file"].includes(
+        field.type
+      ) && (
         <input
           {...commonProps}
           type={field.type || "text"}
@@ -564,22 +1052,62 @@ function RequestField({ field, value, onChange, formData }) {
         />
       )}
 
-      {field.help && <small>{field.help}</small>}
+      {field.help && (
+        <small>{field.help}</small>
+      )}
     </div>
   );
 }
 
+function formatReviewValue(field, value) {
+  if (value instanceof File) {
+    return value.name;
+  }
+
+  if (field.type === "date" && value) {
+    const date = new Date(`${value}T12:00:00`);
+
+    if (!Number.isNaN(date.getTime())) {
+      return date.toLocaleDateString("fr-FR", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      });
+    }
+  }
+
+  if (
+    field.apiField === "montant_souhaite" ||
+    field.name === "amount" ||
+    field.name === "montant_souhaite"
+  ) {
+    const amount = Number(value);
+
+    if (!Number.isNaN(amount)) {
+      return `${amount.toLocaleString("fr-FR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })} €`;
+    }
+  }
+
+  return String(value);
+}
 
 function StatusBadge({ status }) {
   const labels = {
     EN_ATTENTE: "En attente",
+    APPROUVEE: "Approuvée",
     APPROUVE: "Approuvée",
+    REFUSEE: "Refusée",
     REFUSE: "Refusée",
   };
 
   const cssClasses = {
     EN_ATTENTE: "pending",
+    APPROUVEE: "approved",
     APPROUVE: "approved",
+    REFUSEE: "rejected",
     REFUSE: "rejected",
   };
 
@@ -593,4 +1121,3 @@ function StatusBadge({ status }) {
     </span>
   );
 }
-
