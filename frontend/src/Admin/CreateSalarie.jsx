@@ -5,8 +5,10 @@ import React, {
 
 import {
   ArrowLeft,
+  ArrowRight,
   Banknote,
   BriefcaseBusiness,
+  Check,
   CheckCircle2,
   FileText,
   Loader2,
@@ -14,6 +16,7 @@ import {
   MapPin,
   Save,
   ShieldCheck,
+  Sparkles,
   UserRound,
   UsersRound,
 } from "lucide-react";
@@ -23,15 +26,13 @@ import {
 } from "react-router-dom";
 
 import API from "../Services/api";
+import DatePicker from "../Components/DatePicker";
 
 import "../Styles/create-salarie.css";
 
 
 const INITIAL_FORM = {
-  // =========================================================
-  // IDENTITE
-  // =========================================================
-
+  // IDENTITÉ
   nom: "",
   prenom: "",
   email_personnel: "",
@@ -39,10 +40,7 @@ const INITIAL_FORM = {
   date_naissance: "",
   nationalite: "",
 
-  // =========================================================
   // EMPLOI
-  // =========================================================
-
   poste: "",
   etablissement: "",
   type_contrat: "CDI",
@@ -50,17 +48,11 @@ const INITIAL_FORM = {
   date_fin_contrat: "",
   role: "SALARIE",
 
-  // =========================================================
   // COMPTE
-  // =========================================================
-
   username: "",
   password: "",
 
-  // =========================================================
   // ADRESSE
-  // =========================================================
-
   adresse_numero: "",
   adresse_voie: "",
   adresse_complement: "",
@@ -68,27 +60,18 @@ const INITIAL_FORM = {
   adresse_commune: "",
   adresse_pays: "France",
 
-  // =========================================================
   // CONTACT URGENCE
-  // =========================================================
-
   contact_urgence_nom: "",
   contact_urgence_lien: "",
   contact_urgence_telephone: "",
 
-  // =========================================================
   // BANQUE
-  // =========================================================
-
   iban: "",
   bic: "",
   titulaire: "",
   nom_banque: "",
 
-  // =========================================================
   // DOCUMENTS
-  // =========================================================
-
   piece_identite_type: "CNI",
   piece_identite_numero: "",
   piece_identite_date_emission: "",
@@ -109,10 +92,46 @@ const ROLE_LABELS = {
 };
 
 
+const CONTRACT_LABELS = {
+  CDI: "CDI",
+  CDD: "CDD",
+  VACATAIRE: "Vacataire",
+  STAGIAIRE: "Stagiaire",
+  ALTERNANT: "Alternant",
+};
+
+
+const STEPS = [
+  {
+    id: 1,
+    label: "Informations",
+    description: "Identité du salarié",
+    icon: UserRound,
+  },
+  {
+    id: 2,
+    label: "Emploi",
+    description: "Poste et contrat",
+    icon: BriefcaseBusiness,
+  },
+  {
+    id: 3,
+    label: "Onboarding",
+    description: "Compléter le dossier",
+    icon: Sparkles,
+  },
+  {
+    id: 4,
+    label: "Vérification",
+    description: "Contrôle final",
+    icon: ShieldCheck,
+  },
+];
+
+
 function getApiError(error) {
   const responseData =
     error?.response?.data;
-
 
   if (!responseData) {
     return (
@@ -121,7 +140,6 @@ function getApiError(error) {
     );
   }
 
-
   if (
     typeof responseData
     === "string"
@@ -129,13 +147,11 @@ function getApiError(error) {
     return responseData;
   }
 
-
   if (
     responseData.detail
   ) {
     return responseData.detail;
   }
-
 
   return Object.entries(
     responseData
@@ -149,7 +165,6 @@ function getApiError(error) {
           Array.isArray(messages)
             ? messages.join(" ")
             : String(messages);
-
 
         return (
           `${field} : ${content}`
@@ -166,11 +181,17 @@ function Field({
   required = false,
   hint,
   children,
+  type = "text",
+  value,
+  onChange,
+  disabled,
+  min,
+  max,
+  placeholder,
   ...inputProps
 }) {
   return (
     <label className="create-salarie-field">
-
       <span>
         {label}
 
@@ -184,18 +205,39 @@ function Field({
         }
       </span>
 
-
       {
         children
         || (
-          <input
-            name={name}
-            required={required}
-            {...inputProps}
-          />
+          type === "date"
+            ? (
+                <DatePicker
+                  id={name}
+                  name={name}
+                  value={value ?? ""}
+                  onChange={onChange}
+                  placeholder={placeholder || "Sélectionner une date"}
+                  disabled={disabled}
+                  required={required}
+                  minDate={min}
+                  maxDate={max}
+                />
+              )
+            : (
+                <input
+                  name={name}
+                  type={type}
+                  value={value}
+                  onChange={onChange}
+                  required={required}
+                  disabled={disabled}
+                  min={min}
+                  max={max}
+                  placeholder={placeholder}
+                  {...inputProps}
+                />
+              )
         )
       }
-
 
       {
         hint
@@ -205,8 +247,28 @@ function Field({
           </small>
         )
       }
-
     </label>
+  );
+}
+
+
+function SummaryItem({
+  label,
+  value,
+}) {
+  return (
+    <div className="create-salarie-summary-item">
+      <span>
+        {label}
+      </span>
+
+      <strong>
+        {
+          value
+          || "Non renseigné"
+        }
+      </strong>
+    </div>
   );
 }
 
@@ -215,7 +277,6 @@ export default function CreateSalarie() {
   const navigate =
     useNavigate();
 
-
   const [
     form,
     setForm,
@@ -223,36 +284,41 @@ export default function CreateSalarie() {
     INITIAL_FORM
   );
 
+  const [
+    currentStep,
+    setCurrentStep,
+  ] = useState(1);
+
+  const [
+    onboardingMode,
+    setOnboardingMode,
+  ] = useState("INVITE");
 
   const [
     saving,
     setSaving,
   ] = useState(false);
 
-
   const [
     error,
     setError,
   ] = useState("");
-
 
   const [
     created,
     setCreated,
   ] = useState(null);
 
-
   const isPermanentContract =
     form.type_contrat
     === "CDI";
-
 
   const employeePreview =
     useMemo(
       () => {
         return (
           `${form.prenom} ${form.nom}`
-          .trim()
+            .trim()
           || "Nouveau salarié"
         );
       },
@@ -260,6 +326,15 @@ export default function CreateSalarie() {
         form.nom,
         form.prenom,
       ]
+    );
+
+  const progress =
+    Math.round(
+      (
+        currentStep
+        / STEPS.length
+      )
+      * 100
     );
 
 
@@ -276,9 +351,7 @@ export default function CreateSalarie() {
       files,
     } = event.target;
 
-
     setError("");
-
 
     setForm(
       (current) => ({
@@ -309,106 +382,219 @@ export default function CreateSalarie() {
   // VALIDATION
   // =========================================================
 
-  const validateForm = () => {
-    const requiredFields = [
-      [
-        "nom",
-        "Le nom",
-      ],
-      [
-        "prenom",
-        "Le prénom",
-      ],
-      [
-        "email_personnel",
-        "L’adresse e-mail personnelle",
-      ],
-      [
-        "poste",
-        "Le poste",
-      ],
-      [
-        "etablissement",
-        "L’établissement",
-      ],
-      [
-        "date_debut_contrat",
-        "La date de début du contrat",
-      ],
-    ];
-
-
-    const missingField =
-      requiredFields.find(
-        ([name]) => {
-          return !String(
-            form[name]
-            || ""
-          ).trim();
+  const validateStep =
+    (
+      step = currentStep
+    ) => {
+      if (
+        step === 1
+      ) {
+        if (
+          !form.nom.trim()
+        ) {
+          return "Le nom est obligatoire.";
         }
-      );
+
+        if (
+          !form.prenom.trim()
+        ) {
+          return "Le prénom est obligatoire.";
+        }
+
+        if (
+          !form.email_personnel.trim()
+        ) {
+          return "L’adresse e-mail personnelle est obligatoire.";
+        }
+
+        const emailPattern =
+          /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (
+          !emailPattern.test(
+            form.email_personnel.trim()
+          )
+        ) {
+          return "L’adresse e-mail personnelle n’est pas valide.";
+        }
+      }
+
+      if (
+        step === 2
+      ) {
+        if (
+          !form.poste.trim()
+        ) {
+          return "Le poste est obligatoire.";
+        }
+
+        if (
+          !form.etablissement.trim()
+        ) {
+          return "L’établissement est obligatoire.";
+        }
+
+        if (
+          !form.date_debut_contrat
+        ) {
+          return "La date de début du contrat est obligatoire.";
+        }
+
+        if (
+          form.date_fin_contrat
+          && form.date_fin_contrat
+            < form.date_debut_contrat
+        ) {
+          return (
+            "La date de fin ne peut pas être "
+            + "antérieure à la date de début."
+          );
+        }
+      }
+
+      if (
+        step === 3
+        && onboardingMode
+        === "RH"
+      ) {
+        if (
+          form.piece_identite_date_emission
+          && form.piece_identite_date_expiration
+          && form.piece_identite_date_expiration
+            < form.piece_identite_date_emission
+        ) {
+          return (
+            "La date d’expiration de la pièce "
+            + "d’identité est invalide."
+          );
+        }
+
+        if (
+          form.titre_sejour_date_emission
+          && form.titre_sejour_date_expiration
+          && form.titre_sejour_date_expiration
+            < form.titre_sejour_date_emission
+        ) {
+          return (
+            "La date d’expiration du titre "
+            + "de séjour est invalide."
+          );
+        }
+      }
+
+      if (
+        step === 4
+        && form.password
+        && form.password.length
+          < 8
+      ) {
+        return (
+          "Le mot de passe doit contenir "
+          + "au moins 8 caractères."
+        );
+      }
+
+      return "";
+    };
 
 
-    if (missingField) {
-      return (
-        `${missingField[1]} `
-        + "est obligatoire."
-      );
+  const validateForm = () => {
+    for (
+      let step = 1;
+      step <= STEPS.length;
+      step += 1
+    ) {
+      const validationError =
+        validateStep(step);
+
+      if (
+        validationError
+      ) {
+        return {
+          message:
+            validationError,
+          step,
+        };
+      }
     }
 
+    return {
+      message: "",
+      step: 4,
+    };
+  };
+
+
+  // =========================================================
+  // NAVIGATION
+  // =========================================================
+
+  const goToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+
+  const nextStep = () => {
+    const validationError =
+      validateStep(
+        currentStep
+      );
 
     if (
-      form.date_fin_contrat
-      && form.date_fin_contrat
-        < form.date_debut_contrat
+      validationError
     ) {
-      return (
-        "La date de fin ne peut pas "
-        + "être antérieure à la date "
-        + "de début."
+      setError(
+        validationError
       );
+
+      goToTop();
+      return;
     }
 
+    setError("");
 
+    setCurrentStep(
+      (step) =>
+        Math.min(
+          step + 1,
+          STEPS.length
+        )
+    );
+
+    goToTop();
+  };
+
+
+  const previousStep = () => {
+    setError("");
+
+    setCurrentStep(
+      (step) =>
+        Math.max(
+          step - 1,
+          1
+        )
+    );
+
+    goToTop();
+  };
+
+
+  const goToStep = (
+    step
+  ) => {
     if (
-      form.password
-      && form.password.length < 8
+      step > currentStep
     ) {
-      return (
-        "Le mot de passe doit "
-        + "contenir au moins "
-        + "8 caractères."
-      );
+      return;
     }
 
-
-    if (
-      form.piece_identite_date_emission
-      && form.piece_identite_date_expiration
-      && form.piece_identite_date_expiration
-        < form.piece_identite_date_emission
-    ) {
-      return (
-        "La date d’expiration de la "
-        + "pièce d’identité est invalide."
-      );
-    }
-
-
-    if (
-      form.titre_sejour_date_emission
-      && form.titre_sejour_date_expiration
-      && form.titre_sejour_date_expiration
-        < form.titre_sejour_date_emission
-    ) {
-      return (
-        "La date d’expiration du titre "
-        + "de séjour est invalide."
-      );
-    }
-
-
-    return "";
+    setError("");
+    setCurrentStep(step);
+    goToTop();
   };
 
 
@@ -418,7 +604,6 @@ export default function CreateSalarie() {
 
   const buildPayload = () => {
     const payload = {
-      // Salarie
       nom:
         form.nom.trim(),
 
@@ -463,54 +648,78 @@ export default function CreateSalarie() {
       role:
         form.role,
 
-      // Contact urgence
       contact_urgence_nom:
-        form.contact_urgence_nom.trim(),
+        onboardingMode === "RH"
+          ? form.contact_urgence_nom.trim()
+          : "",
 
       contact_urgence_lien:
-        form.contact_urgence_lien.trim(),
+        onboardingMode === "RH"
+          ? form.contact_urgence_lien.trim()
+          : "",
 
       contact_urgence_telephone:
-        form.contact_urgence_telephone
-          .trim(),
+        onboardingMode === "RH"
+          ? form.contact_urgence_telephone.trim()
+          : "",
 
-      // Données liées
       adresse_data: {
         numero:
-          form.adresse_numero.trim(),
+          onboardingMode === "RH"
+            ? form.adresse_numero.trim()
+            : "",
 
         voie:
-          form.adresse_voie.trim(),
+          onboardingMode === "RH"
+            ? form.adresse_voie.trim()
+            : "",
 
         complement:
-          form.adresse_complement.trim(),
+          onboardingMode === "RH"
+            ? form.adresse_complement.trim()
+            : "",
 
         code_postal:
-          form.adresse_code_postal.trim(),
+          onboardingMode === "RH"
+            ? form.adresse_code_postal.trim()
+            : "",
 
         commune:
-          form.adresse_commune.trim(),
+          onboardingMode === "RH"
+            ? form.adresse_commune.trim()
+            : "",
 
         pays:
-          form.adresse_pays.trim()
-          || "France",
+          onboardingMode === "RH"
+            ? (
+                form.adresse_pays.trim()
+                || "France"
+              )
+            : "",
       },
 
       iban_data: {
         iban:
-          form.iban.trim(),
+          onboardingMode === "RH"
+            ? form.iban.trim()
+            : "",
 
         bic:
-          form.bic.trim(),
+          onboardingMode === "RH"
+            ? form.bic.trim()
+            : "",
 
         titulaire:
-          form.titulaire.trim(),
+          onboardingMode === "RH"
+            ? form.titulaire.trim()
+            : "",
 
         nom_banque:
-          form.nom_banque.trim(),
+          onboardingMode === "RH"
+            ? form.nom_banque.trim()
+            : "",
       },
     };
-
 
     if (
       form.username.trim()
@@ -519,14 +728,12 @@ export default function CreateSalarie() {
         form.username.trim();
     }
 
-
     if (
       form.password
     ) {
       payload.password =
         form.password;
     }
-
 
     return payload;
   };
@@ -553,34 +760,28 @@ export default function CreateSalarie() {
         return;
       }
 
-
       const documentData =
         new FormData();
-
 
       documentData.append(
         "salarie",
         salarieId
       );
 
-
       documentData.append(
         "type_document",
         typeDocument
       );
-
 
       documentData.append(
         "titre",
         titre
       );
 
-
       documentData.append(
         "fichier",
         fichier
       );
-
 
       if (
         numero
@@ -591,7 +792,6 @@ export default function CreateSalarie() {
         );
       }
 
-
       if (
         dateEmission
       ) {
@@ -601,7 +801,6 @@ export default function CreateSalarie() {
         );
       }
 
-
       if (
         dateExpiration
       ) {
@@ -610,7 +809,6 @@ export default function CreateSalarie() {
           dateExpiration
         );
       }
-
 
       await API.post(
         "/api/documents/",
@@ -629,54 +827,54 @@ export default function CreateSalarie() {
     ) => {
       event.preventDefault();
 
-
-      const validationError =
-        validateForm();
-
-
       if (
-        validationError
+        currentStep
+        !== STEPS.length
       ) {
-        setError(
-          validationError
-        );
-
+        nextStep();
         return;
       }
 
+      const validation =
+        validateForm();
+
+      if (
+        validation.message
+      ) {
+        setError(
+          validation.message
+        );
+
+        setCurrentStep(
+          validation.step
+        );
+
+        goToTop();
+        return;
+      }
 
       setSaving(true);
       setError("");
 
-
       try {
-        // -----------------------------------------------------
-        // SALARIE
-        // -----------------------------------------------------
-
         const response =
           await API.post(
             "/api/salaries/",
             buildPayload()
           );
 
-
         const responseData =
           response.data
           || {};
-
 
         const salarie =
           responseData.data
           || responseData;
 
-
-        // -----------------------------------------------------
-        // PIECE IDENTITE
-        // -----------------------------------------------------
-
         if (
-          form.piece_identite_fichier
+          onboardingMode
+          === "RH"
+          && form.piece_identite_fichier
         ) {
           await uploadDocument({
             salarieId:
@@ -705,15 +903,10 @@ export default function CreateSalarie() {
           });
         }
 
-
-        // -----------------------------------------------------
-        // TITRE DE SEJOUR
-        // Temporairement AUTRE tant que le backend
-        // n'a pas encore TITRE_SEJOUR.
-        // -----------------------------------------------------
-
         if (
-          form.titre_sejour_fichier
+          onboardingMode
+          === "RH"
+          && form.titre_sejour_fichier
         ) {
           await uploadDocument({
             salarieId:
@@ -739,11 +932,6 @@ export default function CreateSalarie() {
           });
         }
 
-
-        // -----------------------------------------------------
-        // SUCCESS
-        // -----------------------------------------------------
-
         setCreated({
           salarie,
 
@@ -753,8 +941,9 @@ export default function CreateSalarie() {
 
           emailSent:
             responseData.email_envoye,
-        });
 
+          onboardingMode,
+        });
       } catch (
         requestError
       ) {
@@ -763,13 +952,11 @@ export default function CreateSalarie() {
           requestError
         );
 
-
         setError(
           getApiError(
             requestError
           )
         );
-
       } finally {
         setSaving(false);
       }
@@ -777,7 +964,7 @@ export default function CreateSalarie() {
 
 
   // =========================================================
-  // NOUVEAU SALARIE
+  // RESET
   // =========================================================
 
   const createAnotherEmployee =
@@ -788,12 +975,9 @@ export default function CreateSalarie() {
 
       setCreated(null);
       setError("");
-
-
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
+      setCurrentStep(1);
+      setOnboardingMode("INVITE");
+      goToTop();
     };
 
 
@@ -808,42 +992,33 @@ export default function CreateSalarie() {
       created.salarie
       || {};
 
-
     const fullName =
       `${salarie.prenom || form.prenom} ${
         salarie.nom || form.nom
       }`.trim();
 
-
     return (
       <main className="create-salarie-page">
-
         <section className="create-salarie-success">
-
           <span className="create-salarie-success-icon">
             <CheckCircle2
               size={38}
             />
           </span>
 
-
           <p className="create-salarie-eyebrow">
             Création terminée
           </p>
-
 
           <h1>
             {fullName}
           </h1>
 
-
           <p className="create-salarie-success-message">
             {created.message}
           </p>
 
-
           <div className="create-salarie-result-grid">
-
             <div>
               <span>
                 Matricule
@@ -857,7 +1032,6 @@ export default function CreateSalarie() {
               </strong>
             </div>
 
-
             <div>
               <span>
                 E-mail professionnel
@@ -870,7 +1044,6 @@ export default function CreateSalarie() {
                 }
               </strong>
             </div>
-
 
             <div>
               <span>
@@ -887,33 +1060,56 @@ export default function CreateSalarie() {
               </strong>
             </div>
 
-
             <div>
               <span>
-                Invitation
+                Onboarding
               </span>
 
               <strong>
                 {
-                  created.emailSent
-                  === false
-                    ? (
-                      "Compte créé, "
-                      + "e-mail non envoyé"
-                    )
-                    : (
-                      "E-mail de connexion "
-                      + "envoyé"
-                    )
+                  created.onboardingMode
+                  === "INVITE"
+                    ? "Invitation salarié"
+                    : "Dossier complété par le RH"
                 }
               </strong>
             </div>
-
           </div>
 
+          {
+            created.onboardingMode
+            === "INVITE"
+            && (
+              <div className="create-salarie-success-note">
+                <Mail
+                  size={20}
+                />
+
+                <div>
+                  <strong>
+                    Invitation de connexion
+                  </strong>
+
+                  <p>
+                    {
+                      created.emailSent
+                      === false
+                        ? (
+                            "Le compte a été créé, mais l’e-mail "
+                            + "d’invitation n’a pas été envoyé."
+                          )
+                        : (
+                            "Le compte a été créé et l’invitation "
+                            + "de connexion a été envoyée."
+                          )
+                    }
+                  </p>
+                </div>
+              </div>
+            )
+          }
 
           <div className="create-salarie-success-actions">
-
             <button
               type="button"
               className="create-salarie-secondary-button"
@@ -923,7 +1119,6 @@ export default function CreateSalarie() {
             >
               Créer un autre salarié
             </button>
-
 
             <button
               type="button"
@@ -936,11 +1131,8 @@ export default function CreateSalarie() {
             >
               Voir les salariés
             </button>
-
           </div>
-
         </section>
-
       </main>
     );
   }
@@ -952,13 +1144,7 @@ export default function CreateSalarie() {
 
   return (
     <main className="create-salarie-page">
-
-      {/* =====================================================
-          HEADER
-      ===================================================== */}
-
       <header className="create-salarie-heading">
-
         <button
           type="button"
           className="create-salarie-back"
@@ -972,29 +1158,22 @@ export default function CreateSalarie() {
           />
         </button>
 
-
         <div>
-
           <span className="create-salarie-eyebrow">
             Administration des salariés
           </span>
 
-
           <h1>
-            Créer un salarié
+            Ajouter un salarié
           </h1>
 
-
           <p>
-            Créez son dossier RH et son compte
-            de connexion.
+            Créez le profil professionnel puis choisissez
+            comment compléter son dossier RH.
           </p>
-
         </div>
 
-
         <div className="create-salarie-preview">
-
           <UserRound
             size={19}
           />
@@ -1002,10 +1181,122 @@ export default function CreateSalarie() {
           <span>
             {employeePreview}
           </span>
+        </div>
+      </header>
 
+
+      {/* =====================================================
+          STEPPER
+      ===================================================== */}
+
+      <section className="create-salarie-stepper-card create-salarie-stepper-card-compact">
+        <div className="create-salarie-stepper-top">
+          <div>
+            <span>
+              Étape {currentStep} sur {STEPS.length}
+            </span>
+
+            <strong>
+              {
+                STEPS[
+                  currentStep - 1
+                ].label
+              }
+            </strong>
+          </div>
+
+          <span className="create-salarie-progress-value">
+            {progress} %
+          </span>
         </div>
 
-      </header>
+        <div className="create-salarie-progress">
+          <span
+            style={{
+              width:
+                `${progress}%`,
+            }}
+          />
+        </div>
+
+        <div className="create-salarie-stepper create-salarie-stepper-four">
+          {
+            STEPS.map(
+              (step) => {
+                const Icon =
+                  step.icon;
+
+                const completed =
+                  step.id
+                  < currentStep;
+
+                const active =
+                  step.id
+                  === currentStep;
+
+                return (
+                  <button
+                    key={
+                      step.id
+                    }
+                    type="button"
+                    className={[
+                      "create-salarie-step",
+                      active
+                        ? "is-active"
+                        : "",
+                      completed
+                        ? "is-completed"
+                        : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                    onClick={() =>
+                      goToStep(
+                        step.id
+                      )
+                    }
+                    disabled={
+                      step.id
+                      > currentStep
+                    }
+                  >
+                    <span className="create-salarie-step-icon">
+                      {
+                        completed
+                          ? (
+                              <Check
+                                size={17}
+                              />
+                            )
+                          : (
+                              <Icon
+                                size={17}
+                              />
+                            )
+                      }
+                    </span>
+
+                    <span className="create-salarie-step-copy">
+                      <small>
+                        0{step.id}
+                      </small>
+
+                      <strong>
+                        {step.label}
+                      </strong>
+
+                      <em>
+                        {step.description}
+                      </em>
+                    </span>
+                  </button>
+                );
+              }
+            )
+          }
+        </div>
+      </section>
 
 
       {
@@ -1022,862 +1313,1258 @@ export default function CreateSalarie() {
 
 
       <form
-        className="create-salarie-form"
+        className="create-salarie-form create-salarie-form-wizard"
         onSubmit={
           handleSubmit
         }
       >
 
         {/* ===================================================
-            IDENTITE
+            ÉTAPE 1 — INFORMATIONS
         =================================================== */}
 
-        <section className="create-salarie-card">
+        {
+          currentStep
+          === 1
+          && (
+            <section className="create-salarie-card create-salarie-step-panel">
+              <header className="create-salarie-card-heading">
+                <span>
+                  <UserRound
+                    size={21}
+                  />
+                </span>
 
-          <header className="create-salarie-card-heading">
+                <div>
+                  <p className="create-salarie-section-kicker">
+                    Étape 1
+                  </p>
 
-            <span>
-              <UserRound
-                size={21}
-              />
-            </span>
+                  <h2>
+                    Informations personnelles
+                  </h2>
 
+                  <p>
+                    Commencez par les informations essentielles
+                    permettant d’identifier le salarié.
+                  </p>
+                </div>
+              </header>
 
-            <div>
-              <h2>
-                Identité et coordonnées
-              </h2>
+              <div className="create-salarie-grid">
+                <Field
+                  label="Nom"
+                  name="nom"
+                  value={form.nom}
+                  onChange={handleChange}
+                  autoComplete="family-name"
+                  placeholder="Ex. Moukiana"
+                  required
+                />
 
-              <p>
-                Informations personnelles principales.
-              </p>
-            </div>
+                <Field
+                  label="Prénom"
+                  name="prenom"
+                  value={form.prenom}
+                  onChange={handleChange}
+                  autoComplete="given-name"
+                  placeholder="Ex. Jordy"
+                  required
+                />
 
-          </header>
+                <Field
+                  label="E-mail personnel"
+                  name="email_personnel"
+                  type="email"
+                  value={
+                    form.email_personnel
+                  }
+                  onChange={
+                    handleChange
+                  }
+                  autoComplete="email"
+                  placeholder="prenom.nom@email.com"
+                  required
+                  hint="L’invitation de connexion pourra être envoyée à cette adresse."
+                />
 
+                <Field
+                  label="Téléphone"
+                  name="telephone"
+                  type="tel"
+                  value={
+                    form.telephone
+                  }
+                  onChange={
+                    handleChange
+                  }
+                  autoComplete="tel"
+                  placeholder="06 00 00 00 00"
+                />
 
-          <div className="create-salarie-grid">
+                <Field
+                  label="Date de naissance"
+                  name="date_naissance"
+                  type="date"
+                  value={
+                    form.date_naissance
+                  }
+                  onChange={
+                    handleChange
+                  }
+                />
 
-            <Field
-              label="Nom"
-              name="nom"
-              value={form.nom}
-              onChange={handleChange}
-              autoComplete="family-name"
-              placeholder="Ex. Moukiana"
-              required
-            />
-
-
-            <Field
-              label="Prénom"
-              name="prenom"
-              value={form.prenom}
-              onChange={handleChange}
-              autoComplete="given-name"
-              placeholder="Ex. Jordy"
-              required
-            />
-
-
-            <Field
-              label="E-mail personnel"
-              name="email_personnel"
-              type="email"
-              value={
-                form.email_personnel
-              }
-              onChange={
-                handleChange
-              }
-              autoComplete="email"
-              placeholder="prenom.nom@email.com"
-              required
-            />
-
-
-            <Field
-              label="Téléphone"
-              name="telephone"
-              type="tel"
-              value={
-                form.telephone
-              }
-              onChange={
-                handleChange
-              }
-              autoComplete="tel"
-              placeholder="06 00 00 00 00"
-            />
-
-
-            <Field
-              label="Date de naissance"
-              name="date_naissance"
-              type="date"
-              value={
-                form.date_naissance
-              }
-              onChange={
-                handleChange
-              }
-            />
-
-
-            <Field
-              label="Nationalité"
-              name="nationalite"
-              value={
-                form.nationalite
-              }
-              onChange={
-                handleChange
-              }
-              placeholder="Ex. Congolaise"
-            />
-
-          </div>
-
-        </section>
+                <Field
+                  label="Nationalité"
+                  name="nationalite"
+                  value={
+                    form.nationalite
+                  }
+                  onChange={
+                    handleChange
+                  }
+                  placeholder="Ex. Congolaise"
+                />
+              </div>
+            </section>
+          )
+        }
 
 
         {/* ===================================================
-            ADRESSE
+            ÉTAPE 2 — EMPLOI
         =================================================== */}
 
-        <section className="create-salarie-card">
+        {
+          currentStep
+          === 2
+          && (
+            <section className="create-salarie-card create-salarie-step-panel">
+              <header className="create-salarie-card-heading">
+                <span>
+                  <BriefcaseBusiness
+                    size={21}
+                  />
+                </span>
 
-          <header className="create-salarie-card-heading">
+                <div>
+                  <p className="create-salarie-section-kicker">
+                    Étape 2
+                  </p>
 
-            <span>
-              <MapPin
-                size={21}
-              />
-            </span>
+                  <h2>
+                    Emploi et contrat
+                  </h2>
 
+                  <p>
+                    Définissez l’affectation, le contrat
+                    et les droits applicatifs du salarié.
+                  </p>
+                </div>
+              </header>
 
-            <div>
-              <h2>
-                Adresse
-              </h2>
+              <div className="create-salarie-grid">
+                <Field
+                  label="Poste"
+                  name="poste"
+                  value={
+                    form.poste
+                  }
+                  onChange={
+                    handleChange
+                  }
+                  placeholder="Ex. Comptable"
+                  required
+                />
 
-              <p>
-                Adresse personnelle du salarié.
-              </p>
-            </div>
+                <Field
+                  label="Établissement"
+                  name="etablissement"
+                  value={
+                    form.etablissement
+                  }
+                  onChange={
+                    handleChange
+                  }
+                  placeholder="Ex. Siège social"
+                  required
+                />
 
-          </header>
+                <Field
+                  label="Type de contrat"
+                  required
+                >
+                  <select
+                    name="type_contrat"
+                    value={
+                      form.type_contrat
+                    }
+                    onChange={
+                      handleChange
+                    }
+                  >
+                    <option value="CDI">
+                      CDI
+                    </option>
 
+                    <option value="CDD">
+                      CDD
+                    </option>
 
-          <div className="create-salarie-grid">
+                    <option value="VACATAIRE">
+                      Vacataire
+                    </option>
 
-            <Field
-              label="Numéro"
-              name="adresse_numero"
-              value={
-                form.adresse_numero
-              }
-              onChange={
-                handleChange
-              }
-              placeholder="Ex. 10"
-            />
+                    <option value="STAGIAIRE">
+                      Stagiaire
+                    </option>
 
+                    <option value="ALTERNANT">
+                      Alternant
+                    </option>
+                  </select>
+                </Field>
 
-            <Field
-              label="Voie"
-              name="adresse_voie"
-              value={
-                form.adresse_voie
-              }
-              onChange={
-                handleChange
-              }
-              placeholder="Ex. rue de Paris"
-            />
+                <Field
+                  label="Rôle StaffHub"
+                  required
+                >
+                  <select
+                    name="role"
+                    value={
+                      form.role
+                    }
+                    onChange={
+                      handleChange
+                    }
+                  >
+                    <option value="SALARIE">
+                      Salarié
+                    </option>
 
+                    <option value="RH">
+                      Ressources humaines
+                    </option>
 
-            <Field
-              label="Complément"
-              name="adresse_complement"
-              value={
-                form.adresse_complement
-              }
-              onChange={
-                handleChange
-              }
-              placeholder="Appartement, bâtiment..."
-            />
+                    <option value="ADMIN">
+                      Administrateur
+                    </option>
+                  </select>
+                </Field>
 
+                <Field
+                  label="Date de début"
+                  name="date_debut_contrat"
+                  type="date"
+                  value={
+                    form.date_debut_contrat
+                  }
+                  onChange={
+                    handleChange
+                  }
+                  required
+                />
 
-            <Field
-              label="Code postal"
-              name="adresse_code_postal"
-              value={
-                form.adresse_code_postal
-              }
-              onChange={
-                handleChange
-              }
-              placeholder="75017"
-            />
-
-
-            <Field
-              label="Commune"
-              name="adresse_commune"
-              value={
-                form.adresse_commune
-              }
-              onChange={
-                handleChange
-              }
-              placeholder="Paris"
-            />
-
-
-            <Field
-              label="Pays"
-              name="adresse_pays"
-              value={
-                form.adresse_pays
-              }
-              onChange={
-                handleChange
-              }
-              placeholder="France"
-            />
-
-          </div>
-
-        </section>
+                <Field
+                  label="Date de fin"
+                  name="date_fin_contrat"
+                  type="date"
+                  value={
+                    form.date_fin_contrat
+                  }
+                  onChange={
+                    handleChange
+                  }
+                  min={
+                    form.date_debut_contrat
+                    || undefined
+                  }
+                  disabled={
+                    isPermanentContract
+                  }
+                  hint={
+                    isPermanentContract
+                      ? "Un CDI ne possède pas de date de fin."
+                      : "Facultatif si la date n’est pas encore connue."
+                  }
+                />
+              </div>
+            </section>
+          )
+        }
 
 
         {/* ===================================================
-            CONTACT URGENCE
+            ÉTAPE 3 — ONBOARDING
         =================================================== */}
 
-        <section className="create-salarie-card">
-
-          <header className="create-salarie-card-heading">
-
-            <span>
-              <UsersRound
-                size={21}
-              />
-            </span>
-
-
-            <div>
-              <h2>
-                Contact d'urgence
-              </h2>
-
-              <p>
-                Personne à contacter en cas d'urgence.
-              </p>
-            </div>
-
-          </header>
-
-
-          <div className="create-salarie-grid">
-
-            <Field
-              label="Nom complet"
-              name="contact_urgence_nom"
-              value={
-                form.contact_urgence_nom
-              }
-              onChange={
-                handleChange
-              }
-              placeholder="Ex. Jean Moukiana"
-            />
-
-
-            <Field
-              label="Lien"
-              name="contact_urgence_lien"
-              value={
-                form.contact_urgence_lien
-              }
-              onChange={
-                handleChange
-              }
-              placeholder="Ex. Père, conjoint..."
-            />
-
-
-            <Field
-              label="Téléphone"
-              name="contact_urgence_telephone"
-              type="tel"
-              value={
-                form.contact_urgence_telephone
-              }
-              onChange={
-                handleChange
-              }
-              placeholder="06 00 00 00 00"
-            />
-
-          </div>
-
-        </section>
-
-
-        {/* ===================================================
-            BANQUE
-        =================================================== */}
-
-        <section className="create-salarie-card">
-
-          <header className="create-salarie-card-heading">
-
-            <span>
-              <Banknote
-                size={21}
-              />
-            </span>
-
-
-            <div>
-              <h2>
-                Coordonnées bancaires
-              </h2>
-
-              <p>
-                RIB et informations de versement du salaire.
-              </p>
-            </div>
-
-          </header>
-
-
-          <div className="create-salarie-grid">
-
-            <Field
-              label="IBAN"
-              name="iban"
-              value={
-                form.iban
-              }
-              onChange={
-                handleChange
-              }
-              placeholder="FR76..."
-            />
-
-
-            <Field
-              label="BIC"
-              name="bic"
-              value={
-                form.bic
-              }
-              onChange={
-                handleChange
-              }
-              placeholder="AGRIFRPP"
-            />
-
-
-            <Field
-              label="Titulaire"
-              name="titulaire"
-              value={
-                form.titulaire
-              }
-              onChange={
-                handleChange
-              }
-              placeholder="Nom du titulaire"
-            />
-
-
-            <Field
-              label="Banque"
-              name="nom_banque"
-              value={
-                form.nom_banque
-              }
-              onChange={
-                handleChange
-              }
-              placeholder="Ex. LCL"
-            />
-
-          </div>
-
-        </section>
-
-
-        {/* ===================================================
-            DOCUMENTS
-        =================================================== */}
-
-        <section className="create-salarie-card">
-
-          <header className="create-salarie-card-heading">
-
-            <span>
-              <FileText
-                size={21}
-              />
-            </span>
-
-
-            <div>
-              <h2>
-                Documents administratifs
-              </h2>
-
-              <p>
-                Pièce d'identité et titre de séjour.
-              </p>
-            </div>
-
-          </header>
-
-
-          <div className="create-salarie-grid">
-
-            <Field
-              label="Type de pièce"
-            >
-              <select
-                name="piece_identite_type"
-                value={
-                  form.piece_identite_type
-                }
-                onChange={
-                  handleChange
-                }
-              >
-                <option value="CNI">
-                  Carte nationale d'identité
-                </option>
-
-                <option value="PASSEPORT">
-                  Passeport
-                </option>
-              </select>
-            </Field>
-
-
-            <Field
-              label="N° pièce d'identité"
-              name="piece_identite_numero"
-              value={
-                form.piece_identite_numero
-              }
-              onChange={
-                handleChange
-              }
-            />
-
-
-            <Field
-              label="Date d'émission"
-              name="piece_identite_date_emission"
-              type="date"
-              value={
-                form.piece_identite_date_emission
-              }
-              onChange={
-                handleChange
-              }
-            />
-
-
-            <Field
-              label="Date d'expiration"
-              name="piece_identite_date_expiration"
-              type="date"
-              value={
-                form.piece_identite_date_expiration
-              }
-              onChange={
-                handleChange
-              }
-            />
-
-
-            <Field
-              label="Fichier pièce d'identité"
-              name="piece_identite_fichier"
-              type="file"
-              accept=".pdf,.jpg,.jpeg,.png"
-              onChange={
-                handleChange
-              }
-              hint="PDF, JPG ou PNG."
-            />
-
-
-            <Field
-              label="N° titre de séjour"
-              name="titre_sejour_numero"
-              value={
-                form.titre_sejour_numero
-              }
-              onChange={
-                handleChange
-              }
-            />
-
-
-            <Field
-              label="Début de validité"
-              name="titre_sejour_date_emission"
-              type="date"
-              value={
-                form.titre_sejour_date_emission
-              }
-              onChange={
-                handleChange
-              }
-            />
-
-
-            <Field
-              label="Expiration du titre"
-              name="titre_sejour_date_expiration"
-              type="date"
-              value={
-                form.titre_sejour_date_expiration
-              }
-              onChange={
-                handleChange
-              }
-            />
-
-
-            <Field
-              label="Fichier titre de séjour"
-              name="titre_sejour_fichier"
-              type="file"
-              accept=".pdf,.jpg,.jpeg,.png"
-              onChange={
-                handleChange
-              }
-              hint="Facultatif si le salarié n'est pas concerné."
-            />
-
-          </div>
-
-        </section>
-
-
-        {/* ===================================================
-            EMPLOI
-        =================================================== */}
-
-        <section className="create-salarie-card">
-
-          <header className="create-salarie-card-heading">
-
-            <span>
-              <BriefcaseBusiness
-                size={21}
-              />
-            </span>
-
-
-            <div>
-              <h2>
-                Emploi et contrat
-              </h2>
-
-              <p>
-                Affectation, droits applicatifs et durée du contrat.
-              </p>
-            </div>
-
-          </header>
-
-
-          <div className="create-salarie-grid">
-
-            <Field
-              label="Poste"
-              name="poste"
-              value={
-                form.poste
-              }
-              onChange={
-                handleChange
-              }
-              placeholder="Ex. Comptable"
-              required
-            />
-
-
-            <Field
-              label="Établissement"
-              name="etablissement"
-              value={
-                form.etablissement
-              }
-              onChange={
-                handleChange
-              }
-              placeholder="Ex. Siège social"
-              required
-            />
-
-
-            <Field
-              label="Type de contrat"
-              required
-            >
-              <select
-                name="type_contrat"
-                value={
-                  form.type_contrat
-                }
-                onChange={
-                  handleChange
-                }
-              >
-                <option value="CDI">
-                  CDI
-                </option>
-
-                <option value="CDD">
-                  CDD
-                </option>
-
-                <option value="VACATAIRE">
-                  Vacataire
-                </option>
-
-                <option value="STAGIAIRE">
-                  Stagiaire
-                </option>
-
-                <option value="ALTERNANT">
-                  Alternant
-                </option>
-              </select>
-            </Field>
-
-
-            <Field
-              label="Rôle applicatif"
-              required
-            >
-              <select
-                name="role"
-                value={
-                  form.role
-                }
-                onChange={
-                  handleChange
-                }
-              >
-                <option value="SALARIE">
-                  Salarié
-                </option>
-
-                <option value="RH">
-                  Ressources humaines
-                </option>
-
-                <option value="ADMIN">
-                  Administrateur
-                </option>
-              </select>
-            </Field>
-
-
-            <Field
-              label="Début du contrat"
-              name="date_debut_contrat"
-              type="date"
-              value={
-                form.date_debut_contrat
-              }
-              onChange={
-                handleChange
-              }
-              required
-            />
-
-
-            <Field
-              label="Fin du contrat"
-              name="date_fin_contrat"
-              type="date"
-              value={
-                form.date_fin_contrat
-              }
-              onChange={
-                handleChange
-              }
-              min={
-                form.date_debut_contrat
-                || undefined
-              }
-              disabled={
-                isPermanentContract
-              }
-              hint={
-                isPermanentContract
+        {
+          currentStep
+          === 3
+          && (
+            <section className="create-salarie-card create-salarie-step-panel">
+              <header className="create-salarie-card-heading">
+                <span>
+                  <Sparkles
+                    size={21}
+                  />
+                </span>
+
+                <div>
+                  <p className="create-salarie-section-kicker">
+                    Étape 3
+                  </p>
+
+                  <h2>
+                    Choisir l’onboarding
+                  </h2>
+
+                  <p>
+                    Choisissez qui complètera les informations
+                    administratives du dossier.
+                  </p>
+                </div>
+              </header>
+
+              <div className="create-salarie-onboarding-options">
+                <button
+                  type="button"
+                  className={[
+                    "create-salarie-onboarding-card",
+                    onboardingMode
+                    === "INVITE"
+                      ? "is-selected"
+                      : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  onClick={() => {
+                    setOnboardingMode(
+                      "INVITE"
+                    );
+                    setError("");
+                  }}
+                >
+                  <span className="create-salarie-onboarding-icon">
+                    <Mail
+                      size={24}
+                    />
+                  </span>
+
+                  <span className="create-salarie-onboarding-content">
+                    <span className="create-salarie-onboarding-title-row">
+                      <strong>
+                        Inviter le salarié
+                      </strong>
+
+                      <em>
+                        Recommandé
+                      </em>
+                    </span>
+
+                    <span>
+                      Le compte StaffHub est créé et le salarié
+                      reçoit son invitation de connexion.
+                    </span>
+
+                    <ul>
+                      <li>
+                        Adresse personnelle
+                      </li>
+                      <li>
+                        Contact d’urgence
+                      </li>
+                      <li>
+                        Coordonnées bancaires
+                      </li>
+                      <li>
+                        Documents administratifs
+                      </li>
+                    </ul>
+                  </span>
+
+                  <span className="create-salarie-radio">
+                    {
+                      onboardingMode
+                      === "INVITE"
+                      && (
+                        <Check
+                          size={15}
+                        />
+                      )
+                    }
+                  </span>
+                </button>
+
+
+                <button
+                  type="button"
+                  className={[
+                    "create-salarie-onboarding-card",
+                    onboardingMode
+                    === "RH"
+                      ? "is-selected"
+                      : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  onClick={() => {
+                    setOnboardingMode(
+                      "RH"
+                    );
+                    setError("");
+                  }}
+                >
+                  <span className="create-salarie-onboarding-icon">
+                    <UserRound
+                      size={24}
+                    />
+                  </span>
+
+                  <span className="create-salarie-onboarding-content">
+                    <span className="create-salarie-onboarding-title-row">
+                      <strong>
+                        Compléter le dossier moi-même
+                      </strong>
+                    </span>
+
+                    <span>
+                      Le RH saisit immédiatement les informations
+                      complémentaires avant la création.
+                    </span>
+
+                    <ul>
+                      <li>
+                        Adresse et contact d’urgence
+                      </li>
+                      <li>
+                        RIB / coordonnées bancaires
+                      </li>
+                      <li>
+                        Pièce d’identité
+                      </li>
+                      <li>
+                        Titre de séjour
+                      </li>
+                    </ul>
+                  </span>
+
+                  <span className="create-salarie-radio">
+                    {
+                      onboardingMode
+                      === "RH"
+                      && (
+                        <Check
+                          size={15}
+                        />
+                      )
+                    }
+                  </span>
+                </button>
+              </div>
+
+
+              {
+                onboardingMode
+                === "INVITE"
                   ? (
-                    "Un CDI ne possède pas "
-                    + "de date de fin."
-                  )
+                      <div className="create-salarie-invite-panel">
+                        <div className="create-salarie-invite-visual">
+                          <Mail
+                            size={27}
+                          />
+                        </div>
+
+                        <div>
+                          <h3>
+                            Le salarié complètera son dossier
+                          </h3>
+
+                          <p>
+                            StaffHub créera d’abord son compte avec les
+                            informations professionnelles saisies.
+                            L’invitation sera envoyée à :
+                          </p>
+
+                          <strong>
+                            {
+                              form.email_personnel
+                              || "E-mail personnel non renseigné"
+                            }
+                          </strong>
+                        </div>
+                      </div>
+                    )
                   : (
-                    "À renseigner si elle "
-                    + "est connue."
-                  )
+                      <div className="create-salarie-rh-onboarding">
+                        <div className="create-salarie-subsection">
+                          <div className="create-salarie-subsection-heading">
+                            <MapPin
+                              size={19}
+                            />
+
+                            <div>
+                              <h3>
+                                Adresse
+                              </h3>
+
+                              <p>
+                                Adresse personnelle du salarié.
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="create-salarie-grid">
+                            <Field
+                              label="Numéro"
+                              name="adresse_numero"
+                              value={
+                                form.adresse_numero
+                              }
+                              onChange={
+                                handleChange
+                              }
+                              placeholder="Ex. 10"
+                            />
+
+                            <Field
+                              label="Voie"
+                              name="adresse_voie"
+                              value={
+                                form.adresse_voie
+                              }
+                              onChange={
+                                handleChange
+                              }
+                              placeholder="Ex. rue de Paris"
+                            />
+
+                            <Field
+                              label="Complément"
+                              name="adresse_complement"
+                              value={
+                                form.adresse_complement
+                              }
+                              onChange={
+                                handleChange
+                              }
+                              placeholder="Appartement, bâtiment..."
+                            />
+
+                            <Field
+                              label="Code postal"
+                              name="adresse_code_postal"
+                              value={
+                                form.adresse_code_postal
+                              }
+                              onChange={
+                                handleChange
+                              }
+                              placeholder="75017"
+                            />
+
+                            <Field
+                              label="Commune"
+                              name="adresse_commune"
+                              value={
+                                form.adresse_commune
+                              }
+                              onChange={
+                                handleChange
+                              }
+                              placeholder="Paris"
+                            />
+
+                            <Field
+                              label="Pays"
+                              name="adresse_pays"
+                              value={
+                                form.adresse_pays
+                              }
+                              onChange={
+                                handleChange
+                              }
+                              placeholder="France"
+                            />
+                          </div>
+                        </div>
+
+
+                        <div className="create-salarie-subsection">
+                          <div className="create-salarie-subsection-heading">
+                            <UsersRound
+                              size={19}
+                            />
+
+                            <div>
+                              <h3>
+                                Contact d’urgence
+                              </h3>
+
+                              <p>
+                                Personne à joindre en cas d’urgence.
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="create-salarie-grid">
+                            <Field
+                              label="Nom complet"
+                              name="contact_urgence_nom"
+                              value={
+                                form.contact_urgence_nom
+                              }
+                              onChange={
+                                handleChange
+                              }
+                              placeholder="Ex. Jean Moukiana"
+                            />
+
+                            <Field
+                              label="Lien"
+                              name="contact_urgence_lien"
+                              value={
+                                form.contact_urgence_lien
+                              }
+                              onChange={
+                                handleChange
+                              }
+                              placeholder="Ex. Père, conjoint..."
+                            />
+
+                            <Field
+                              label="Téléphone"
+                              name="contact_urgence_telephone"
+                              type="tel"
+                              value={
+                                form.contact_urgence_telephone
+                              }
+                              onChange={
+                                handleChange
+                              }
+                              placeholder="06 00 00 00 00"
+                            />
+                          </div>
+                        </div>
+
+
+                        <div className="create-salarie-subsection">
+                          <div className="create-salarie-subsection-heading">
+                            <Banknote
+                              size={19}
+                            />
+
+                            <div>
+                              <h3>
+                                Coordonnées bancaires
+                              </h3>
+
+                              <p>
+                                Informations nécessaires au versement du salaire.
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="create-salarie-grid">
+                            <Field
+                              label="IBAN"
+                              name="iban"
+                              value={
+                                form.iban
+                              }
+                              onChange={
+                                handleChange
+                              }
+                              placeholder="FR76..."
+                            />
+
+                            <Field
+                              label="BIC"
+                              name="bic"
+                              value={
+                                form.bic
+                              }
+                              onChange={
+                                handleChange
+                              }
+                              placeholder="AGRIFRPP"
+                            />
+
+                            <Field
+                              label="Titulaire"
+                              name="titulaire"
+                              value={
+                                form.titulaire
+                              }
+                              onChange={
+                                handleChange
+                              }
+                              placeholder="Nom du titulaire"
+                            />
+
+                            <Field
+                              label="Banque"
+                              name="nom_banque"
+                              value={
+                                form.nom_banque
+                              }
+                              onChange={
+                                handleChange
+                              }
+                              placeholder="Ex. LCL"
+                            />
+                          </div>
+                        </div>
+
+
+                        <div className="create-salarie-subsection">
+                          <div className="create-salarie-subsection-heading">
+                            <FileText
+                              size={19}
+                            />
+
+                            <div>
+                              <h3>
+                                Documents administratifs
+                              </h3>
+
+                              <p>
+                                Pièce d’identité et titre de séjour.
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="create-salarie-grid">
+                            <Field
+                              label="Type de pièce"
+                            >
+                              <select
+                                name="piece_identite_type"
+                                value={
+                                  form.piece_identite_type
+                                }
+                                onChange={
+                                  handleChange
+                                }
+                              >
+                                <option value="CNI">
+                                  Carte nationale d'identité
+                                </option>
+
+                                <option value="PASSEPORT">
+                                  Passeport
+                                </option>
+                              </select>
+                            </Field>
+
+                            <Field
+                              label="N° pièce d'identité"
+                              name="piece_identite_numero"
+                              value={
+                                form.piece_identite_numero
+                              }
+                              onChange={
+                                handleChange
+                              }
+                            />
+
+                            <Field
+                              label="Date d'émission"
+                              name="piece_identite_date_emission"
+                              type="date"
+                              value={
+                                form.piece_identite_date_emission
+                              }
+                              onChange={
+                                handleChange
+                              }
+                            />
+
+                            <Field
+                              label="Date d'expiration"
+                              name="piece_identite_date_expiration"
+                              type="date"
+                              value={
+                                form.piece_identite_date_expiration
+                              }
+                              onChange={
+                                handleChange
+                              }
+                            />
+
+                            <Field
+                              label="Fichier pièce d'identité"
+                              name="piece_identite_fichier"
+                              type="file"
+                              accept=".pdf,.jpg,.jpeg,.png"
+                              onChange={
+                                handleChange
+                              }
+                              hint={
+                                form.piece_identite_fichier
+                                  ? `Sélectionné : ${form.piece_identite_fichier.name}`
+                                  : "PDF, JPG ou PNG."
+                              }
+                            />
+
+                            <Field
+                              label="N° titre de séjour"
+                              name="titre_sejour_numero"
+                              value={
+                                form.titre_sejour_numero
+                              }
+                              onChange={
+                                handleChange
+                              }
+                            />
+
+                            <Field
+                              label="Début de validité"
+                              name="titre_sejour_date_emission"
+                              type="date"
+                              value={
+                                form.titre_sejour_date_emission
+                              }
+                              onChange={
+                                handleChange
+                              }
+                            />
+
+                            <Field
+                              label="Expiration du titre"
+                              name="titre_sejour_date_expiration"
+                              type="date"
+                              value={
+                                form.titre_sejour_date_expiration
+                              }
+                              onChange={
+                                handleChange
+                              }
+                            />
+
+                            <Field
+                              label="Fichier titre de séjour"
+                              name="titre_sejour_fichier"
+                              type="file"
+                              accept=".pdf,.jpg,.jpeg,.png"
+                              onChange={
+                                handleChange
+                              }
+                              hint={
+                                form.titre_sejour_fichier
+                                  ? `Sélectionné : ${form.titre_sejour_fichier.name}`
+                                  : "Facultatif si le salarié n'est pas concerné."
+                              }
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )
               }
-            />
-
-          </div>
-
-        </section>
+            </section>
+          )
+        }
 
 
         {/* ===================================================
-            COMPTE
+            ÉTAPE 4 — VÉRIFICATION
         =================================================== */}
 
-        <section className="create-salarie-card">
+        {
+          currentStep
+          === 4
+          && (
+            <div className="create-salarie-final-layout">
+              <section className="create-salarie-card create-salarie-step-panel">
+                <header className="create-salarie-card-heading">
+                  <span>
+                    <ShieldCheck
+                      size={21}
+                    />
+                  </span>
 
-          <header className="create-salarie-card-heading">
+                  <div>
+                    <p className="create-salarie-section-kicker">
+                      Étape 4
+                    </p>
 
-            <span>
-              <ShieldCheck
-                size={21}
-              />
-            </span>
+                    <h2>
+                      Vérification
+                    </h2>
+
+                    <p>
+                      Contrôlez les informations avant la création du compte.
+                    </p>
+                  </div>
+                </header>
 
 
-            <div>
-              <h2>
-                Compte de connexion
-              </h2>
+                <div className="create-salarie-review-hero">
+                  <div className="create-salarie-review-avatar">
+                    <UserRound
+                      size={28}
+                    />
+                  </div>
 
-              <p>
-                Ces champs sont facultatifs :
-                le serveur peut les générer.
-              </p>
+                  <div>
+                    <h3>
+                      {employeePreview}
+                    </h3>
+
+                    <p>
+                      {
+                        form.poste
+                        || "Poste non renseigné"
+                      }
+                      {" · "}
+                      {
+                        CONTRACT_LABELS[
+                          form.type_contrat
+                        ]
+                      }
+                    </p>
+                  </div>
+
+                  <span>
+                    {
+                      ROLE_LABELS[
+                        form.role
+                      ]
+                    }
+                  </span>
+                </div>
+
+
+                <div className="create-salarie-summary-section">
+                  <div className="create-salarie-summary-heading">
+                    <h3>
+                      Informations
+                    </h3>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCurrentStep(1)
+                      }
+                    >
+                      Modifier
+                    </button>
+                  </div>
+
+                  <div className="create-salarie-summary-grid">
+                    <SummaryItem
+                      label="Nom complet"
+                      value={
+                        employeePreview
+                      }
+                    />
+
+                    <SummaryItem
+                      label="E-mail personnel"
+                      value={
+                        form.email_personnel
+                      }
+                    />
+
+                    <SummaryItem
+                      label="Téléphone"
+                      value={
+                        form.telephone
+                      }
+                    />
+
+                    <SummaryItem
+                      label="Nationalité"
+                      value={
+                        form.nationalite
+                      }
+                    />
+                  </div>
+                </div>
+
+
+                <div className="create-salarie-summary-section">
+                  <div className="create-salarie-summary-heading">
+                    <h3>
+                      Emploi
+                    </h3>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCurrentStep(2)
+                      }
+                    >
+                      Modifier
+                    </button>
+                  </div>
+
+                  <div className="create-salarie-summary-grid">
+                    <SummaryItem
+                      label="Poste"
+                      value={
+                        form.poste
+                      }
+                    />
+
+                    <SummaryItem
+                      label="Établissement"
+                      value={
+                        form.etablissement
+                      }
+                    />
+
+                    <SummaryItem
+                      label="Contrat"
+                      value={
+                        CONTRACT_LABELS[
+                          form.type_contrat
+                        ]
+                      }
+                    />
+
+                    <SummaryItem
+                      label="Début"
+                      value={
+                        form.date_debut_contrat
+                      }
+                    />
+                  </div>
+                </div>
+
+
+                <div className="create-salarie-summary-section">
+                  <div className="create-salarie-summary-heading">
+                    <h3>
+                      Onboarding
+                    </h3>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCurrentStep(3)
+                      }
+                    >
+                      Modifier
+                    </button>
+                  </div>
+
+                  <div className="create-salarie-onboarding-summary">
+                    {
+                      onboardingMode
+                      === "INVITE"
+                        ? (
+                            <>
+                              <Mail
+                                size={20}
+                              />
+
+                              <div>
+                                <strong>
+                                  Invitation salarié
+                                </strong>
+
+                                <p>
+                                  Le salarié recevra son accès StaffHub
+                                  et complètera son dossier.
+                                </p>
+                              </div>
+                            </>
+                          )
+                        : (
+                            <>
+                              <CheckCircle2
+                                size={20}
+                              />
+
+                              <div>
+                                <strong>
+                                  Dossier complété par le RH
+                                </strong>
+
+                                <p>
+                                  Les informations administratives saisies
+                                  seront enregistrées avec le profil.
+                                </p>
+                              </div>
+                            </>
+                          )
+                    }
+                  </div>
+                </div>
+              </section>
+
+
+              <section className="create-salarie-card create-salarie-account-card">
+                <header className="create-salarie-card-heading">
+                  <span>
+                    <Mail
+                      size={21}
+                    />
+                  </span>
+
+                  <div>
+                    <h2>
+                      Compte StaffHub
+                    </h2>
+
+                    <p>
+                      Paramètres facultatifs du compte de connexion.
+                    </p>
+                  </div>
+                </header>
+
+                <div className="create-salarie-grid">
+                  <Field
+                    label="Nom d’utilisateur"
+                    name="username"
+                    value={
+                      form.username
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    autoComplete="off"
+                    placeholder="Laisser vide pour utiliser le matricule"
+                    hint="Le matricule généré devient l'identifiant par défaut."
+                  />
+
+                  <Field
+                    label="Mot de passe temporaire"
+                    name="password"
+                    type="password"
+                    value={
+                      form.password
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    autoComplete="new-password"
+                    placeholder="Laisser vide pour génération automatique"
+                    hint="Minimum 8 caractères si vous le renseignez."
+                  />
+                </div>
+
+                <div className="create-salarie-account-note">
+                  <CheckCircle2
+                    size={18}
+                  />
+
+                  <p>
+                    Le matricule et l’e-mail professionnel
+                    sont générés automatiquement par Django.
+                  </p>
+                </div>
+              </section>
             </div>
-
-          </header>
-
-
-          <div className="create-salarie-grid">
-
-            <Field
-              label="Nom d’utilisateur"
-              name="username"
-              value={
-                form.username
-              }
-              onChange={
-                handleChange
-              }
-              autoComplete="off"
-              placeholder="Laisser vide pour utiliser le matricule"
-              hint="Le matricule généré devient l'identifiant par défaut."
-            />
-
-
-            <Field
-              label="Mot de passe temporaire"
-              name="password"
-              type="password"
-              value={
-                form.password
-              }
-              onChange={
-                handleChange
-              }
-              autoComplete="new-password"
-              placeholder="Laisser vide pour génération automatique"
-              hint="Minimum 8 caractères."
-            />
-
-          </div>
-
-
-          <div className="create-salarie-account-note">
-
-            <Mail
-              size={18}
-            />
-
-            <p>
-              L'e-mail professionnel et le matricule
-              sont générés automatiquement par Django.
-            </p>
-
-          </div>
-
-        </section>
+          )
+        }
 
 
         {/* ===================================================
             ACTIONS
         =================================================== */}
 
-        <footer className="create-salarie-actions">
-
-          <button
-            type="button"
-            className="create-salarie-secondary-button"
-            onClick={() =>
-              navigate(-1)
-            }
-            disabled={
-              saving
-            }
-          >
-            Annuler
-          </button>
-
-
-          <button
-            type="submit"
-            className="create-salarie-primary-button"
-            disabled={
-              saving
-            }
-          >
-
+        <footer className="create-salarie-actions create-salarie-wizard-actions">
+          <div>
             {
-              saving
+              currentStep
+              === 1
                 ? (
-                  <>
-                    <Loader2
-                      className="create-salarie-spinner"
-                      size={18}
-                    />
-
-                    Création en cours...
-                  </>
-                )
+                    <button
+                      type="button"
+                      className="create-salarie-secondary-button"
+                      onClick={() =>
+                        navigate(-1)
+                      }
+                      disabled={
+                        saving
+                      }
+                    >
+                      Annuler
+                    </button>
+                  )
                 : (
-                  <>
-                    <Save
+                    <button
+                      type="button"
+                      className="create-salarie-secondary-button"
+                      onClick={
+                        previousStep
+                      }
+                      disabled={
+                        saving
+                      }
+                    >
+                      <ArrowLeft
+                        size={18}
+                      />
+
+                      Précédent
+                    </button>
+                  )
+            }
+          </div>
+
+          <span className="create-salarie-action-step">
+            Étape {currentStep} / {STEPS.length}
+          </span>
+
+          {
+            currentStep
+            < STEPS.length
+              ? (
+                  <button
+                    type="button"
+                    className="create-salarie-primary-button"
+                    onClick={
+                      nextStep
+                    }
+                    disabled={
+                      saving
+                    }
+                  >
+                    Suivant
+
+                    <ArrowRight
                       size={18}
                     />
-
-                    Créer le salarié
-                  </>
+                  </button>
                 )
-            }
+              : (
+                  <button
+                    type="submit"
+                    className="create-salarie-primary-button"
+                    disabled={
+                      saving
+                    }
+                  >
+                    {
+                      saving
+                        ? (
+                            <>
+                              <Loader2
+                                className="create-salarie-spinner"
+                                size={18}
+                              />
 
-          </button>
+                              Création en cours...
+                            </>
+                          )
+                        : (
+                            <>
+                              <Save
+                                size={18}
+                              />
 
+                              Créer le salarié
+                            </>
+                          )
+                    }
+                  </button>
+                )
+          }
         </footer>
-
       </form>
-
     </main>
   );
 }
