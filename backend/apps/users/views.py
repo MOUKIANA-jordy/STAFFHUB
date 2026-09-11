@@ -1,3 +1,5 @@
+import logging
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
@@ -52,6 +54,9 @@ from .serializers import (
     PasswordResetRequestSerializer,
     SalarieSerializer,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 User = get_user_model()
@@ -239,10 +244,10 @@ class SalarieViewSet(viewsets.ModelViewSet):
 
                 email_sent = True
 
-            except Exception as error:
-                print(
-                    "ERREUR EMAIL CREATION SALARIE:",
-                    error,
+            except Exception:
+                logger.exception(
+                    "Failed to send temporary password email "
+                    "during employee creation."
                 )
 
                 email_sent = False
@@ -592,10 +597,9 @@ def password_reset_request(request):
             fail_silently=False,
         )
 
-    except Exception as error:
-        print(
-            "ERREUR PASSWORD RESET EMAIL:",
-            error,
+    except Exception:
+        logger.exception(
+            "Failed to send password reset email."
         )
 
         return Response(
