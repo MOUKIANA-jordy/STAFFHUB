@@ -299,18 +299,18 @@ export default function Sidebar() {
             <strong>
 
               <span className="brand-rh">
-                RH
+                Staff
               </span>
 
               <span className="brand-manager">
-                Manager
+                Hub
               </span>
 
             </strong>
 
 
             <span>
-              Ressources humaines
+              Mon Espace Salarié
             </span>
 
           </div>

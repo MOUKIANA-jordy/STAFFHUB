@@ -1,0 +1,571 @@
+/* ============================================================
+   STAFFHUB — DATE PICKER
+   Composant date entreprise / RH
+============================================================ */
+
+.app-date-picker {
+  position: relative;
+  width: 100%;
+}
+
+
+/* ============================================================
+   TRIGGER
+============================================================ */
+
+.app-date-picker-trigger {
+  appearance: none;
+  -webkit-appearance: none;
+
+  display: flex;
+
+  width: 100%;
+  min-height: 46px;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  padding: 0 12px 0 13px;
+
+  border:
+    1px solid
+    rgba(148, 163, 184, 0.2);
+
+  border-radius: 9px;
+
+  background:
+    rgba(4, 17, 31, 0.72);
+
+  color: #f8fafc;
+
+  font: inherit;
+  font-size: 13px;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  box-shadow: none;
+
+  transition:
+    border-color 0.16s ease,
+    background 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+
+.app-date-picker-trigger:hover:not(:disabled) {
+  border-color:
+    rgba(148, 163, 184, 0.34);
+}
+
+
+.app-date-picker.is-open
+.app-date-picker-trigger {
+  border-color: #2489ff;
+
+  background:
+    rgba(5, 22, 40, 0.96);
+
+  box-shadow:
+    0 0 0 3px
+    rgba(22, 119, 255, 0.1);
+}
+
+
+.app-date-picker-value {
+  overflow: hidden;
+
+  color: #f8fafc;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+.app-date-picker-placeholder {
+  overflow: hidden;
+
+  color: #627087;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+.app-date-picker-actions {
+  display: inline-flex;
+
+  flex: 0 0 auto;
+
+  align-items: center;
+
+  gap: 7px;
+
+  color: #8fa0b7;
+}
+
+
+.app-date-picker-clear {
+  display: inline-flex;
+
+  width: 24px;
+  height: 24px;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 7px;
+
+  color: #64748b;
+
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+}
+
+
+.app-date-picker-clear:hover {
+  background:
+    rgba(148, 163, 184, 0.09);
+
+  color: #e2e8f0;
+}
+
+
+.app-date-picker-calendar-icon {
+  color: #71adff;
+}
+
+
+/* ============================================================
+   DISABLED
+============================================================ */
+
+.app-date-picker.is-disabled
+.app-date-picker-trigger {
+  cursor: not-allowed;
+
+  border-color:
+    rgba(148, 163, 184, 0.1);
+
+  background:
+    rgba(4, 17, 31, 0.4);
+
+  color: #64748b;
+
+  opacity: 0.72;
+}
+
+
+/* ============================================================
+   POPOVER
+============================================================ */
+
+.app-date-picker-popover {
+  position: absolute;
+
+  top:
+    calc(100% + 8px);
+
+  left: 0;
+
+  z-index: 10000;
+
+  width: 308px;
+
+  padding: 12px;
+
+  border:
+    1px solid
+    rgba(96, 165, 250, 0.22);
+
+  border-radius: 14px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(10, 28, 48, 0.995),
+      rgba(5, 18, 32, 0.995)
+    );
+
+  box-shadow:
+    0 22px 48px
+    rgba(0, 0, 0, 0.38);
+
+  backdrop-filter:
+    blur(16px);
+}
+
+
+/* ============================================================
+   HEADER CALENDRIER
+============================================================ */
+
+.app-date-picker-header {
+  display: grid;
+
+  grid-template-columns:
+    34px
+    1fr
+    34px;
+
+  align-items: center;
+
+  gap: 8px;
+
+  margin-bottom: 12px;
+}
+
+
+.app-date-picker-header strong {
+  color: #f8fafc;
+
+  font-size: 13px;
+  font-weight: 750;
+
+  text-align: center;
+}
+
+
+.app-date-picker-nav {
+  appearance: none;
+  -webkit-appearance: none;
+
+  display: inline-flex;
+
+  width: 34px;
+  height: 34px;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+  margin: 0;
+
+  border:
+    1px solid
+    rgba(148, 163, 184, 0.12);
+
+  border-radius: 9px;
+
+  background:
+    rgba(148, 163, 184, 0.045);
+
+  color: #9aabc0;
+
+  cursor: pointer;
+
+  transition:
+    background 0.14s ease,
+    border-color 0.14s ease,
+    color 0.14s ease;
+}
+
+
+.app-date-picker-nav:hover {
+  border-color:
+    rgba(59, 130, 246, 0.25);
+
+  background:
+    rgba(22, 119, 255, 0.09);
+
+  color: #ffffff;
+}
+
+
+/* ============================================================
+   WEEKDAYS
+============================================================ */
+
+.app-date-picker-weekdays {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      7,
+      minmax(0, 1fr)
+    );
+
+  gap: 3px;
+
+  margin-bottom: 4px;
+}
+
+
+.app-date-picker-weekdays span {
+  display: flex;
+
+  height: 28px;
+
+  align-items: center;
+  justify-content: center;
+
+  color: #627087;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  text-transform: uppercase;
+}
+
+
+/* ============================================================
+   DAYS
+============================================================ */
+
+.app-date-picker-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      7,
+      minmax(0, 1fr)
+    );
+
+  gap: 3px;
+}
+
+
+.app-date-picker-day {
+  appearance: none;
+  -webkit-appearance: none;
+
+  position: relative;
+
+  display: flex;
+
+  aspect-ratio: 1;
+
+  min-width: 0;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+  margin: 0;
+
+  border:
+    1px solid
+    transparent;
+
+  border-radius: 9px;
+
+  background:
+    transparent;
+
+  color: #cbd5e1;
+
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.13s ease,
+    border-color 0.13s ease,
+    color 0.13s ease;
+}
+
+
+.app-date-picker-day:hover:not(:disabled) {
+  border-color:
+    rgba(59, 130, 246, 0.16);
+
+  background:
+    rgba(22, 119, 255, 0.09);
+
+  color: #ffffff;
+}
+
+
+.app-date-picker-day.is-outside {
+  color: #46546a;
+}
+
+
+.app-date-picker-day.is-today {
+  border-color:
+    rgba(96, 165, 250, 0.38);
+
+  color: #8fc2ff;
+}
+
+
+.app-date-picker-day.is-selected {
+  border-color: #1677ff;
+
+  background:
+    linear-gradient(
+      135deg,
+      #1264d9,
+      #2585ff
+    );
+
+  color: #ffffff;
+
+  box-shadow:
+    0 6px 14px
+    rgba(22, 119, 255, 0.2);
+}
+
+
+.app-date-picker-day.is-selected svg {
+  position: absolute;
+
+  right: 3px;
+  bottom: 3px;
+
+  color: #dbeafe;
+}
+
+
+.app-date-picker-day.is-blocked {
+  cursor: not-allowed;
+
+  color: #374151;
+
+  opacity: 0.42;
+}
+
+
+/* ============================================================
+   FOOTER
+============================================================ */
+
+.app-date-picker-footer {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 8px;
+
+  margin-top: 10px;
+
+  padding-top: 10px;
+
+  border-top:
+    1px solid
+    rgba(148, 163, 184, 0.1);
+}
+
+
+.app-date-picker-footer-button {
+  appearance: none;
+  -webkit-appearance: none;
+
+  min-height: 32px;
+
+  padding: 0 10px;
+  margin: 0;
+
+  border:
+    1px solid
+    rgba(148, 163, 184, 0.14);
+
+  border-radius: 8px;
+
+  background:
+    rgba(148, 163, 184, 0.045);
+
+  color: #8fa0b7;
+
+  font: inherit;
+  font-size: 10.5px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+
+.app-date-picker-footer-button:hover:not(:disabled) {
+  border-color:
+    rgba(59, 130, 246, 0.22);
+
+  color: #ffffff;
+
+  background:
+    rgba(22, 119, 255, 0.08);
+}
+
+
+.app-date-picker-footer-button.is-primary {
+  border-color:
+    rgba(59, 130, 246, 0.22);
+
+  background:
+    rgba(22, 119, 255, 0.12);
+
+  color: #8fc2ff;
+}
+
+
+.app-date-picker-footer-button:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.35;
+}
+
+
+/* ============================================================
+   REQUIRED HIDDEN INPUT
+============================================================ */
+
+.app-date-picker-required-input {
+  position: absolute;
+
+  left: 0;
+  bottom: 0;
+
+  width: 1px !important;
+  height: 1px !important;
+
+  padding: 0 !important;
+  margin: 0 !important;
+
+  border: 0 !important;
+
+  opacity: 0;
+
+  pointer-events: none;
+}
+
+
+/* ============================================================
+   PROTECTION CONTRE LES STYLES BUTTON GLOBAUX
+============================================================ */
+
+body .app-date-picker button {
+  margin-right: 0 !important;
+
+  -webkit-text-fill-color:
+    currentColor;
+}
+
+
+/* ============================================================
+   MOBILE
+============================================================ */
+
+@media (
+  max-width: 520px
+) {
+  .app-date-picker-popover {
+    width:
+      min(
+        308px,
+        calc(100vw - 42px)
+      );
+  }
+
+  .app-date-picker-day {
+    min-height: 34px;
+
+    aspect-ratio: auto;
+  }
+}
+

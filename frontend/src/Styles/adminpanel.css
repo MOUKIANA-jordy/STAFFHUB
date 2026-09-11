@@ -122,7 +122,8 @@
 }
 
 /* ===== BUTTONS ===== */
-button {
+
+.admin-panel button {
   padding: 6px 12px;
   margin-right: 6px;
   border-radius: 8px;
@@ -132,24 +133,27 @@ button {
   transition: 0.2s;
 }
 
-/* Modifier */
-button:first-child {
-  background: rgba(59,130,246,0.2);
-  color: #3b82f6;
+/* Boutons standards */
+.admin-panel button {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
 }
 
-button:first-child:hover {
-  background: rgba(59,130,246,0.4);
+.admin-panel button:hover {
+  background: rgba(59, 130, 246, 0.28);
 }
 
-/* Supprimer */
-button:last-child {
-  background: rgba(239,68,68,0.2);
+/* Déconnexion uniquement */
+.admin-panel .logout,
+.admin-panel .logout-button {
+  background: rgba(239, 68, 68, 0.12);
   color: #ef4444;
 }
 
-button:last-child:hover {
-  background: rgba(239,68,68,0.4);
+.admin-panel .logout:hover,
+.admin-panel .logout-button:hover {
+  background: rgba(239, 68, 68, 0.22);
+  color: #f87171;
 }
 
 /* ===== RESPONSIVE ===== */
@@ -168,4 +172,47 @@ button:last-child:hover {
   .admin-menu div {
     white-space: nowrap;
   }
+}
+
+input,
+select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 42px 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #020617;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  background-image:
+    linear-gradient(45deg, transparent 50%, #94a3b8 50%),
+    linear-gradient(135deg, #94a3b8 50%, transparent 50%);
+
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 13px) 50%;
+
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+select option {
+  background: #0b1b2e;
+  color: #f8fafc;
+  font-size: 13px;
 }

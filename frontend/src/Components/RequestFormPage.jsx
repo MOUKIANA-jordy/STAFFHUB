@@ -27,6 +27,7 @@ import Button from "./Button";
 import API from "../Services/api";
 import "../Styles/demandes.css";
 import Select from "./Select";
+import DatePicker from "./DatePicker";
 
 export default function RequestFormPage({
   title,
@@ -990,32 +991,30 @@ function RequestField({
       </label>
 
       {field.type === "select" && (
-        <select {...commonProps}>
-          <option value="">
-            Sélectionner
-          </option>
+        <Select
+          id={field.name}
+          name={field.name}
+          value={value ?? ""}
+          onChange={onChange}
+          options={field.options || []}
+          placeholder={field.placeholder || "Sélectionner"}
+          disabled={field.disabled}
+          required={isRequired}
+        />
+      )}
 
-          {field.options?.map((option) => {
-            const optionValue =
-              typeof option === "string"
-                ? option
-                : option.value;
-
-            const optionLabel =
-              typeof option === "string"
-                ? option
-                : option.label;
-
-            return (
-              <option
-                key={optionValue}
-                value={optionValue}
-              >
-                {optionLabel}
-              </option>
-            );
-          })}
-        </select>
+      {field.type === "date" && (
+        <DatePicker
+          id={field.name}
+          name={field.name}
+          value={value ?? ""}
+          onChange={onChange}
+          placeholder={field.placeholder || "Sélectionner une date"}
+          disabled={field.disabled}
+          required={isRequired}
+          minDate={field.min}
+          maxDate={field.max}
+        />
       )}
 
       {field.type === "textarea" && (
@@ -1039,7 +1038,7 @@ function RequestField({
         />
       )}
 
-      {!["select", "textarea", "file"].includes(
+      {!["select", "date", "textarea", "file"].includes(
         field.type
       ) && (
         <input
