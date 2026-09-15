@@ -80,6 +80,7 @@ INSTALLED_APPS = [
     "apps.planning",
     "apps.dossiers",
     "apps.messagerie",
+    "cloudinary_storage",
 ]
 
 MIDDLEWARE = [
@@ -204,13 +205,28 @@ CORS_ALLOW_CREDENTIALS = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+CLOUDINARY_STORAGE = {
+    "CLOUD_NAME": os.getenv("CLOUDINARY_CLOUD_NAME", ""),
+    "API_KEY": os.getenv("CLOUDINARY_API_KEY", ""),
+    "API_SECRET": os.getenv("CLOUDINARY_API_SECRET", ""),
+    "SECURE": True,
+}
+
 STORAGES = {
+    # Les fichiers envoyés par les utilisateurs sont stockés
+    # durablement sur Cloudinary.
     "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "BACKEND": (
+            "cloudinary_storage.storage."
+            "MediaCloudinaryStorage"
+        ),
     },
+
+    # Les fichiers CSS/JS de Django restent gérés par WhiteNoise.
     "staticfiles": {
         "BACKEND": (
-            "whitenoise.storage.CompressedManifestStaticFilesStorage"
+            "whitenoise.storage."
+            "CompressedManifestStaticFilesStorage"
         ),
     },
 }
