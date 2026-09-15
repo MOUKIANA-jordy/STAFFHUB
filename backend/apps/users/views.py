@@ -6,6 +6,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.mail import send_mail
+from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
 from django.utils.http import (
     urlsafe_base64_decode,
@@ -215,30 +216,55 @@ class SalarieViewSet(viewsets.ModelViewSet):
 
         if temp_password:
             try:
+                frontend_url = (
+                    settings.FRONTEND_URL.rstrip("/")
+                )
+
+                login_url = (
+                    f"{frontend_url}/login"
+                )
+
+                html_message = render_to_string(
+                    "email/welcome.html",
+                    {
+                        "prenom": salarie.prenom,
+                        "username": salarie.user.username,
+                        "password": temp_password,
+                        "email": email_pro,
+                        "login_url": login_url,
+                    },
+                )
+
+                text_message = (
+                    f"Bonjour {salarie.prenom},\n\n"
+                    "Votre compte StaffHub "
+                    "a été créé avec succès.\n\n"
+                    f"Identifiant : "
+                    f"{salarie.user.username}\n"
+                    f"Adresse professionnelle : "
+                    f"{email_pro}\n"
+                    f"Mot de passe temporaire : "
+                    f"{temp_password}\n\n"
+                    "Se connecter à StaffHub :\n"
+                    f"{login_url}\n\n"
+                    "Pour des raisons de sécurité, "
+                    "vous devrez modifier votre "
+                    "mot de passe lors de votre "
+                    "première connexion."
+                )
+
                 send_mail(
                     subject=(
                         "Bienvenue sur StaffHub"
                     ),
-                    message=(
-                        f"Bonjour {salarie.prenom},\n\n"
-                        "Votre compte StaffHub "
-                        "a été créé.\n\n"
-                        f"Identifiant : "
-                        f"{salarie.user.username}\n"
-                        f"Adresse professionnelle : "
-                        f"{email_pro}\n"
-                        f"Mot de passe temporaire : "
-                        f"{temp_password}\n\n"
-                        "Vous devrez modifier votre "
-                        "mot de passe lors de votre "
-                        "première connexion."
-                    ),
+                    message=text_message,
                     from_email=(
                         settings.DEFAULT_FROM_EMAIL
                     ),
                     recipient_list=[
                         salarie.email_personnel,
                     ],
+                    html_message=html_message,
                     fail_silently=False,
                 )
 
