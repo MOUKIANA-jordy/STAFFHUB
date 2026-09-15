@@ -364,7 +364,7 @@ export default function Users() {
               size={18}
             />
 
-            Ajouter un salarié
+            Creer un salarié
 
           </button>
 
