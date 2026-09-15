@@ -286,8 +286,8 @@ export default function Sidebar() {
           <div className="sidebar-logo-container">
 
             <img
-              src="/images/rh-logo.png"
-              alt="RH Manager"
+              src="/images/staffhub-logo.png"
+              alt="StaffHub"
               className="sidebar-logo-image"
             />
 
