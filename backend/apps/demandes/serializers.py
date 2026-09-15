@@ -21,7 +21,7 @@ class DemandeSerializer(serializers.ModelSerializer):
     )
 
     salarie_nom = serializers.SerializerMethodField()
-
+    salarie_photo = serializers.SerializerMethodField()
     total_heures_sup = serializers.SerializerMethodField()
 
     class Meta:
@@ -31,6 +31,7 @@ class DemandeSerializer(serializers.ModelSerializer):
             "id",
             "salarie",
             "salarie_nom",
+            "salarie_photo",
             "type_demande",
             "type_demande_display",
             "montant_souhaite",
@@ -48,6 +49,7 @@ class DemandeSerializer(serializers.ModelSerializer):
             "id",
             "salarie",
             "salarie_nom",
+            "salarie_photo",
             "total_heures_sup",
             "statut",
             "date_demande",
@@ -68,10 +70,30 @@ class DemandeSerializer(serializers.ModelSerializer):
 
         return full_name or user.username
 
-    def get_total_heures_sup(self, obj) -> float:
-        return float(
-            obj.total_heures_sup
+    def get_salarie_photo(self, obj):
+        salarie = getattr(
+            obj,
+            "salarie",
+            None,
         )
+
+        if not salarie or not salarie.photo:
+            return None
+
+        try:
+            photo_url = salarie.photo.url
+        except (ValueError, AttributeError):
+            return None
+
+        request = self.context.get("request")
+
+        if request and photo_url.startswith("/"):
+            return request.build_absolute_uri(photo_url)
+
+        return photo_url
+
+    def get_total_heures_sup(self, obj) -> float:
+        return float(obj.total_heures_sup)
 
     def validate_details(self, value):
         if isinstance(value, str):
@@ -118,10 +140,7 @@ class DemandeSerializer(serializers.ModelSerializer):
             None,
         )
 
-        if (
-            content_type
-            and content_type not in allowed_types
-        ):
+        if content_type and content_type not in allowed_types:
             raise serializers.ValidationError(
                 "Formats acceptés : PDF, JPG et PNG."
             )
@@ -163,21 +182,13 @@ class DemandeSerializer(serializers.ModelSerializer):
             ),
         ) or {}
 
-        request = self.context.get(
-            "request"
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        current_salarie = (
+            getattr(user, "salarie", None)
+            if user
+            else None
         )
-
-        user = getattr(
-            request,
-            "user",
-            None,
-        )
-
-        current_salarie = getattr(
-            user,
-            "salarie",
-            None,
-        ) if user else None
 
         demande_salarie = (
             instance.salarie
@@ -191,8 +202,7 @@ class DemandeSerializer(serializers.ModelSerializer):
 
         if (
             instance
-            and instance.statut
-            != Demande.Statut.EN_ATTENTE
+            and instance.statut != Demande.Statut.EN_ATTENTE
         ):
             raise serializers.ValidationError(
                 "Une demande déjà traitée "
@@ -227,8 +237,7 @@ class DemandeSerializer(serializers.ModelSerializer):
         # =========================================
 
         if (
-            type_demande
-            == Demande.TypeDemande.AVANCE
+            type_demande == Demande.TypeDemande.AVANCE
             and demande_salarie
             and demande_salarie.type_contrat != "CDI"
         ):
@@ -243,10 +252,7 @@ class DemandeSerializer(serializers.ModelSerializer):
         # ABSENCE
         # =========================================
 
-        if (
-            type_demande
-            == Demande.TypeDemande.ABSENCE
-        ):
+        if type_demande == Demande.TypeDemande.ABSENCE:
             if montant is not None:
                 raise serializers.ValidationError({
                     "montant_souhaite": (
@@ -255,13 +261,8 @@ class DemandeSerializer(serializers.ModelSerializer):
                     )
                 })
 
-            date_debut = details.get(
-                "date_debut"
-            )
-
-            date_fin = details.get(
-                "date_fin"
-            )
+            date_debut = details.get("date_debut")
+            date_fin = details.get("date_fin")
 
             if not date_debut:
                 raise serializers.ValidationError({
@@ -317,10 +318,7 @@ class DemandeSerializer(serializers.ModelSerializer):
         # CET
         # =========================================
 
-        if (
-            type_demande
-            == Demande.TypeDemande.CET
-        ):
+        if type_demande == Demande.TypeDemande.CET:
             if not demande_salarie:
                 raise serializers.ValidationError({
                     "details": (
@@ -329,9 +327,7 @@ class DemandeSerializer(serializers.ModelSerializer):
                     )
                 })
 
-            heures_cet = details.get(
-                "heures_cet"
-            )
+            heures_cet = details.get("heures_cet")
 
             if heures_cet is None:
                 raise serializers.ValidationError({
@@ -344,9 +340,7 @@ class DemandeSerializer(serializers.ModelSerializer):
                 })
 
             try:
-                heures_cet = Decimal(
-                    str(heures_cet)
-                )
+                heures_cet = Decimal(str(heures_cet))
 
             except (
                 InvalidOperation,
@@ -374,9 +368,7 @@ class DemandeSerializer(serializers.ModelSerializer):
 
             compte_cet = (
                 CompteCET.objects
-                .filter(
-                    salarie=demande_salarie
-                )
+                .filter(salarie=demande_salarie)
                 .first()
             )
 
@@ -388,10 +380,7 @@ class DemandeSerializer(serializers.ModelSerializer):
                     )
                 })
 
-            if (
-                heures_cet
-                > compte_cet.solde_heures
-            ):
+            if heures_cet > compte_cet.solde_heures:
                 raise serializers.ValidationError({
                     "details": {
                         "heures_cet": (
@@ -414,13 +403,8 @@ class DemandeSerializer(serializers.ModelSerializer):
         # FICHE DE PAIE
         # =========================================
 
-        if (
-            type_demande
-            == Demande.TypeDemande.FICHE
-        ):
-            mois = details.get(
-                "mois"
-            )
+        if type_demande == Demande.TypeDemande.FICHE:
+            mois = details.get("mois")
 
             if not mois:
                 raise serializers.ValidationError({
@@ -433,10 +417,7 @@ class DemandeSerializer(serializers.ModelSerializer):
                 })
 
             try:
-                datetime.strptime(
-                    str(mois),
-                    "%Y-%m",
-                )
+                datetime.strptime(str(mois), "%Y-%m")
 
             except ValueError as error:
                 raise serializers.ValidationError({
@@ -460,10 +441,7 @@ class DemandeSerializer(serializers.ModelSerializer):
         # HEURES SUPPLÉMENTAIRES
         # =========================================
 
-        if (
-            type_demande
-            == Demande.TypeDemande.HEURES_SUP
-        ):
+        if type_demande == Demande.TypeDemande.HEURES_SUP:
             if not demande_salarie:
                 raise serializers.ValidationError({
                     "pointages": (
@@ -472,10 +450,7 @@ class DemandeSerializer(serializers.ModelSerializer):
                     )
                 })
 
-            if (
-                not instance
-                and not pointages
-            ):
+            if not instance and not pointages:
                 raise serializers.ValidationError({
                     "pointages": (
                         "Sélectionnez au moins "
@@ -489,10 +464,7 @@ class DemandeSerializer(serializers.ModelSerializer):
                 periodes_paie = set()
 
                 for pointage in pointages:
-                    if (
-                        pointage.salarie_id
-                        != demande_salarie.id
-                    ):
+                    if pointage.salarie_id != demande_salarie.id:
                         raise serializers.ValidationError({
                             "pointages": (
                                 "Vous ne pouvez utiliser "
@@ -523,16 +495,12 @@ class DemandeSerializer(serializers.ModelSerializer):
                             )
                         })
 
-                    periodes_paie.add(
-                        pointage.mois_paie
-                    )
+                    periodes_paie.add(pointage.mois_paie)
 
                     demandes_existantes = (
                         pointage
                         .demandes_heures_sup
-                        .exclude(
-                            statut=Demande.Statut.REFUSE
-                        )
+                        .exclude(statut=Demande.Statut.REFUSE)
                     )
 
                     if instance:
