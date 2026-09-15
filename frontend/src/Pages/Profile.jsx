@@ -274,10 +274,13 @@ export default function Profile() {
       `${profile.nom?.[0] || ""}`
     ).toUpperCase() || "U";
 
-  const photo =
+  const rawPhoto =
     profile.photo ||
     profile.photo_profil ||
-    profile.avatar;
+    profile.avatar ||
+    "";
+
+  const photo = resolveMediaUrl(rawPhoto);
 
   const active =
     profile.actif !== false &&
@@ -1169,3 +1172,51 @@ function getDaysRemaining(value) {
       (1000 * 60 * 60 * 24)
   );
 }
+
+// ===========================================================
+// URL DES FICHIERS MEDIA
+// ===========================================================
+
+function resolveMediaUrl(value) {
+  if (!value || typeof value !== "string") {
+    return "";
+  }
+
+  const normalizedValue = value.trim();
+
+  // Cloudinary doit toujours être chargé avec HTTPS.
+  if (
+    normalizedValue.startsWith(
+      "http://res.cloudinary.com"
+    )
+  ) {
+    return normalizedValue.replace(
+      "http://",
+      "https://"
+    );
+  }
+
+  // L'adresse reçue est déjà complète.
+  if (
+    normalizedValue.startsWith("https://") ||
+    normalizedValue.startsWith("http://") ||
+    normalizedValue.startsWith("data:") ||
+    normalizedValue.startsWith("blob:")
+  ) {
+    return normalizedValue;
+  }
+
+  // Compatibilité avec les anciennes adresses /media/...
+  const apiBaseUrl = (
+    API.defaults.baseURL ||
+    process.env.REACT_APP_API_URL ||
+    "https://staffhub-api-13hi.onrender.com"
+  ).replace(/\/$/, "");
+
+  const mediaPath = normalizedValue.startsWith("/")
+    ? normalizedValue
+    : `/${normalizedValue}`;
+
+  return `${apiBaseUrl}${mediaPath}`;
+}
+
