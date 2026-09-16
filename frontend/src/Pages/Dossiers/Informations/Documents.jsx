@@ -105,6 +105,88 @@ const DEFAULT_FORM = {
 
 
 // =========================================================
+// DATE INPUT MASK - JJ/MM/AAAA
+// =========================================================
+
+const formatDateInput = (value) => {
+  const numbers = String(value || "")
+    .replace(/\D/g, "")
+    .slice(0, 8);
+
+  if (!numbers) {
+    return "";
+  }
+
+  if (numbers.length < 2) {
+    return numbers;
+  }
+
+  if (numbers.length === 2) {
+    return `${numbers}/`;
+  }
+
+  if (numbers.length < 4) {
+    return `${numbers.slice(0, 2)}/${numbers.slice(2)}`;
+  }
+
+  if (numbers.length === 4) {
+    return (
+      `${numbers.slice(0, 2)}/`
+      + `${numbers.slice(2, 4)}/`
+    );
+  }
+
+  return (
+    `${numbers.slice(0, 2)}/`
+    + `${numbers.slice(2, 4)}/`
+    + `${numbers.slice(4, 8)}`
+  );
+};
+
+
+// =========================================================
+// DATE -> FORMAT API DJANGO YYYY-MM-DD
+// =========================================================
+
+const dateToApiFormat = (value) => {
+  if (!value) {
+    return "";
+  }
+
+  const match = value.match(
+    /^(\d{2})\/(\d{2})\/(\d{4})$/
+  );
+
+  if (!match) {
+    return "";
+  }
+
+  const [, day, month, year] = match;
+
+  const dayNumber = Number(day);
+  const monthNumber = Number(month);
+  const yearNumber = Number(year);
+
+  const date = new Date(
+    yearNumber,
+    monthNumber - 1,
+    dayNumber
+  );
+
+  const isValid =
+    date.getFullYear() === yearNumber
+    && date.getMonth() === monthNumber - 1
+    && date.getDate() === dayNumber;
+
+  if (!isValid) {
+    return "";
+  }
+
+  return `${year}-${month}-${day}`;
+};
+
+
+// =========================================================
 // PAGE
 // =========================================================
 
@@ -225,14 +307,27 @@ export default function DocumentsOfficiels() {
     } = event.target;
 
     setFormData(
-      (current) => ({
-        ...current,
+      (current) => {
+        if (
+          name === "date_emission"
+          || name === "date_expiration"
+        ) {
+          return {
+            ...current,
+            [name]:
+              formatDateInput(value),
+          };
+        }
 
-        [name]:
-          files
-            ? files[0] || null
-            : value,
-      })
+        return {
+          ...current,
+
+          [name]:
+            files
+              ? files[0] || null
+              : value,
+        };
+      }
     );
   };
 
@@ -278,6 +373,60 @@ export default function DocumentsOfficiels() {
     }
 
 
+    // ---------------------------------------------------------
+    // VALIDATION DATE D'EMISSION
+    // ---------------------------------------------------------
+
+    let apiDateEmission = "";
+
+    if (
+      formData.date_emission
+    ) {
+      apiDateEmission =
+        dateToApiFormat(
+          formData.date_emission
+        );
+
+      if (!apiDateEmission) {
+        setMessage({
+          type: "error",
+          text:
+            "La date d'émission n'est pas valide. "
+            + "Utilisez le format JJ/MM/AAAA.",
+        });
+
+        return;
+      }
+    }
+
+
+    // ---------------------------------------------------------
+    // VALIDATION DATE D'EXPIRATION
+    // ---------------------------------------------------------
+
+    let apiDateExpiration = "";
+
+    if (
+      formData.date_expiration
+    ) {
+      apiDateExpiration =
+        dateToApiFormat(
+          formData.date_expiration
+        );
+
+      if (!apiDateExpiration) {
+        setMessage({
+          type: "error",
+          text:
+            "La date d'expiration n'est pas valide. "
+            + "Utilisez le format JJ/MM/AAAA.",
+        });
+
+        return;
+      }
+    }
+
+
     setSubmitting(true);
 
 
@@ -319,21 +468,21 @@ export default function DocumentsOfficiels() {
 
 
       if (
-        formData.date_emission
+        apiDateEmission
       ) {
         payload.append(
           "date_emission",
-          formData.date_emission
+          apiDateEmission
         );
       }
 
 
       if (
-        formData.date_expiration
+        apiDateExpiration
       ) {
         payload.append(
           "date_expiration",
-          formData.date_expiration
+          apiDateExpiration
         );
       }
 
@@ -929,13 +1078,17 @@ export default function DocumentsOfficiels() {
                   <input
                     id="date_emission"
                     name="date_emission"
-                    type="date"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    maxLength={10}
                     value={
                       formData.date_emission
                     }
                     onChange={
                       handleChange
                     }
+                    placeholder="JJ/MM/AAAA"
                   />
 
                 </div>
@@ -952,13 +1105,17 @@ export default function DocumentsOfficiels() {
                   <input
                     id="date_expiration"
                     name="date_expiration"
-                    type="date"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    maxLength={10}
                     value={
                       formData.date_expiration
                     }
                     onChange={
                       handleChange
                     }
+                    placeholder="JJ/MM/AAAA"
                   />
 
                 </div>
