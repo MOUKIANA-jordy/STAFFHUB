@@ -3,7 +3,6 @@ import React from "react";
 import {
   NavLink,
   Outlet,
-  useNavigate,
 } from "react-router-dom";
 
 import {
@@ -26,10 +25,10 @@ import "../Styles/admin.css";
 
 export default function AdminLayout() {
 
-  const navigate = useNavigate();
-
   const {
     user,
+    loading,
+    logout,
   } = useAuth();
 
 
@@ -37,22 +36,20 @@ export default function AdminLayout() {
   // LOGOUT
   // =========================================================
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
 
-    localStorage.removeItem(
-      "access"
-    );
+    try {
 
-    localStorage.removeItem(
-      "refresh"
-    );
+      await logout();
 
-    navigate(
-      "/",
-      {
-        replace: true,
-      }
-    );
+    } catch (error) {
+
+      console.error(
+        "Erreur pendant la déconnexion :",
+        error
+      );
+
+    }
 
   };
 
@@ -61,11 +58,26 @@ export default function AdminLayout() {
   // CHARGEMENT
   // =========================================================
 
-  if (!user) {
+  if (loading) {
 
     return (
       <div className="app-loading">
         Chargement...
+      </div>
+    );
+
+  }
+
+
+  // =========================================================
+  // UTILISATEUR NON CONNECTÉ
+  // =========================================================
+
+  if (!user) {
+
+    return (
+      <div className="app-loading">
+        Session expirée...
       </div>
     );
 
