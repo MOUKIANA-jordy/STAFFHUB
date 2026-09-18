@@ -2,7 +2,6 @@ import React from "react";
 
 import {
   NavLink,
-  useNavigate,
 } from "react-router-dom";
 
 import {
@@ -121,9 +120,6 @@ export default function Sidebar() {
     logout,
   } = useAuth();
 
-  const navigate =
-    useNavigate();
-
 
   /* =======================================================
      PERMISSIONS
@@ -165,44 +161,12 @@ export default function Sidebar() {
   const handleLogout =
     async () => {
       try {
-        if (logout) {
-          await logout();
-        }
-
-        navigate(
-          "/",
-          {
-            replace: true,
-          }
-        );
+        await logout();
 
       } catch (error) {
         console.error(
           "Erreur pendant la déconnexion :",
           error
-        );
-
-        localStorage.removeItem(
-          "access"
-        );
-
-        localStorage.removeItem(
-          "refresh"
-        );
-
-        sessionStorage.removeItem(
-          "access"
-        );
-
-        sessionStorage.removeItem(
-          "refresh"
-        );
-
-        navigate(
-          "/",
-          {
-            replace: true,
-          }
         );
       }
     };
