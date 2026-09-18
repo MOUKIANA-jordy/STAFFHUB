@@ -1,6 +1,7 @@
 import logging
 
 from django.conf import settings
+from django.middleware.csrf import get_token
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import default_token_generator
@@ -14,6 +15,8 @@ from django.utils.http import (
 )
 
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
 
 from rest_framework import filters, status, viewsets
 from rest_framework import serializers as drf_serializers
@@ -297,6 +300,261 @@ class SalarieViewSet(viewsets.ModelViewSet):
             },
             status=status.HTTP_201_CREATED,
         )
+
+
+# ============================================================
+# CSRF TOKEN
+# ============================================================
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def csrf_token(request):
+    """
+    Génère et renvoie un token CSRF au frontend.
+
+    Le token CSRF n'est pas un secret d'authentification.
+    React pourra l'envoyer dans le header X-CSRFToken
+    pour les requêtes sensibles.
+    """
+
+    token = get_token(request)
+
+    return Response(
+        {
+            "csrfToken": token,
+        },
+        status=status.HTTP_200_OK,
+    )
+
+
+# ============================================================
+# AUTHENTIFICATION JWT PAR COOKIES HTTPONLY
+# ============================================================
+
+def _set_auth_cookies(response, access_token, refresh_token=None):
+    """
+    Enregistre les JWT dans des cookies HttpOnly.
+
+    En développement :
+        secure=False
+        samesite=Lax
+
+    En production :
+        secure=True
+        samesite=None
+
+    SameSite=None est nécessaire lorsque le frontend et le backend
+    sont hébergés sur des sites différents.
+    """
+
+    secure_cookie = not settings.DEBUG
+    same_site = "None" if secure_cookie else "Lax"
+
+    response.set_cookie(
+        key="access_token",
+        value=str(access_token),
+        httponly=True,
+        secure=secure_cookie,
+        samesite=same_site,
+        max_age=60 * 60,  # 1 heure
+        path="/",
+    )
+
+    if refresh_token is not None:
+        response.set_cookie(
+            key="refresh_token",
+            value=str(refresh_token),
+            httponly=True,
+            secure=secure_cookie,
+            samesite=same_site,
+            max_age=24 * 60 * 60,  # 1 jour
+            path="/",
+        )
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def cookie_login(request):
+    """
+    Authentifie l'utilisateur et place les JWT
+    dans des cookies HttpOnly.
+    """
+
+    username = request.data.get("username")
+    password = request.data.get("password")
+
+    if not username or not password:
+        return Response(
+            {
+                "detail": (
+                    "Nom d'utilisateur et mot de passe requis."
+                )
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    user = User.objects.filter(
+        username=username
+    ).first()
+
+    if user is None or not user.check_password(password):
+        return Response(
+            {
+                "detail": (
+                    "Identifiant ou mot de passe incorrect."
+                )
+            },
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    if not user.is_active:
+        return Response(
+            {
+                "detail": "Ce compte est désactivé."
+            },
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    refresh = RefreshToken.for_user(user)
+    access = refresh.access_token
+
+    response = Response(
+        {
+            "message": "Connexion réussie."
+        },
+        status=status.HTTP_200_OK,
+    )
+
+    _set_auth_cookies(
+        response,
+        access,
+        refresh,
+    )
+
+    return response
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def cookie_refresh(request):
+    """
+    Génère un nouvel access token à partir
+    du refresh token présent dans le cookie HttpOnly.
+    """
+
+    refresh_token = request.COOKIES.get(
+        "refresh_token"
+    )
+
+    if not refresh_token:
+        return Response(
+            {
+                "detail": (
+                    "Refresh token absent."
+                )
+            },
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    try:
+        refresh = RefreshToken(refresh_token)
+
+        # Rotation du refresh token
+        user_id = refresh.get("user_id")
+
+        user = User.objects.get(
+            id=user_id,
+            is_active=True,
+        )
+
+        # Blacklist de l'ancien refresh token
+        try:
+            refresh.blacklist()
+        except AttributeError:
+            pass
+
+        new_refresh = RefreshToken.for_user(user)
+        new_access = new_refresh.access_token
+
+        response = Response(
+            {
+                "message": "Token renouvelé."
+            },
+            status=status.HTTP_200_OK,
+        )
+
+        _set_auth_cookies(
+            response,
+            new_access,
+            new_refresh,
+        )
+
+        return response
+
+    except (
+        TokenError,
+        User.DoesNotExist,
+    ):
+        response = Response(
+            {
+                "detail": (
+                    "Refresh token invalide ou expiré."
+                )
+            },
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+        response.delete_cookie(
+            "access_token",
+            path="/",
+        )
+
+        response.delete_cookie(
+            "refresh_token",
+            path="/",
+        )
+
+        return response
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def cookie_logout(request):
+    """
+    Supprime les cookies d'authentification.
+    """
+
+    refresh_token = request.COOKIES.get(
+        "refresh_token"
+    )
+
+    if refresh_token:
+        try:
+            RefreshToken(
+                refresh_token
+            ).blacklist()
+        except TokenError:
+            pass
+
+    response = Response(
+        {
+            "message": "Déconnexion réussie."
+        },
+        status=status.HTTP_200_OK,
+    )
+
+    response.delete_cookie(
+        "access_token",
+        path="/",
+    )
+
+    response.delete_cookie(
+        "refresh_token",
+        path="/",
+    )
+
+    return response
+
 
 
 # ============================================================
