@@ -40,13 +40,16 @@ const Login = () => {
     setError("");
 
     try {
-      const response = await API.post("/api/token/", {
-        username: form.username.trim(),
-        password: form.password,
-      });
-
-      localStorage.setItem("access", response.data.access);
-      localStorage.setItem("refresh", response.data.refresh);
+      await API.post(
+  "/api/auth/login/",
+  {
+    username: form.username.trim(),
+    password: form.password,
+  },
+  {
+    withCredentials: true,
+  }
+);
 
       navigate("/home", {
         replace: true,
