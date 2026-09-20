@@ -1,7 +1,33 @@
-import { Navigate, Outlet } from "react-router-dom";
+import {
+  Navigate,
+  Outlet,
+} from "react-router-dom";
+
+import useAuth from "../Hooks/useAuth";
+
 
 export default function PrivateRoute() {
-  const token = localStorage.getItem("access");
+  const {
+    user,
+    loading,
+  } = useAuth();
 
-  return token ? <Outlet /> : <Navigate to="/" />;
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          padding: "2rem",
+          textAlign: "center",
+        }}
+      >
+        Chargement...
+      </div>
+    );
+  }
+
+
+  return user
+    ? <Outlet />
+    : <Navigate to="/" replace />;
 }
