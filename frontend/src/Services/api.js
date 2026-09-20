@@ -1,8 +1,17 @@
 import axios from "axios";
 
+// =========================================================
+// CONFIGURATION API
+// =========================================================
 
 const API = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || "http://localhost:8000",
+  baseURL:
+    process.env.REACT_APP_API_URL ||
+    "http://localhost:8000",
+
+  // IMPORTANT :
+  // Permet au navigateur d'envoyer les cookies HttpOnly
+  // vers le backend Django.
   withCredentials: true,
 });
 
@@ -13,26 +22,28 @@ const API = axios.create({
 
 API.interceptors.request.use(
   (config) => {
-    const token =
-      localStorage.getItem("access")
-      || sessionStorage.getItem("access");
-
-
-    // -------------------------------------------------------
-    // TOKEN
-    // -------------------------------------------------------
-
-    if (token) {
-      config.headers.Authorization =
-        `Bearer ${token}`;
-    }
-
-
-    // -------------------------------------------------------
-    // FORM DATA
-    // -------------------------------------------------------
+    // -----------------------------------------------------
+    // PLUS DE JWT DANS LOCALSTORAGE
+    // -----------------------------------------------------
     //
-    // IMPORTANT :
+    // Avant :
+    //
+    // Authorization: Bearer <token>
+    //
+    // Maintenant :
+    //
+    // Le navigateur envoie automatiquement le cookie
+    // access_token grâce à withCredentials: true.
+    //
+    // JavaScript ne peut pas lire le cookie car il est
+    // HttpOnly.
+    // -----------------------------------------------------
+
+
+    // -----------------------------------------------------
+    // FORM DATA
+    // -----------------------------------------------------
+    //
     // Ne jamais forcer application/json pour FormData.
     //
     // Le navigateur doit générer lui-même :
@@ -40,29 +51,20 @@ API.interceptors.request.use(
     // multipart/form-data;
     // boundary=----------------...
     //
-    // Sinon Django retourne 415.
-    // -------------------------------------------------------
+    // Sinon Django peut retourner 415.
+    // -----------------------------------------------------
 
-    if (
-      config.data
-      instanceof FormData
-    ) {
-      delete config.headers[
-        "Content-Type"
-      ];
+    if (config.data instanceof FormData) {
+      delete config.headers["Content-Type"];
     } else {
-      config.headers[
-        "Content-Type"
-      ] = "application/json";
+      config.headers["Content-Type"] =
+        "application/json";
     }
-
 
     return config;
   },
 
-
-  (error) =>
-    Promise.reject(error)
+  (error) => Promise.reject(error)
 );
 
 
@@ -71,128 +73,112 @@ API.interceptors.request.use(
 // =========================================================
 
 API.interceptors.response.use(
-  (response) =>
-    response,
-
+  (response) => response,
 
   async (error) => {
-    const originalRequest =
-      error.config;
+    const originalRequest = error.config;
 
-
-    // -------------------------------------------------------
-    // TOKEN EXPIRE
-    // -------------------------------------------------------
+    // -----------------------------------------------------
+    // ACCESS TOKEN EXPIRÉ
+    // -----------------------------------------------------
+    //
+    // Si Django retourne 401 :
+    //
+    // 1. Le navigateur possède normalement refresh_token
+    //    dans un cookie HttpOnly.
+    //
+    // 2. On appelle /api/auth/refresh/
+    //
+    // 3. Django crée un nouveau access_token.
+    //
+    // 4. Django remplace automatiquement les cookies.
+    //
+    // 5. On rejoue la requête d'origine.
+    // -----------------------------------------------------
 
     if (
-      error.response?.status
-        === 401
-      &&
-      originalRequest
-      &&
+      error.response?.status === 401 &&
+      originalRequest &&
       !originalRequest._retry
     ) {
-      originalRequest._retry =
-        true;
+      // Ne pas essayer de refresh si c'est justement
+      // le login ou le refresh qui a échoué.
+      const requestUrl =
+        originalRequest.url || "";
 
+      const isAuthRequest =
+        requestUrl.includes("/api/auth/login/") ||
+        requestUrl.includes("/api/auth/refresh/") ||
+        requestUrl.includes("/api/auth/logout/");
 
-      const refresh =
-        localStorage.getItem(
-          "refresh"
-        )
-        ||
-        sessionStorage.getItem(
-          "refresh"
-        );
-
-
-      if (!refresh) {
-        clearAuthentication();
-
-        window.location.href =
-          "/";
-
-        return Promise.reject(
-          error
-        );
+      if (isAuthRequest) {
+        return Promise.reject(error);
       }
 
+      originalRequest._retry = true;
 
       try {
-        const response =
-          await axios.post(
-            `${API.defaults.baseURL}/api/token/refresh/`,
-            {
-              refresh,
+        // -------------------------------------------------
+        // REFRESH TOKEN
+        // -------------------------------------------------
+        //
+        // Aucun refresh token dans le body.
+        //
+        // Le navigateur envoie automatiquement :
+        //
+        // Cookie: refresh_token=...
+        //
+        // grâce à withCredentials.
+        // -------------------------------------------------
+
+        await axios.post(
+          `${API.defaults.baseURL}/api/auth/refresh/`,
+          {},
+          {
+            withCredentials: true,
+            headers: {
+              "Content-Type": "application/json",
             },
-            {
-              headers: {
-                "Content-Type":
-                  "application/json",
-              },
-            }
-          );
-
-
-        const newAccess =
-          response.data.access;
-
-
-        // ---------------------------------------------------
-        // GARDE LE MEME TYPE DE STOCKAGE
-        // ---------------------------------------------------
-
-        if (
-          localStorage.getItem(
-            "refresh"
-          )
-        ) {
-          localStorage.setItem(
-            "access",
-            newAccess
-          );
-        } else {
-          sessionStorage.setItem(
-            "access",
-            newAccess
-          );
-        }
-
-
-        // ---------------------------------------------------
-        // NOUVEAU TOKEN
-        // ---------------------------------------------------
-
-        originalRequest.headers.Authorization =
-          `Bearer ${newAccess}`;
-
-
-        // ---------------------------------------------------
-        // IMPORTANT POUR FORM DATA
-        // ---------------------------------------------------
-
-        if (
-          originalRequest.data
-          instanceof FormData
-        ) {
-          delete originalRequest
-            .headers[
-              "Content-Type"
-            ];
-        }
-
-
-        return API(
-          originalRequest
+          }
         );
 
-      } catch (
-        refreshError
-      ) {
+
+        // -------------------------------------------------
+        // FORM DATA
+        // -------------------------------------------------
+
+        if (
+          originalRequest.data instanceof FormData
+        ) {
+          delete originalRequest.headers[
+            "Content-Type"
+          ];
+        }
+
+
+        // -------------------------------------------------
+        // REJOUER LA REQUÊTE
+        // -------------------------------------------------
+        //
+        // Le nouveau access_token est maintenant
+        // dans le cookie HttpOnly.
+        // -------------------------------------------------
+
+        return API(originalRequest);
+
+      } catch (refreshError) {
+        // Le refresh token est lui aussi invalide
+        // ou expiré.
+        //
+        // L'utilisateur doit se reconnecter.
+
         clearAuthentication();
 
-        window.location.href =
-          "/";
+        if (
+          window.location.pathname !== "/"
+        ) {
+          window.location.href = "/";
+        }
 
         return Promise.reject(
           refreshError
@@ -200,10 +186,7 @@ API.interceptors.response.use(
       }
     }
 
-
-    return Promise.reject(
-      error
-    );
+    return Promise.reject(error);
   }
 );
 
@@ -213,30 +196,50 @@ API.interceptors.response.use(
 // =========================================================
 
 function clearAuthentication() {
-  localStorage.removeItem(
-    "access"
-  );
+  // -------------------------------------------------------
+  // JWT
+  // -------------------------------------------------------
+  //
+  // On ne peut PAS supprimer access_token ou refresh_token
+  // ici avec JavaScript car ils sont HttpOnly.
+  //
+  // C'est Django qui doit les supprimer via :
+  //
+  // POST /api/auth/logout/
+  // -------------------------------------------------------
 
-  localStorage.removeItem(
-    "refresh"
-  );
 
-  localStorage.removeItem(
-    "user"
-  );
+  // On nettoie uniquement d'anciennes données qui peuvent
+  // encore exister à cause de l'ancien système.
+
+  localStorage.removeItem("access");
+  localStorage.removeItem("refresh");
+  localStorage.removeItem("user");
+
+  sessionStorage.removeItem("access");
+  sessionStorage.removeItem("refresh");
+  sessionStorage.removeItem("user");
+}
 
 
-  sessionStorage.removeItem(
-    "access"
-  );
+// =========================================================
+// LOGOUT
+// =========================================================
 
-  sessionStorage.removeItem(
-    "refresh"
-  );
-
-  sessionStorage.removeItem(
-    "user"
-  );
+export async function logout() {
+  try {
+    await API.post(
+      "/api/auth/logout/",
+      {}
+    );
+  } catch (error) {
+    console.error(
+      "Erreur lors de la déconnexion :",
+      error
+    );
+  } finally {
+    clearAuthentication();
+  }
 }
 
 
