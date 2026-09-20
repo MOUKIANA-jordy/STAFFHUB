@@ -4,270 +4,104 @@ import {
   useState,
 } from "react";
 
-
-const API_URL =
-  process.env.REACT_APP_API_URL
-  || "http://127.0.0.1:8000";
+import API from "../Services/api";
 
 
-/*
-=========================================================
-CACHE GLOBAL DU USER
-
-Empêche Layout, Sidebar, Header, etc.
-de refaire chacun GET /api/me/
-=========================================================
-*/
+// =========================================================
+// CACHE GLOBAL DU USER
+// =========================================================
+//
+// Empêche Layout, Sidebar, Header, etc.
+// de refaire chacun GET /api/me/.
+//
+// Les JWT ne sont PLUS stockés ici.
+// Ils sont maintenant dans des cookies HttpOnly.
+// =========================================================
 
 let cachedUser = null;
-
 let userRequest = null;
 
 
-/*
-=========================================================
-TOKENS
-=========================================================
-*/
+// =========================================================
+// NETTOYAGE ANCIEN STOCKAGE
+// =========================================================
+//
+// Ces suppressions servent uniquement à nettoyer les anciens
+// JWT qui pourraient encore être présents dans le navigateur.
+//
+// Aucun nouveau JWT n'est enregistré dans localStorage ou
+// sessionStorage.
+// =========================================================
 
-function getAccessToken() {
-  return (
-    localStorage.getItem("access")
-    || sessionStorage.getItem("access")
-    || null
-  );
+function clearOldAuthStorage() {
+  localStorage.removeItem("access");
+  localStorage.removeItem("refresh");
+  localStorage.removeItem("user");
+
+  sessionStorage.removeItem("access");
+  sessionStorage.removeItem("refresh");
+  sessionStorage.removeItem("user");
 }
 
 
-function getRefreshToken() {
-  return (
-    localStorage.getItem("refresh")
-    || sessionStorage.getItem("refresh")
-    || null
-  );
-}
+// =========================================================
+// RESET CACHE USER
+// =========================================================
 
-
-/*
-=========================================================
-SAUVEGARDE NOUVEL ACCESS TOKEN
-=========================================================
-*/
-
-function saveAccessToken(token) {
-  if (
-    localStorage.getItem("refresh")
-    || localStorage.getItem("access")
-  ) {
-    localStorage.setItem(
-      "access",
-      token
-    );
-
-    return;
-  }
-
-
-  sessionStorage.setItem(
-    "access",
-    token
-  );
-}
-
-
-/*
-=========================================================
-SUPPRESSION AUTH
-=========================================================
-*/
-
-function clearAuthStorage() {
-  localStorage.removeItem(
-    "access"
-  );
-
-  localStorage.removeItem(
-    "refresh"
-  );
-
-  localStorage.removeItem(
-    "user"
-  );
-
-  sessionStorage.removeItem(
-    "access"
-  );
-
-  sessionStorage.removeItem(
-    "refresh"
-  );
-
-  sessionStorage.removeItem(
-    "user"
-  );
-
+function clearUserCache() {
   cachedUser = null;
   userRequest = null;
 }
 
 
-/*
-=========================================================
-REFRESH TOKEN
-=========================================================
-*/
-
-async function refreshAccessToken() {
-  const refresh =
-    getRefreshToken();
-
-
-  if (!refresh) {
-    throw new Error(
-      "Aucun refresh token disponible."
-    );
-  }
-
-
-  const response =
-    await fetch(
-      `${API_URL}/api/token/refresh/`,
-      {
-        method: "POST",
-
-        headers: {
-          "Content-Type":
-            "application/json",
-        },
-
-        body: JSON.stringify({
-          refresh,
-        }),
-      }
-    );
-
-
-  if (!response.ok) {
-    throw new Error(
-      "Le refresh token n'est plus valide."
-    );
-  }
-
-
-  const data =
-    await response.json();
-
-
-  if (!data.access) {
-    throw new Error(
-      "Aucun nouveau token d'accès reçu."
-    );
-  }
-
-
-  saveAccessToken(
-    data.access
-  );
-
-
-  return data.access;
-}
-
-
-/*
-=========================================================
-GET /api/me/
-=========================================================
-*/
+// =========================================================
+// GET /api/me/
+// =========================================================
+//
+// API utilise déjà :
+//
+// withCredentials: true
+//
+// Le navigateur envoie donc automatiquement :
+//
+// access_token=<JWT>
+//
+// dans le cookie HttpOnly.
+//
+// Si l'access token est expiré, l'interceptor de api.js
+// appellera /api/auth/refresh/ automatiquement.
+// =========================================================
 
 async function requestCurrentUser() {
-  let access =
-    getAccessToken();
-
-
-  if (!access) {
-    return null;
-  }
-
-
-  let response =
-    await fetch(
-      `${API_URL}/api/me/`,
-      {
-        headers: {
-          Authorization:
-            `Bearer ${access}`,
-        },
-      }
+  try {
+    const response = await API.get(
+      "/api/me/"
     );
 
+    const userData = response.data;
 
-  /*
-  -------------------------------------------------------
-  ACCESS EXPIRE
-  -------------------------------------------------------
-  */
+    cachedUser = userData;
 
-  if (
-    response.status === 401
-  ) {
-    try {
-      access =
-        await refreshAccessToken();
-
-
-      response =
-        await fetch(
-          `${API_URL}/api/me/`,
-          {
-            headers: {
-              Authorization:
-                `Bearer ${access}`,
-            },
-          }
-        );
-
-    } catch (error) {
-      clearAuthStorage();
-
-      throw error;
+    return userData;
+  } catch (error) {
+    // 401 = aucune session valide
+    if (error.response?.status === 401) {
+      clearUserCache();
+      return null;
     }
+
+    throw error;
   }
-
-
-  /*
-  -------------------------------------------------------
-  AUTRE ERREUR API
-  -------------------------------------------------------
-  */
-
-  if (!response.ok) {
-    throw new Error(
-      `Erreur /api/me/ : ${response.status}`
-    );
-  }
-
-
-  const userData =
-    await response.json();
-
-
-  cachedUser =
-    userData;
-
-
-  return userData;
 }
 
 
-/*
-=========================================================
-CHARGEMENT PARTAGÉ
-
-Si plusieurs composants appellent useAuth() en même temps,
-une seule requête /api/me/ sera exécutée.
-=========================================================
-*/
+// =========================================================
+// CHARGEMENT PARTAGÉ
+// =========================================================
+//
+// Si plusieurs composants utilisent useAuth() en même temps,
+// une seule requête GET /api/me/ sera exécutée.
+// =========================================================
 
 function loadCurrentUser() {
   if (cachedUser) {
@@ -276,11 +110,9 @@ function loadCurrentUser() {
     );
   }
 
-
   if (userRequest) {
     return userRequest;
   }
-
 
   userRequest =
     requestCurrentUser()
@@ -288,16 +120,13 @@ function loadCurrentUser() {
         userRequest = null;
       });
 
-
   return userRequest;
 }
 
 
-/*
-=========================================================
-HOOK
-=========================================================
-*/
+// =========================================================
+// HOOK
+// =========================================================
 
 export default function useAuth() {
   const [
@@ -307,7 +136,6 @@ export default function useAuth() {
     cachedUser
   );
 
-
   const [
     loading,
     setLoading,
@@ -315,18 +143,15 @@ export default function useAuth() {
     !cachedUser
   );
 
-
   const [
     error,
     setError,
   ] = useState("");
 
 
-  /*
-  -------------------------------------------------------
-  FETCH USER
-  -------------------------------------------------------
-  */
+  // =======================================================
+  // FETCH USER
+  // =======================================================
 
   const fetchUser =
     useCallback(
@@ -336,42 +161,32 @@ export default function useAuth() {
         setLoading(true);
         setError("");
 
-
         try {
           if (force) {
-            cachedUser = null;
-            userRequest = null;
+            clearUserCache();
           }
-
 
           const userData =
             await loadCurrentUser();
-
 
           setUser(
             userData
           );
 
-
           return userData;
-
         } catch (err) {
           console.error(
             "AUTH ERROR:",
             err
           );
 
-
           setUser(null);
-
 
           setError(
             "Impossible de charger l'utilisateur."
           );
 
-
           return null;
-
         } finally {
           setLoading(false);
         }
@@ -380,35 +195,59 @@ export default function useAuth() {
     );
 
 
-  /*
-  -------------------------------------------------------
-  LOGOUT
-  -------------------------------------------------------
-  */
+  // =======================================================
+  // LOGOUT
+  // =======================================================
+  //
+  // IMPORTANT :
+  //
+  // Les cookies sont HttpOnly.
+  // JavaScript ne peut donc pas les supprimer directement.
+  //
+  // On demande au backend Django de :
+  //
+  // 1. blacklister le refresh token
+  // 2. supprimer access_token
+  // 3. supprimer refresh_token
+  // =======================================================
 
   const logout =
     useCallback(
-      () => {
-        clearAuthStorage();
+      async () => {
+        try {
+          await API.post(
+            "/api/auth/logout/",
+            {}
+          );
+        } catch (err) {
+          console.error(
+            "LOGOUT ERROR:",
+            err
+          );
+        } finally {
+          clearUserCache();
 
-        setUser(null);
+          clearOldAuthStorage();
 
-        window.location.href =
-          "/";
+          setUser(null);
+
+          window.location.href = "/";
+        }
       },
       []
     );
 
 
-  /*
-  -------------------------------------------------------
-  INITIALISATION
-  -------------------------------------------------------
-  */
+  // =======================================================
+  // INITIALISATION
+  // =======================================================
 
   useEffect(() => {
     let mounted = true;
 
+    // Nettoyage des JWT laissés par l'ancienne version
+    // de StaffHub.
+    clearOldAuthStorage();
 
     const initialize =
       async () => {
@@ -416,19 +255,16 @@ export default function useAuth() {
           const userData =
             await loadCurrentUser();
 
-
           if (mounted) {
             setUser(
               userData
             );
           }
-
         } catch (err) {
           console.error(
             "AUTH INIT ERROR:",
             err
           );
-
 
           if (mounted) {
             setUser(null);
@@ -437,7 +273,6 @@ export default function useAuth() {
               "Votre session n'est plus valide."
             );
           }
-
         } finally {
           if (mounted) {
             setLoading(false);
@@ -445,15 +280,17 @@ export default function useAuth() {
         }
       };
 
-
     initialize();
-
 
     return () => {
       mounted = false;
     };
   }, []);
 
+
+  // =======================================================
+  // RETURN
+  // =======================================================
 
   return {
     user,
