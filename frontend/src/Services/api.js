@@ -26,22 +26,26 @@ const API = axios.create({
 // =========================================================
 // CSRF
 // =========================================================
-//
-// Le JWT reste dans un cookie HttpOnly.
-// JavaScript ne peut donc pas lire access_token.
-//
-// Le token CSRF, lui, peut être récupéré par React.
-// Il ne sert pas à authentifier l'utilisateur.
-//
-// Pour les requêtes sensibles, React enverra :
-//
-// X-CSRFToken: <token>
-//
-// =========================================================
 
 let csrfToken = null;
-
 let csrfRequest = null;
+
+
+// =========================================================
+// REFRESH JWT
+// =========================================================
+//
+// Une seule requête de refresh peut être exécutée
+// à la fois.
+//
+// Si plusieurs appels API reçoivent 401 simultanément,
+// ils attendent tous la même Promise.
+//
+// Cela évite que plusieurs refresh utilisent le même
+// refresh_token alors que Django effectue sa rotation.
+// =========================================================
+
+let refreshRequest = null;
 
 
 // =========================================================
@@ -50,16 +54,12 @@ let csrfRequest = null;
 
 async function fetchCsrfToken() {
 
-  // Si nous l'avons déjà en mémoire,
-  // inutile de refaire une requête.
-
   if (csrfToken) {
     return csrfToken;
   }
 
 
   // Évite plusieurs appels simultanés à /csrf/
-  // lorsque plusieurs requêtes démarrent en même temps.
 
   if (csrfRequest) {
     return csrfRequest;
@@ -128,12 +128,8 @@ API.interceptors.request.use(
     // CSRF
     // -----------------------------------------------------
     //
-    // POST
-    // PUT
-    // PATCH
-    // DELETE
-    //
-    // récupèrent automatiquement un token CSRF.
+    // POST / PUT / PATCH / DELETE
+    // reçoivent automatiquement X-CSRFToken.
     // -----------------------------------------------------
 
     if (!isSafeMethod(config.method)) {
@@ -151,10 +147,6 @@ API.interceptors.request.use(
 
     // -----------------------------------------------------
     // FORM DATA
-    // -----------------------------------------------------
-    //
-    // Pour FormData, le navigateur doit créer lui-même
-    // le Content-Type avec le boundary.
     // -----------------------------------------------------
 
     if (config.data instanceof FormData) {
@@ -178,6 +170,70 @@ API.interceptors.request.use(
   (error) =>
     Promise.reject(error)
 );
+
+
+// =========================================================
+// EFFECTUER LE REFRESH
+// =========================================================
+
+async function refreshAccessToken() {
+
+  // Si un refresh est déjà en cours,
+  // toutes les autres requêtes attendent celui-ci.
+
+  if (refreshRequest) {
+    return refreshRequest;
+  }
+
+
+  refreshRequest = (async () => {
+
+    // Récupération du CSRF déjà chargé
+    // ou récupération d'un nouveau si nécessaire.
+
+    const token =
+      await fetchCsrfToken();
+
+
+    // Le refresh_token est envoyé automatiquement
+    // par le navigateur grâce au cookie HttpOnly.
+
+    await axios.post(
+
+      `${BASE_URL}/api/auth/refresh/`,
+
+      {},
+
+      {
+        withCredentials: true,
+
+        headers: {
+
+          "Content-Type":
+            "application/json",
+
+          "X-CSRFToken":
+            token,
+        },
+      }
+    );
+
+  })();
+
+
+  try {
+
+    await refreshRequest;
+
+  } finally {
+
+    // Important :
+    // le prochain renouvellement pourra créer
+    // une nouvelle requête de refresh.
+
+    refreshRequest = null;
+  }
+}
 
 
 // =========================================================
@@ -209,6 +265,9 @@ API.interceptors.response.use(
         originalRequest.url || "";
 
 
+      // Ces endpoints ne doivent jamais provoquer
+      // eux-mêmes un nouveau refresh.
+
       const isAuthRequest =
         requestUrl.includes(
           "/api/auth/login/"
@@ -229,7 +288,6 @@ API.interceptors.response.use(
         return Promise.reject(
           error
         );
-
       }
 
 
@@ -239,41 +297,10 @@ API.interceptors.response.use(
       try {
 
         // -------------------------------------------------
-        // CSRF POUR LE REFRESH
+        // UN SEUL REFRESH POUR TOUS LES 401
         // -------------------------------------------------
 
-        const token =
-          await fetchCsrfToken();
-
-
-        // -------------------------------------------------
-        // REFRESH TOKEN
-        // -------------------------------------------------
-        //
-        // refresh_token reste dans le cookie HttpOnly.
-        //
-        // Aucun JWT n'est placé dans le body.
-        // -------------------------------------------------
-
-        await axios.post(
-
-          `${BASE_URL}/api/auth/refresh/`,
-
-          {},
-
-          {
-            withCredentials: true,
-
-            headers: {
-
-              "Content-Type":
-                "application/json",
-
-              "X-CSRFToken":
-                token,
-            },
-          }
-        );
+        await refreshAccessToken();
 
 
         // -------------------------------------------------
@@ -288,12 +315,15 @@ API.interceptors.response.use(
           delete originalRequest.headers[
             "Content-Type"
           ];
-
         }
 
 
         // -------------------------------------------------
-        // REJOUER LA REQUÊTE
+        // REJOUER LA REQUÊTE INITIALE
+        // -------------------------------------------------
+        //
+        // Le navigateur possède maintenant le nouveau
+        // access_token HttpOnly.
         // -------------------------------------------------
 
         return API(
@@ -312,7 +342,6 @@ API.interceptors.response.use(
 
           window.location.href =
             "/";
-
         }
 
 
@@ -344,7 +373,7 @@ function clearAuthentication() {
   // POST /api/auth/logout/
 
 
-  // Nettoyage des anciennes données de StaffHub.
+  // Nettoyage des anciennes données StaffHub.
 
   localStorage.removeItem(
     "access"
@@ -372,10 +401,13 @@ function clearAuthentication() {
   );
 
 
-  // Le token CSRF conservé en mémoire
-  // n'est plus nécessaire après déconnexion.
+  // Nettoyage de l'état CSRF en mémoire.
 
   csrfToken = null;
+  csrfRequest = null;
+
+  // On oublie également un éventuel refresh.
+  refreshRequest = null;
 }
 
 
@@ -402,7 +434,6 @@ export async function logout() {
   } finally {
 
     clearAuthentication();
-
   }
 }
 
