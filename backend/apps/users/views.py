@@ -24,6 +24,7 @@ from rest_framework.decorators import (
     api_view,
     parser_classes,
     permission_classes,
+    authentication_classes,
 )
 from rest_framework.parsers import (
     FormParser,
@@ -35,6 +36,7 @@ from rest_framework.permissions import (
     IsAuthenticated,
 )
 from rest_framework.response import Response
+from .authentication import enforce_csrf
 
 from drf_spectacular.utils import (
     extend_schema,
