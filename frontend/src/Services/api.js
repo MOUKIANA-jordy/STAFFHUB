@@ -1,19 +1,119 @@
 import axios from "axios";
 
+
 // =========================================================
-// CONFIGURATION API
+// CONFIGURATION
 // =========================================================
+
+const BASE_URL =
+  process.env.REACT_APP_API_URL ||
+  "http://localhost:8000";
+
 
 const API = axios.create({
-  baseURL:
-    process.env.REACT_APP_API_URL ||
-    "http://localhost:8000",
+  baseURL: BASE_URL,
 
-  // IMPORTANT :
-  // Permet au navigateur d'envoyer les cookies HttpOnly
-  // vers le backend Django.
+  // Nécessaire pour envoyer les cookies :
+  //
+  // access_token
+  // refresh_token
+  // csrftoken
+  //
   withCredentials: true,
 });
+
+
+// =========================================================
+// CSRF
+// =========================================================
+//
+// Le JWT reste dans un cookie HttpOnly.
+// JavaScript ne peut donc pas lire access_token.
+//
+// Le token CSRF, lui, peut être récupéré par React.
+// Il ne sert pas à authentifier l'utilisateur.
+//
+// Pour les requêtes sensibles, React enverra :
+//
+// X-CSRFToken: <token>
+//
+// =========================================================
+
+let csrfToken = null;
+
+let csrfRequest = null;
+
+
+// =========================================================
+// RÉCUPÉRER LE TOKEN CSRF
+// =========================================================
+
+async function fetchCsrfToken() {
+
+  // Si nous l'avons déjà en mémoire,
+  // inutile de refaire une requête.
+
+  if (csrfToken) {
+    return csrfToken;
+  }
+
+
+  // Évite plusieurs appels simultanés à /csrf/
+  // lorsque plusieurs requêtes démarrent en même temps.
+
+  if (csrfRequest) {
+    return csrfRequest;
+  }
+
+
+  csrfRequest = axios
+    .get(
+      `${BASE_URL}/api/auth/csrf/`,
+      {
+        withCredentials: true,
+      }
+    )
+    .then((response) => {
+
+      const token =
+        response.data?.csrfToken;
+
+      if (!token) {
+        throw new Error(
+          "Token CSRF absent de la réponse Django."
+        );
+      }
+
+      csrfToken = token;
+
+      return token;
+    })
+    .finally(() => {
+      csrfRequest = null;
+    });
+
+
+  return csrfRequest;
+}
+
+
+// =========================================================
+// MÉTHODES HTTP SÛRES
+// =========================================================
+
+function isSafeMethod(method) {
+
+  const safeMethods = [
+    "get",
+    "head",
+    "options",
+    "trace",
+  ];
+
+  return safeMethods.includes(
+    (method || "get").toLowerCase()
+  );
+}
 
 
 // =========================================================
@@ -21,50 +121,62 @@ const API = axios.create({
 // =========================================================
 
 API.interceptors.request.use(
-  (config) => {
+
+  async (config) => {
+
     // -----------------------------------------------------
-    // PLUS DE JWT DANS LOCALSTORAGE
+    // CSRF
     // -----------------------------------------------------
     //
-    // Avant :
+    // POST
+    // PUT
+    // PATCH
+    // DELETE
     //
-    // Authorization: Bearer <token>
-    //
-    // Maintenant :
-    //
-    // Le navigateur envoie automatiquement le cookie
-    // access_token grâce à withCredentials: true.
-    //
-    // JavaScript ne peut pas lire le cookie car il est
-    // HttpOnly.
+    // récupèrent automatiquement un token CSRF.
     // -----------------------------------------------------
+
+    if (!isSafeMethod(config.method)) {
+
+      const token =
+        await fetchCsrfToken();
+
+      config.headers =
+        config.headers || {};
+
+      config.headers["X-CSRFToken"] =
+        token;
+    }
 
 
     // -----------------------------------------------------
     // FORM DATA
     // -----------------------------------------------------
     //
-    // Ne jamais forcer application/json pour FormData.
-    //
-    // Le navigateur doit générer lui-même :
-    //
-    // multipart/form-data;
-    // boundary=----------------...
-    //
-    // Sinon Django peut retourner 415.
+    // Pour FormData, le navigateur doit créer lui-même
+    // le Content-Type avec le boundary.
     // -----------------------------------------------------
 
     if (config.data instanceof FormData) {
-      delete config.headers["Content-Type"];
+
+      delete config.headers[
+        "Content-Type"
+      ];
+
     } else {
-      config.headers["Content-Type"] =
-        "application/json";
+
+      config.headers[
+        "Content-Type"
+      ] = "application/json";
+
     }
+
 
     return config;
   },
 
-  (error) => Promise.reject(error)
+  (error) =>
+    Promise.reject(error)
 );
 
 
@@ -73,27 +185,18 @@ API.interceptors.request.use(
 // =========================================================
 
 API.interceptors.response.use(
+
   (response) => response,
 
+
   async (error) => {
-    const originalRequest = error.config;
+
+    const originalRequest =
+      error.config;
+
 
     // -----------------------------------------------------
     // ACCESS TOKEN EXPIRÉ
-    // -----------------------------------------------------
-    //
-    // Si Django retourne 401 :
-    //
-    // 1. Le navigateur possède normalement refresh_token
-    //    dans un cookie HttpOnly.
-    //
-    // 2. On appelle /api/auth/refresh/
-    //
-    // 3. Django crée un nouveau access_token.
-    //
-    // 4. Django remplace automatiquement les cookies.
-    //
-    // 5. On rejoue la requête d'origine.
     // -----------------------------------------------------
 
     if (
@@ -101,43 +204,73 @@ API.interceptors.response.use(
       originalRequest &&
       !originalRequest._retry
     ) {
-      // Ne pas essayer de refresh si c'est justement
-      // le login ou le refresh qui a échoué.
+
       const requestUrl =
         originalRequest.url || "";
 
+
       const isAuthRequest =
-        requestUrl.includes("/api/auth/login/") ||
-        requestUrl.includes("/api/auth/refresh/") ||
-        requestUrl.includes("/api/auth/logout/");
+        requestUrl.includes(
+          "/api/auth/login/"
+        ) ||
+        requestUrl.includes(
+          "/api/auth/refresh/"
+        ) ||
+        requestUrl.includes(
+          "/api/auth/logout/"
+        ) ||
+        requestUrl.includes(
+          "/api/auth/csrf/"
+        );
+
 
       if (isAuthRequest) {
-        return Promise.reject(error);
+
+        return Promise.reject(
+          error
+        );
+
       }
+
 
       originalRequest._retry = true;
 
+
       try {
+
+        // -------------------------------------------------
+        // CSRF POUR LE REFRESH
+        // -------------------------------------------------
+
+        const token =
+          await fetchCsrfToken();
+
+
         // -------------------------------------------------
         // REFRESH TOKEN
         // -------------------------------------------------
         //
-        // Aucun refresh token dans le body.
+        // refresh_token reste dans le cookie HttpOnly.
         //
-        // Le navigateur envoie automatiquement :
-        //
-        // Cookie: refresh_token=...
-        //
-        // grâce à withCredentials.
+        // Aucun JWT n'est placé dans le body.
         // -------------------------------------------------
 
         await axios.post(
-          `${API.defaults.baseURL}/api/auth/refresh/`,
+
+          `${BASE_URL}/api/auth/refresh/`,
+
           {},
+
           {
             withCredentials: true,
+
             headers: {
-              "Content-Type": "application/json",
+
+              "Content-Type":
+                "application/json",
+
+              "X-CSRFToken":
+                token,
             },
           }
         );
@@ -148,37 +281,40 @@ API.interceptors.response.use(
         // -------------------------------------------------
 
         if (
-          originalRequest.data instanceof FormData
+          originalRequest.data
+          instanceof FormData
         ) {
+
           delete originalRequest.headers[
             "Content-Type"
           ];
+
         }
 
 
         // -------------------------------------------------
         // REJOUER LA REQUÊTE
         // -------------------------------------------------
-        //
-        // Le nouveau access_token est maintenant
-        // dans le cookie HttpOnly.
-        // -------------------------------------------------
 
-        return API(originalRequest);
+        return API(
+          originalRequest
+        );
 
       } catch (refreshError) {
-        // Le refresh token est lui aussi invalide
-        // ou expiré.
-        //
-        // L'utilisateur doit se reconnecter.
 
         clearAuthentication();
 
+
         if (
-          window.location.pathname !== "/"
+          window.location.pathname
+          !== "/"
         ) {
-          window.location.href = "/";
+
+          window.location.href =
+            "/";
+
         }
+
 
         return Promise.reject(
           refreshError
@@ -186,7 +322,10 @@ API.interceptors.response.use(
       }
     }
 
-    return Promise.reject(error);
+
+    return Promise.reject(
+      error
+    );
   }
 );
 
@@ -196,29 +335,47 @@ API.interceptors.response.use(
 // =========================================================
 
 function clearAuthentication() {
-  // -------------------------------------------------------
-  // JWT
-  // -------------------------------------------------------
+
+  // Les JWT HttpOnly ne peuvent pas être supprimés
+  // directement avec JavaScript.
   //
-  // On ne peut PAS supprimer access_token ou refresh_token
-  // ici avec JavaScript car ils sont HttpOnly.
-  //
-  // C'est Django qui doit les supprimer via :
+  // Django les supprime via :
   //
   // POST /api/auth/logout/
-  // -------------------------------------------------------
 
 
-  // On nettoie uniquement d'anciennes données qui peuvent
-  // encore exister à cause de l'ancien système.
+  // Nettoyage des anciennes données de StaffHub.
 
-  localStorage.removeItem("access");
-  localStorage.removeItem("refresh");
-  localStorage.removeItem("user");
+  localStorage.removeItem(
+    "access"
+  );
 
-  sessionStorage.removeItem("access");
-  sessionStorage.removeItem("refresh");
-  sessionStorage.removeItem("user");
+  localStorage.removeItem(
+    "refresh"
+  );
+
+  localStorage.removeItem(
+    "user"
+  );
+
+
+  sessionStorage.removeItem(
+    "access"
+  );
+
+  sessionStorage.removeItem(
+    "refresh"
+  );
+
+  sessionStorage.removeItem(
+    "user"
+  );
+
+
+  // Le token CSRF conservé en mémoire
+  // n'est plus nécessaire après déconnexion.
+
+  csrfToken = null;
 }
 
 
@@ -227,18 +384,25 @@ function clearAuthentication() {
 // =========================================================
 
 export async function logout() {
+
   try {
+
     await API.post(
       "/api/auth/logout/",
       {}
     );
+
   } catch (error) {
+
     console.error(
       "Erreur lors de la déconnexion :",
       error
     );
+
   } finally {
+
     clearAuthentication();
+
   }
 }
 
