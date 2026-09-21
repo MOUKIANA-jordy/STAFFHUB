@@ -2,8 +2,6 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-# AUTH
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 # USERS
 from apps.users.views import (
@@ -68,8 +66,6 @@ urlpatterns = [
     path('api/', include(router.urls)),
 
     # AUTH
-    path('api/token/', TokenObtainPairView.as_view()),
-    path('api/token/refresh/', TokenRefreshView.as_view()),
     path('api/password-reset/', password_reset_request, name='password-reset'),
     path('api/auth/csrf/', csrf_token, name='csrf-token'),
     path('api/auth/login/', cookie_login, name='cookie-login'),
