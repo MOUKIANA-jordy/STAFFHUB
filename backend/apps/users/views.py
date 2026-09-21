@@ -309,6 +309,7 @@ class SalarieViewSet(viewsets.ModelViewSet):
 # ============================================================
 
 @api_view(["GET"])
+@authentication_classes([])
 @permission_classes([AllowAny])
 def csrf_token(request):
     """
@@ -375,12 +376,14 @@ def _set_auth_cookies(response, access_token, refresh_token=None):
 
 
 @api_view(["POST"])
+@authentication_classes([])
 @permission_classes([AllowAny])
 def cookie_login(request):
     """
     Authentifie l'utilisateur et place les JWT
     dans des cookies HttpOnly.
     """
+    enforce_csrf(request)
 
     username = request.data.get("username")
     password = request.data.get("password")
@@ -437,12 +440,14 @@ def cookie_login(request):
 
 
 @api_view(["POST"])
+@authentication_classes([])
 @permission_classes([AllowAny])
 def cookie_refresh(request):
     """
     Génère un nouvel access token à partir
     du refresh token présent dans le cookie HttpOnly.
     """
+    enforce_csrf(request)
 
     refresh_token = request.COOKIES.get(
         "refresh_token"
@@ -520,11 +525,13 @@ def cookie_refresh(request):
 
 
 @api_view(["POST"])
+@authentication_classes([])
 @permission_classes([AllowAny])
 def cookie_logout(request):
     """
     Supprime les cookies d'authentification.
     """
+    enforce_csrf(request)
 
     refresh_token = request.COOKIES.get(
         "refresh_token"
