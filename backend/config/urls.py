@@ -15,6 +15,7 @@ from apps.users.views import (
     cookie_login,
     cookie_refresh,
     cookie_logout,
+    csrf_token,
 )
 
 # MODULES
@@ -70,6 +71,7 @@ urlpatterns = [
     path('api/token/', TokenObtainPairView.as_view()),
     path('api/token/refresh/', TokenRefreshView.as_view()),
     path('api/password-reset/', password_reset_request, name='password-reset'),
+    path('api/auth/csrf/', csrf_token, name='csrf-token'),
     path('api/auth/login/', cookie_login, name='cookie-login'),
     path('api/auth/refresh/', cookie_refresh, name='cookie-refresh'),
     path('api/auth/logout/', cookie_logout, name='cookie-logout'),
