@@ -712,7 +712,6 @@ export default function Home() {
         <div>
 
           <span className="dashboard-eyebrow">
-            Tableau de bord
           </span>
 
           <h1>
