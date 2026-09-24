@@ -1,245 +1,154 @@
-# StaffHub
+I-- StaffHub
 
-StaffHub is a full-stack Human Resources Management platform designed to centralize employee information, administrative requests, documents, schedules, attendance, payroll information, notifications, and communication in a single application.
+StaffHub is a web application for managing employee information and common HR workflows in one place. Employees can view their records and submit requests; HR staff can manage employees, review requests, and monitor activity.
 
-The project was developed as my Portfolio Project during my Full-Stack Web Development training at Holberton School.
+I built StaffHub independently as my Portfolio Project during the Full-Stack Web Development program at Holberton School.
 
-## Screenshot
+![StaffHub dashboard](screenshots/dashboard.png)
 
-![StaffHub Dashboard](screenshots/dashboard.png)
+II-- What the application does
 
-## About StaffHub
+| Employees | HR and administrators |
+| --- | --- |
+| View and update their profile | Create and manage employee records |
+| Submit and track HR requests | Approve or reject requests |
+| Access documents, schedules, and payroll information | Review employee and absence statistics |
+| View attendance, notifications, and messages | Manage HR information according to their permissions |
 
-Managing HR information can quickly become complicated when employee data, documents, schedules, administrative requests, and payroll information are spread across different tools.
+Requests include salary advances, advance payments, overtime, and CET payments. The available actions depend on the user's role and the rules enforced by the backend.
 
-StaffHub was created to provide employees and HR teams with a centralized and easy-to-use platform.
+III-- Tech stack
 
-The application provides different interfaces and permissions depending on the user's role. Employees can access their personal HR space and submit requests, while HR and administrators can manage employees and process those requests.
+| Layer | Technologies |
+| --- | --- |
+| Frontend | React, JavaScript, Axios, Recharts, CSS |
+| Backend | Python, Django, Django REST Framework, SimpleJWT |
+| Database | SQLite in local development; PostgreSQL in production |
+| Deployment | Vercel for the frontend; Render for the backend |
 
-## Main Features
+IV-- Architecture
 
-### Employee
+The React frontend calls a REST API provided by Django REST Framework. The backend validates requests, applies business rules and permissions, and reads or writes data through Django's ORM.
 
-- Secure authentication
-- Personal employee dashboard
-- Employee profile management
-- Personal and employment information
-- Administrative requests
-- Salary advance requests
-- Advance payment requests
-- Overtime requests
-- CET payment requests
-- Documents management
-- Planning and schedules
-- Attendance and time tracking
-- Payroll information
-- Notifications
-- Messaging
+```text
+React frontend
+      │ REST API
+      ▼
+Django REST Framework
+      │ Models and ORM
+      ▼
+Database
+```
 
-### HR / Administrator
+Authentication uses JWT. Access to protected API resources is checked on the backend according to the authenticated user and their role. The interface also adapts to the user's role.
 
-- HR dashboard
-- Employee management
-- Employee creation and administration
-- Administrative request management
-- Request approval and rejection
-- Employee statistics
-- Absence statistics
-- Planning overview
-- Role-based permissions
-- Notifications and employee information management
+V-- Database design
 
-## Technologies
+The database separates employees, requests, documents, schedules, attendance, payroll, and messages into related tables. For example, a request belongs to an employee through a foreign key. This lets StaffHub retrieve an employee's requests without duplicating the employee's information in every request.
 
-### Frontend
+Django models define these relationships, and migrations apply schema changes to the database.
 
-- React
-- JavaScript
-- Axios
-- Recharts
-- HTML5
-- CSS3
+> Add a clear database diagram here if one is available in the repository.
 
-### Backend
+## Getting started
 
-- Python
-- Django
-- Django REST Framework
-- SimpleJWT
-- REST API
+### Requirements
 
-### Database
+- Python 3
+- Node.js and npm
+- The environment variables required by the Django configuration
 
-- SQLite for local development
-- External production database
+### 1. Clone the repository
 
-### Deployment
-
-- Vercel for the React frontend
-- Render for the Django backend
-
-## Architecture
-
-StaffHub uses a separated frontend/backend architecture.
-
-The React frontend is responsible for the user interface and communicates with the Django backend through a REST API.
-
-The Django backend handles business logic, authentication, permissions, database access, and API endpoints.
-
-JWT authentication is used to secure communication between the frontend and backend.
-
-This separation also allows the frontend and backend to be deployed and maintained independently.
-
-## Project Story
-
-I chose to build StaffHub because Human Resources management involves many processes that are often distributed across different systems.
-
-My goal was to create one platform where an employee could find the most important information related to their professional life while providing HR teams with tools to manage employees and administrative requests.
-
-I developed this project independently, which meant working on the complete development lifecycle: identifying the requirements, designing the application, creating the database models and REST API, developing the React interface, implementing authentication and permissions, testing the application, fixing bugs, and deploying the frontend and backend.
-
-Building StaffHub allowed me to work on a project much larger than a simple isolated frontend or backend exercise and helped me better understand how the different parts of a full-stack application communicate.
-
-## Challenges
-
-One of the biggest challenges was implementing authentication and authorization correctly.
-
-StaffHub has several user roles, including employees, HR users, and administrators. Each role must have access only to the appropriate resources. This required implementing permissions both in the Django REST API and in the React interface.
-
-Another important challenge was connecting the React frontend to the Django backend using JWT authentication. Axios interceptors are used to send authentication tokens with protected API requests.
-
-Deployment was also an important learning experience. The frontend and backend are deployed separately, which required configuring API URLs, environment variables, allowed hosts, database settings, and production authentication correctly.
-
-During development, I also encountered and resolved issues involving Django migrations, API permissions, password reset flows, production URLs, frontend builds, and differences between the local and production environments.
-
-## Implemented Features
-
-The current version includes:
-
-- Authentication with JWT
-- Employee and HR roles
-- Employee profiles
-- HR dashboard
-- Employee management
-- Administrative requests
-- Request status management
-- Documents
-- Planning
-- Attendance
-- Payroll-related functionality
-- Notifications
-- Messaging
-- Password reset
-- Production deployment
-
-## Future Improvements
-
-StaffHub is still evolving. Some improvements planned for future versions include:
-
-- More advanced interactive planning
-- Improved attendance management
-- More detailed HR analytics
-- Improved real-time notifications
-- Enhanced messaging
-- Improved profile picture management
-- Better mobile experience
-- Additional automated tests
-- Further UI and accessibility improvements
-
-## Installation
-
-### Clone the repository
-
-git clone git@github.com:MOUKIANA-jordy/STAFFHUB.git
+```bash
+git clone https://github.com/MOUKIANA-jordy/STAFFHUB.git
 cd STAFFHUB
+```
 
+## 2. Start the backend
 
-### Backend
-
-Move to the backend directory:
-
+```bash
 cd backend
-
-Create a virtual environment:
-
 python3 -m venv venv
 source venv/bin/activate
-
-Install the dependencies:
-
 pip install -r requirements.txt
-
-Run the migrations:
-
 python3 manage.py migrate
-
-
-Start the Django server:
-
 python3 manage.py runserver
+```
 
-The backend will normally be available at:
+The API runs locally at `http://127.0.0.1:8000/`.
 
-http://127.0.0.1:8000
+Create a local `.env` file in `backend/` with the variables required by your configuration. For example:
 
+```dotenv
+SECRET_KEY=replace-with-a-local-development-secret
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+CORS_ALLOWED_ORIGINS=http://localhost:3000
+CSRF_TRUSTED_ORIGINS=http://localhost:3000
+```
 
-### Frontend
+Do not commit `.env` or real credentials to Git.
 
-Open another terminal and move to the frontend directory:
+### 3. Start the frontend
 
-cd frontend
+Open a second terminal:
 
-Install the dependencies:
-
+```bash
+cd STAFFHUB/frontend
 npm install
-
-Start the React application:
-
 npm start
+```
 
+The frontend runs locally at http://localhost:3000/.
 
-The frontend will normally be available at:
+If your frontend configuration requires REACT_APP_API_URL, point it to your local backend in frontend/.env:
 
+```dotenv
+REACT_APP_API_URL=http://127.0.0.1:8000
+```
 
-http://localhost:3000
+Restart the React development server after changing its environment variables.
 
-## API
+## API overview
 
-Some of the main API endpoints include:
+The API includes endpoints for employee profiles, requests, documents, schedules, attendance, payroll, notifications, and messaging.
 
-POST /api/token/
-POST /api/token/refresh/
-GET  /api/me/
+| Resource | Example endpoint |
+| --- | --- |
+| Current user | `GET /api/me/` |
+| Employees | `GET /api/salaries/` |
+| Requests | `GET /api/demandes/` |
+| Documents | `GET /api/documents/` |
+| Planning | `GET /api/planning/` |
+| Attendance | `GET /api/pointage/` |
+| Payroll | `GET /api/paie/` |
+| Notifications | `GET /api/notifications/` |
 
-GET  /api/salaries/
-GET  /api/demandes/
-GET  /api/documents/
-GET  /api/planning/
-GET  /api/pointage/
-GET  /api/paie/
-GET  /api/notifications/
-GET  /api/conversations/
-GET  /api/messages/
+Protected endpoints require authentication. The available operations depend on the user's role. API documentation is available through Swagger when running the configured documentation route.
 
-StaffHub also provides API documentation through Swagger.
+# Technical decisions and challenges
 
-## Developer
+**Permissions.** StaffHub handles employee and HR workflows in the same application. Backend permissions determine which data and actions each authenticated user can access.
 
-I am Jordy Wenceslas Moukiana, a Full-Stack Web Development student at Holberton School.
+Separate deployments. The React frontend and Django backend run as separate services. This required configuring the API address, allowed origins, hosts, environment variables, and production database.
 
-I developed StaffHub as my Portfolio Project to strengthen my skills in React, Django, REST APIs, authentication, database design, testing, debugging, and application deployment.
+Relational data. Employee information is connected to requests, documents, schedules, and other records through model relationships. Django migrations keep database changes reproducible across environments.
 
-I am interested in building practical web applications and continuing to develop my skills as a full-stack developer.
+Authentication. Connecting the frontend to protected API endpoints required handling JWT authentication and keeping client and server configuration consistent.
 
-### Connect with me
+## Current scope and next steps
 
-- LinkedIn: [Jordy Wenceslas Moukiana](https://www.linkedin.com/in/jordy-wenceslas-moukiana-636842274)
-- X / Twitter: [@Jordinateur_242](https://x.com/Jordinateur_242)
-- Portfolio Project: [StaffHub](https://github.com/MOUKIANA-jordy/STAFFHUB)
+The project includes employee profiles, HR requests, documents, planning, attendance, payroll-related features, notifications, messaging, password reset, and an HR dashboard.
 
-## Author
+Planned improvements include broader automated test coverage, accessibility work, mobile usability improvements, and more detailed HR analytics.
+
+### Author
 
 Jordy Wenceslas Moukiana
+  
+Full-Stack Web Development student, Holberton School
 
-Full-Stack Web Developer  
-Holberton School
+- [LinkedIn](https://www.linkedin.com/in/jordy-wenceslas-moukiana-636842274)
+- [X / Twitter](https://x.com/Jordinateur_242)
+- [Project repository](https://github.com/MOUKIANA-jordy/STAFFHUB)
